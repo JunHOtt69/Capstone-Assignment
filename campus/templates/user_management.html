@@ -1,0 +1,28 @@
+{% extends "base.html" %} 
+
+{% load static %}  
+
+{% block title %} User Management {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/user_management.css' %}">
+{% endblock %}
+
+{% block content %}
+    <h1 class="pageTitle">User Management</h1>
+    <div class="managementContent">
+        <div class="leftNav">
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'bulk_user' %}active{% endif %}" href="">Bulk Create Users</a>
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'create_user_manually' %}active{% endif %}" href="{% url 'create_user_manually'%}">Create Uer Manually</a>
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'edit_user' %}active{% endif %}" href="">Edit User</a>
+        </div>
+        <div class="rightContent">
+            {% block function_window %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/user_management.js' %}"></script>
+{% endblock %} 

@@ -1,0 +1,457 @@
+::-webkit-calendar-picker-indicator {
+    filter: invert(30%) sepia(100%) saturate(500%) hue-rotate(190deg);
+    cursor: pointer;
+}
+
+.managementContent{
+    background-color: black;
+    margin: 2vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    border: 0.1vw solid rgba(var(--black), 1);
+    overflow: hidden;
+}
+
+.managementContent .leftNav{
+    background-color: rgba(var(--black), 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 8vw;
+    overflow: hidden;
+    height: 100%;
+}
+
+.managementContent .leftNav .leftNavItem{
+    background-color: white;
+    width: 100%;
+    font-size: var(--p-fontsize);
+    color: rgba(var(--black), 1);
+    text-decoration: none;
+    padding: 0.3vw 0.5vw;
+    transition: background-color 0.2s;
+}
+
+.managementContent .leftNav .leftNavItem.active{
+    background-color: greenyellow;
+}
+
+.managementContent .leftNav .leftNavItem:hover{
+    background-color: rgba(var(--dark-green), 1); 
+}
+
+.managementContent .rightContent{
+    padding: 0.3vw 2vw 0.3vw 1vw;
+    flex: 1;
+    min-height: 80vh;
+    height: max-content;
+    min-width: 0;
+    background-color: white;
+    border-left: 0.1vw solid rgba(var(--black), 1);
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1vw;
+}
+
+.createTerm{
+    margin: 0;
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+    padding: 0.5vw 0.5vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1vw;
+    width: 100%;
+}
+
+.createTerm form{
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.selectInput{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+    width: max-content;
+    width: 15vw;
+    height: 2vw;
+}
+
+.selectInput .selectedLabel{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding: 0.3vw 0.5vw;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    font-size: var(--h5-fontsize);
+}
+
+.selectInput .selectedLabel label{
+    max-width: 12vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.selectInput#courseInput.inactive{
+    user-select: none;
+    pointer-events: none;
+    color: rgba(var(--black), 0.4);
+}
+
+.selectInput#courseInput.inactive path{
+    stroke: rgba(var(--black), 0.4);
+}
+
+.selectInput#courseInput{
+    width: 20vw;
+    color: rgba(var(--black), 1); 
+    stroke: rgba(var(--black), 1);
+    user-select: auto;
+    pointer-events: auto;
+}
+
+.selectInput#courseInput .selectedLabel label{
+    max-width: 17vw;
+}
+
+.selectInput .selectedLabel span{
+    width: 1vw;
+    height: 1vw;
+    transform: rotate(0);
+    transition: transform 0.2s;
+}
+
+.selectInput .selectedLabel span svg{
+    width: 1vw;
+    height: 1vw;
+    fill: none;
+}
+
+.selectInput.active .selectedLabel span{
+    transform: rotate(180deg);
+}
+
+.selectInput .selectedLabel span svg path{
+    stroke: rgba(var(--black), 1);
+    stroke-width: 10;
+}
+
+.selectInput .optionContainer{
+    position: absolute;
+    top: 2vw;
+    left: 50%;
+    width: 0;
+    max-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: white;
+    z-index: 99;
+    border: 0.1vw solid rgba(var(--black), 1);
+    opacity: 0;
+    pointer-events: none;
+    font-size: var(--h5-fontsize);
+}
+
+.selectInput.active .optionContainer{
+    opacity: 1;
+    pointer-events: auto;
+    animation: revealBorder 0.3s ease-in-out forwards;
+}
+
+@keyframes revealBorder {
+    0% {
+        left: 50%;
+        width: 0;
+        max-height: 0;
+    }
+    5%{
+        left: 43.75%;
+        width: 5%;
+        max-height: 0.1vw;
+    }
+    40% {
+        left: 0;
+        width: 100%;
+        max-height: 0.1vw;
+    }
+    100% {
+        left: 0;
+        width: 100%;
+        max-height: 6vw;
+    }
+}
+
+.selectInput .optionContainer .option{
+    padding: 0.3vw 0.5vw;
+    cursor: pointer;
+    background-color: rgba(var(--black), 0);
+    transition: background-color 0.2s;
+    width: 100%;
+}
+
+.selectInput .option:has(input:checked) {
+    background-color: greenyellow; 
+}
+
+.selectInput .option:has(input:checked):hover {
+    background-color: rgba(var(--dark-green), 1); 
+}
+
+.selectInput .option input:checked + label {
+    font-weight: bold;
+}
+
+.selectInput .optionContainer .option label{
+    cursor: pointer;
+    width: 100%;
+    display: block;
+}
+
+.selectInput .optionContainer .option input[type="radio"]{
+    display: none;
+}
+
+.selectInput .optionContainer .option:hover{
+    background-color: rgba(var(--black), 0.1);
+}
+
+.createTerm form .fieldWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1vw;
+}
+
+.createTerm form .fieldWrapper p{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    font-size: var(--h5-fontsize);
+}
+
+.createTerm form .fieldWrapper p input{
+    padding: 0.3vw 0.5vw;
+    font-size: var(--h5-fontsize);
+    border: none;
+    outline: none;
+}
+
+p #id_start_date{
+    user-select: none;
+}
+
+.createTerm form button{
+    align-self: flex-end;
+    outline: none;
+    border: 0.1vw solid rgba(var(--black), 0);
+    background-color: rgba(var(--black), 1);
+    color: white;
+    transition: border 0.2s, background-color 0.2s, color 0.2s;
+    cursor: pointer;
+    padding: 0.3vw 0.7vw;
+    font-size: var(--p-fontsize);
+}
+
+.createTerm form button:hover{
+    border: 0.1vw solid rgba(var(--black), 1);
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+}
+
+.createTerm .courseInfo{
+    margin: 0.5vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 2.5vw;
+}
+
+.createTerm .errorMessage{
+    color: red;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 60vw;
+    overflow: hidden;
+    gap: 0.2vw;
+    padding-top: 0.2vw;
+    font-size: var(--h5-fontsize);
+}
+
+.tableWrapper{
+    padding: 0.5vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+    width: 100%;
+}
+
+.tableWrapper .emptyMessage{
+    font-size: var(--h5-fontsize);
+    font-weight: 400;
+}
+
+#termsList{
+    width: 100%;
+    border-collapse: collapse;
+    border: 0.1vw solid rgba(var(--black), 1);
+    counter-reset: rowNumber;
+}
+
+#termsList tbody tr {
+    counter-increment: rowNumber;
+}
+
+#termsList td.number-cell::before {
+    content: counter(rowNumber);
+    font-weight: 400; 
+    color: rgba(var(--black), 0.6);
+}
+
+#termsList thead{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+#termsList thead th{
+    padding: 0.3vw 0.5vw;
+    height: 1.3vw;
+    font-size: var(--p-fontsize);
+}
+
+#termsList tbody tr{
+    width: 100%;
+    border-bottom: 0.1vw solid rgba(var(--black), 0.4);
+    background-color: white;
+    transition: background-color 0.2s;
+    height: 1.3vw;
+}
+
+#termsList tbody tr:nth-child(even){
+    background-color: rgba(var(--black), 0.1);
+}
+
+#termsList tbody tr:last-child{
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+#termsList tbody tr:hover{
+    background-color: rgba(var(--dark-green), 0.1);
+}
+
+#termsList tbody tr td{
+    padding-top: 0.1vw;
+    padding-bottom: 0.1vw;
+    text-align: center;
+    font-size: var(--p-fontsize);
+}
+
+#termsList tbody th{
+    text-align: center;
+}
+
+#termsList thead th.no-col{
+    width: 5%;
+    border-right: 0.1vw solid rgba(var(--black), 1);
+}
+
+#termsList tbody tr td.number-cell {
+    width: 5%;
+    border-right: 0.1vw solid rgba(var(--black), 1);
+}
+
+#termsList th.intake, 
+#termsList td.intake{
+    width: 10%;
+} 
+
+#termsList th.course, 
+#termsList td.course{
+    width: 40%;
+} 
+
+#termsList td.course span{
+    font-size: var(--p-fontsize);
+}
+
+#termsList th.semester, 
+#termsList td.semester{
+    width: 10%;
+} 
+
+#termsList th.date, 
+#termsList td.date{
+    width: 10%;
+} 
+
+#termsList th.status, 
+#termsList td.status{
+    width: 10%;
+} 
+
+#termsList th.action{
+    width: 5%;
+}
+
+#termsList td.action{
+    padding: 0;
+    width: 5%;
+    height: 1px;
+}
+
+#termsList .action .inputWrapper{
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+#termsList td button{
+    outline: none;
+    border: none;
+    background-color: rgba(var(--black), 1);
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    padding: 0.3vw;
+}
+
+#termsList td button:hover{
+    background-color: rgba(var(--dark-green), 1);
+}
+
+#termsList td button svg{
+    width: 0.9vw;
+    height: 0.9vw;
+    fill: white;
+}

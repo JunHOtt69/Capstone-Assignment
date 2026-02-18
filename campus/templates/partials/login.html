@@ -1,0 +1,24 @@
+{% extends 'auth.html' %}
+
+{% block form_content %}
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3>Fill in your details.</h3>
+
+        {{ form.as_p }}
+        
+        <div class="formOptions">
+            <label class="remember-me">
+                <input type="checkbox" name="remember_me">
+                <span class="cbx"></span>
+                <span>Remember Me</span>
+            </label>
+            <a class="forget-password" href="{% url 'password_reset' %}">Forget Password?</a>
+        </div>
+        <div class="formFooter">
+            <p id="errorMessage">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Maxime, officia.</p>
+            <button id="loginButton" type="submit">Login</button>
+        </div>
+    </form>
+{% endblock %}

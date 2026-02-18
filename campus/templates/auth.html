@@ -1,0 +1,37 @@
+{% extends "base.html" %} 
+
+{% load static %}  
+
+{% block title %} Login Page {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="loginTitle">
+        <h1 id="LOG">LOG</h1>
+        <h1 id="IN">IN</h1>
+    </div>
+
+    <div class="welcomeText">
+        <h2>Smart Campus.</h2>
+        <h2>Simple Life.</h2>
+    </div>
+
+    <div class="fieldBorder"></div>
+    
+    <div class="fieldWrapper">
+        {% block form_content %}{% endblock %} 
+    </div>
+    
+{% endblock %} 
+
+{% block background_scripts %}
+    <script src="{% static 'js/BlurDotBg.min.js' %}"></script>
+    <script src="{% static 'js/background1.js' %}"></script>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/auth.js' %}"></script>
+{% endblock %} 

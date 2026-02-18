@@ -1,0 +1,452 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body{
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: white;
+    overflow: hidden;
+    user-select: auto;
+    font-family: "Nunito Sans", sans-serif;
+    display: flex;
+    flex-direction: column;     
+}
+
+header{
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 0.5vw 2vw;
+    user-select: auto;
+    z-index: 1;
+    border-bottom: 0.05vw solid rgba(var(--black), 0.95);
+    height: 3vw;
+    right: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.mainScrollWrapper{
+    position: relative;
+    flex: 1;
+    width: 100vw;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+main{
+    margin-top: 5vw;
+    width: 100%;
+    position: relative;
+    min-height: 100vh;
+    height: max-content;
+}
+
+footer{
+    text-align: center;
+    bottom: 0;
+    width: 100%;
+    user-select: auto;
+    height: max-content;
+    background-color: rgba(var(--black), 0.95);
+    color: white;
+    padding: 2vw 2vw 1vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1vw;
+    
+}
+
+footer p,
+footer a{
+    font-size: var(--xs-fontsize);
+}
+
+footer .upperFooter{
+    height: max-content;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 5vw;
+}
+
+.upperFooter .AboutUs{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    width: 30%;
+    text-align: justify;
+    gap: 0.5vw;
+}
+
+.upperFooter .quickLinks{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.5vw;
+}
+
+.quickLinks ul{
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.5vw;
+}
+
+.quickLinks ul a{
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+h1, h2, h3, h4, h5, p, input, textarea, button, li, ul, a{
+    font-family: "Nunito Sans", sans-serif;
+    font-weight: 400; 
+    margin: 0;
+    padding: 0;
+}
+
+h1{
+    font-size: 4vw;
+}
+
+h2{
+    font-size: 2.5vw;
+}
+
+h3{
+    font-size: 1.4vw;
+}
+
+h4{
+    font-size: 1.2vw;
+}
+
+p{
+    font-size: 0.84vw;
+}
+
+#background{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    user-select: none;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#background canvas{
+    display: block;
+}
+
+::-webkit-scrollbar {
+    width: 0.3vw;
+    z-index: 9999;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(var(--black), 0.95);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5); 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 1); 
+}
+
+.navbarContent{
+    z-index: 1;
+}
+
+.navbarContent ul{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2vw;
+    flex-direction: row;
+    list-style-type: none;
+}
+
+header li {
+    position: relative;
+    padding: 0.3vw 1vw;
+    font-size: var(--p-fontsize);
+    background-color: rgba(255, 255, 255, 0);
+    transition: background-color 0.3s 0.125s;
+    z-index: 1;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+header li:hover{
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+header li svg,
+header li svg rect{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    fill: transparent;
+}
+
+header li svg rect{
+    stroke: rgba(var(--black), 0.95);
+    stroke-width: 0.1vw;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    transition: 0.5s;
+}
+
+header li:hover svg rect{
+    stroke-dashoffset: 0;
+}
+
+header li a{
+    color: rgba(var(--black), 1);
+    text-decoration: none;
+    transition: color 0.2s;
+    font-size: var(--xs-fontsize);
+    z-index: 1;
+}
+
+.logo{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+    margin: 0;
+    position: fixed;
+    left: 2vw;
+    user-select: none;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.profileWrapper{
+    position: absolute;
+    right: 2vw;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1vw;
+    font-size: var(--p-fontsize);
+}
+
+.profileWrapper a{
+    user-select: none;
+    color: rgba(var(--black), 1);
+    text-decoration: underline;
+    transition: color 0.2s;
+    display: block;
+    font-size: var(--xs-fontsize);
+}
+
+.profileWrapper a:hover{
+    color: rgba(var(--dark-green), 1);
+}
+
+.profileWrapper p{
+    cursor: default;
+    user-select: none;
+    color: rgba(var(--black), 1);
+    text-decoration: none;
+    display: none;
+    font-size: var(--xs-fontsize);
+}
+
+.profileIcon{
+    position: relative;
+    width: 2vw;
+    height: 2vw;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    background-color: white;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+}
+
+.profileIcon svg,
+.profileIcon path{
+    width: 100%;
+    height: 100%;
+    stroke-linejoin: round; 
+    stroke-miterlimit: 10; 
+    stroke-width: 1;
+    stroke: rgba(var(--black), 0.95);
+    fill: none;
+}
+
+.bannerTicker{
+    width: 100%;
+    position: absolute;
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: greenyellow;
+    height: 2vw;
+    margin-top: 3vw;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.banner{
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4vw;
+    width: max-content;
+    animation: scroll-flexible 10s linear infinite;
+}
+
+.banner span{
+    font-size: var(--h4-fontsize);
+    white-space: nowrap;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.banner span:last-child{
+    margin-right: 4vw;
+}
+
+@keyframes scroll-flexible {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-25%); 
+    }
+}
+
+.bannerTicker:hover .banner {
+    animation-play-state: paused;
+    cursor: pointer;
+}
+
+.notifContainer{
+    position: fixed;
+    top: 6vw;
+    right: 2vw;
+    max-width: 20vw;
+    z-index: 10000;
+    user-select: none;
+    /* background-color: blue; */
+    display: flex;
+    flex-direction: column;
+    justify-items: flex-start;
+    align-items: flex-end;
+    gap: 0.5vw;
+}
+
+.notifContainer .notif{
+    background-color: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+    display: flex;
+    justify-items: space-between;
+    align-items: center;
+    gap: 1vw;
+    padding: 0.5vw 1vw;
+    width: 100%;
+    height: auto;
+    animation: revealNotif 0.3s ease-in-out forwards;
+}
+
+@keyframes revealNotif{
+    from{
+        transform: translateX(6.5vw);
+        width: 0;
+    }
+    to{
+        transform: translateX(0);
+        width: 20vw;
+    }
+}
+
+.notifContainer .notif p{
+    text-align: justify;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    max-height: 3em;
+    flex: 1;
+    font-size: var(--xs-fontsize);
+}
+
+.notifContainer .notif .closeBtn{
+    cursor: pointer;
+    font-size: var(--xs-fontsize);
+    font-weight: 400;
+    color: rgba(var(--black), 1);
+    transition: color 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: scale(1);
+    transition: transform 0.2s, text-shadow 0.2s;
+    text-shadow: 0 0 0 rgba(var(--black), 0);
+}
+
+.notifContainer .notif .closeBtn:hover{
+    transform: scale(1.2);
+    text-shadow: 0.1vw 0.1vw 0.2vw rgba(var(--black), 0.5);
+}
+
+.pageTitle{
+    margin-left: 2vw;
+}
+
+:root{
+    --h1-fontsize: 4vw;
+    --h2-fontsize: 2.5vw;
+    --h3-fontsize: 1.4vw;
+    --h4-fontsize: 1.2vw;
+    --p-fontsize: 0.84vw;
+    --xs-fontsize: 0.7vw;
+    --p-fontsize-pixel: 15.5px;
+    --black: 1, 1, 3;
+    --dark-green: 121, 179, 34;
+    --green-yellow: 173, 255, 47;
+    --line-height: 0.3vw;
+}

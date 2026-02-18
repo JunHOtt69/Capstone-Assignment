@@ -1,0 +1,30 @@
+{% extends "base.html" %} 
+{% load static %}  
+
+{% block title %} About Us {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/about.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section id="section1">
+        <div class="title">
+            <h1>About Us</h1>
+            <p>This is the about page of the Smart Campus Management System (SCMS). Our mission is to simplify campus life through innovative technology solutions.</p>
+        </div>
+        <img src="{% static 'myapp/images/campus2 B&W.webp' %}" alt="campus" class="campusImage1">
+    </section>
+
+    <section id="section2">
+        <h2>Project Vision</h2>
+    </section>
+
+    <section id="section3">
+        <h2>Key Features Overview</h2>
+    </section>
+
+    <section id="section4">
+        <h2>The Team</h2>
+    </section>
+{% endblock %} 

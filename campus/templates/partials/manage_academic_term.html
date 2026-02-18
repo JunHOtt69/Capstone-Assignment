@@ -1,0 +1,66 @@
+{% extends "academic_management.html" %} 
+
+{% load static %}  
+
+{% block title %} Academic Management {% endblock %}
+
+{% block function_window %}
+    <div class="createTerm">
+        <h3>Create New Term</h3>
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="fieldWrapper">
+                <div class="selectInput" id="levelInput">
+                    <div class="selectedLabel">
+                        <label for="">Please Choose A Level</label>
+                        <span class="arrow">
+                            <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                            </svg>
+                        </span>
+                    </div>
+
+                    {{ levels|json_script:"level-data" }}
+
+                    <div class="optionContainer" id="levelOptions">
+                    </div>
+                </div>
+                <div class="selectInput inactive" id="courseInput">
+                    <div class="selectedLabel">
+                        <label for="">Please Choose A Course</label>
+                        <span class="arrow">
+                            <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="optionContainer" id="courseOptions">
+                    </div>
+                </div>
+                <p>
+                    <label for="id_start_date">Start Date:</label>
+                    {{ form.start_date }}
+                </p>
+
+                <p>
+                    <label for="id_end_date">End Date:</label>
+                    {{ form.end_date }}
+                </p>
+
+                {{ form.level }}
+                {{ form.course }}
+            </div>
+            <div class="courseInfo">
+                <p id="weeksTaken">Week Taken: </p>
+                <p id="studyWeek">Study Week: </p>
+                <p id="examinationPeriod">Examination Period: </p>
+            </div>
+            <button type="submit">Save</button>
+        </form>
+        <div class="errorMessage"></div>
+    </div>
+
+    <div class="tableWrapper" id="tableWrapper">
+        <h3>Existing Term</h3>
+    </div>
+{% endblock %}

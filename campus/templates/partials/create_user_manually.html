@@ -1,0 +1,104 @@
+{% extends "user_management.html" %} 
+
+{% load static %}  
+
+{% block title %} User Management {% endblock %}
+
+{% block function_window %}
+    <div class="functionHeader">
+        <h2>Create User Manually</h2>
+        <div class="userType" id="user_role">
+            <button type="button" id="admin_role">Admin</button>
+            <button type="button" id="lecturer_role">Lecturer</button>
+            <button type="button" id="student_role">Student</button>
+        </div>
+    </div>
+    {{form.user_role}}
+    <form method="POST" action="">
+        {% csrf_token %}
+        <table id="user-table">
+            <thead>
+                <tr>
+                </tr>
+            </thead>
+            <tbody id="form-body">
+            </tbody>
+        </table>
+
+        <div class="controls">
+            <div class="errorMessage" id="errorMessageContainer"></div>
+            <div class="controlWrapper">
+                <div class="numInputWrapper">
+                    <button type="button" onclick="this.parentNode.querySelector('input').stepDown()">-</button>
+                    <input type="number" id="num-of-row" inputmode="numeric" placeholder="Number of Rows" min="1">
+                    <button type="button" onclick="this.parentNode.querySelector('input').stepUp()">+</button>
+                </div>
+                <button type="button" id="add-row-btn">Add Row</button>
+                <button type="submit" class="save-btn">Save All Users</button>
+            </div>
+        </div>
+    </form>
+
+    <template id="row-template-admin">
+        <tr>
+            <td class="number-cell"></td>
+            <td class="f-nField">
+                <div class="inputWrapper">
+                    {{ form.first_name }}
+                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
+                </div>
+            </td>
+            <td class="l-nField">
+                <div class="inputWrapper">
+                    {{ form.last_name }}
+                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
+                </div>
+            </td>
+            <td class="emailField">
+                <div class="inputWrapper">
+                    {{ form.email }}
+                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
+                </div>
+            </td>
+            <td class="actionField">
+                <div class="inputWrapper">
+                    <button type="button" class="delete-btn" onclick="removeRow(this)">Remove</button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <template id="row-template-lecturer">
+        <tr>
+            <td class="number-cell"></td>
+            <td class="f-nField">
+                <div class="inputWrapper">
+                    {{ form.first_name }}
+                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
+                </div>
+            </td>
+            <td class="l-nField">
+                <div class="inputWrapper">
+                    {{ form.last_name }}
+                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
+                </div>
+            </td>
+            <td class="emailField">
+                <div class="inputWrapper">
+                    {{ form.email }}
+                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
+                </div>
+            </td>
+            <td class="departmentField">
+                <div class="inputWrapper">
+                    
+                </div>
+            </td>
+            <td class="actionField">
+                <div class="inputWrapper">
+                    <button type="button" class="delete-btn" onclick="removeRow(this)">Remove</button>
+                </div>
+            </td>
+        </tr>
+    </template>
+{% endblock %}

@@ -1,0 +1,350 @@
+.functionHeader{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.functionHeader .userType{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5vw;
+    border: 0.1vw solid rgba(var(--black), 1);
+    position: relative;
+    background-color: transparent;
+}
+
+.functionHeader .userType::before{
+    content: '';
+    position: absolute;
+    height: 100%;
+    z-index: 0;
+    left: 0;
+    background-color: greenyellow;
+    transition: left 0.1s ease-in-out, width 0.1s ease-in-out;
+}
+
+.functionHeader .userType.admin::before{
+    left: 0;
+    width: 3.5vw;
+}
+
+.functionHeader .userType.lecturer::before{
+    left: 3.94vw;
+    width: 4.15vw;
+}
+
+.functionHeader .userType.student::before{
+    left: 8.6vw;
+    width: 3.95vw;
+}
+
+.functionHeader .userType button{
+    outline: none;
+    border: none;
+    padding: 0.3vw 0.5vw;
+    font-size: var(--p-fontsize);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background-color: transparent;
+    z-index: 1;
+}
+
+.functionHeader .userType button.active{
+    background-color: rgba(var(--black), 1);
+    color: white;
+    font-weight: 600;
+}
+
+.functionHeader .userType button:hover{
+    background-color: rgba(var(--black), 0.1);
+}
+
+.managementContent{
+    background-color: black;
+    margin: 2vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    border: 0.1vw solid rgba(var(--black), 1);
+    overflow: hidden;
+}
+
+.managementContent .leftNav{
+    background-color: rgba(var(--black), 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 8vw;
+    overflow: hidden;
+    height: 100%;
+}
+
+.managementContent .leftNav .leftNavItem{
+    background-color: white;
+    width: 100%;
+    font-size: var(--p-fontsize);
+    color: rgba(var(--black), 1);
+    text-decoration: none;
+    padding: 0.3vw 0.5vw;
+    transition: background-color 0.2s;
+}
+
+.managementContent .leftNav .leftNavItem.active{
+    background-color: greenyellow;
+}
+
+.managementContent .leftNav .leftNavItem:hover{
+    background-color: rgba(var(--dark-green), 1); 
+}
+
+.managementContent .rightContent{
+    padding: 0.3vw 2vw 0.3vw 1vw;
+    flex: 1;
+    min-height: 80vh;
+    height: max-content;
+    min-width: 0;
+    background-color: white;
+    border-left: 0.1vw solid rgba(var(--black), 1);
+}
+
+.managementContent .rightContent form{
+    width: 100%;
+    height: 100%;
+}
+
+.managementContent .rightContent table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.managementContent .rightContent table thead{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+.managementContent .rightContent table thead th{
+    padding: 0.3vw 0.5vw;
+    height: 1.3vw;
+    font-size: var(--p-fontsize);
+}
+
+.managementContent .rightContent table tbody tr{
+    width: 100%;
+    border-bottom: 0.1vw solid rgba(var(--black), 0.4);
+    background-color: white;
+    transition: background-color 0.2s;
+    height: 1.3vw;
+}
+
+.managementContent .rightContent table tbody tr:nth-child(even){
+    background-color: rgba(var(--black), 0.1);
+}
+
+.managementContent .rightContent table tbody tr:last-child{
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+.managementContent .rightContent table tbody tr:hover{
+    background-color: rgba(var(--dark-green), 0.1);
+}
+
+.managementContent .rightContent table tbody tr td{
+    padding-top: 0.1vw;
+    padding-bottom: 0.1vw;
+    font-size: var(--p-fontsize);
+}
+
+.managementContent .rightContent table thead tr .actionField{
+    width: 5%;
+}
+
+.managementContent .rightContent table tbody tr .actionField{
+    width: 5%;
+}
+
+.managementContent .rightContent table thead th.no-col{
+    width: 5%;
+    border-right: 0.1vw solid rgba(var(--black), 1);
+    text-align: center;
+}
+
+.managementContent .rightContent table tbody tr td.number-cell {
+    width: 5%;
+    border-right: 0.1vw solid rgba(var(--black), 1);
+    text-align: center;
+}
+
+#form-body{
+    counter-reset: rowNumber;
+}
+
+#form-body tr {
+    counter-increment: rowNumber;
+}
+
+#form-body td.number-cell::before {
+    content: counter(rowNumber);
+    font-weight: 400;
+    color: rgba(var(--black), 0.6);
+}
+
+.managementContent .rightContent table tbody .inputWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+    height: 1.3vw;
+    overflow: hidden;
+    position: relative;
+}
+
+.managementContent .rightContent table tbody .inputWrapper input{
+    width: 100%;
+    padding: 0.3vw 1.3vw 0.3vw 0.5vw;
+    height: 1.3vw;
+    font-size: var(--p-fontsize);
+    border: none;
+    outline: none;
+    background-color: transparent;
+}
+
+.managementContent .rightContent table tbody .inputWrapper .clearBtn{
+    position: absolute;
+    right: 0.5vw;
+    aspect-ratio: 1/1;
+    outline: none;
+    border: none;
+    color: rgba(var(--black), 1);
+    font-size: var(--p-fontsize);
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.managementContent .rightContent table tbody tr .actionField .delete-btn{
+    outline: none;
+    border: none;
+    width: 100%;
+    height: 100%;
+    color: white;
+    font-size: var(--p-fontsize);
+    background-color: rgba(var(--black), 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.managementContent .rightContent table tbody tr .actionField .delete-btn:hover{
+    background-color: rgba(var(--dark-green), 1);
+}
+
+.controls{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1vw;
+    gap: 1vw;
+}
+
+.controls .errorMessage{
+    color: red;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 60vw;
+    overflow: hidden;
+    gap: 0.2vw;
+    padding-top: 0.2vw;
+}
+
+.controls .controlWrapper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1vw;
+}
+
+.controls .numInputWrapper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.1vw;
+}
+
+.controls .numInputWrapper button{
+    height: 1.5vw;
+    width: 1.5vw;
+    outline: none;
+    border: 0.1vw solid rgba(var(--black), 0);
+    background-color: transparent;
+    font-size: var(--p-fontsize);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.controls .numInputWrapper button:hover{
+    background-color: rgba(var(--black), 0.1);
+}
+
+.controls input{
+    border: 0.1vw solid rgba(var(--black), 1);
+    padding: 0.3vw 0.5vw;
+    font-size: var(--p-fontsize);
+}
+
+.controls input::-webkit-outer-spin-button,
+.controls input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.controls #add-row-btn, 
+.controls .save-btn{
+    outline: none;
+    border: 0.1vw solid rgba(var(--black), 0);
+    padding: 0.3vw 0.5vw;
+    font-size: var(--p-fontsize);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s, border 0.2s;
+    width: max-content;
+}
+
+.controls #add-row-btn{
+    color: rgba(var(--black), 1);
+    background-color: greenyellow;
+    margin-left: -0.5vw;
+}
+
+.controls #add-row-btn:hover{
+    background-color: rgba(var(--dark-green), 1);
+}
+
+.controls .save-btn{
+    color: white;
+    background-color: rgba(var(--black), 1);
+}
+
+.controls .save-btn:hover{
+    color: rgba(var(--black), 1);
+    background-color: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+}

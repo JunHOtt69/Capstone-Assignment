@@ -1,0 +1,119 @@
+.simple-calendar {
+    position: absolute; 
+    width: 13vw;
+    border: 0.1vw solid rgba(var(--black), 1);
+    font-family: "Nunito Sans", sans-serif;
+    font-weight: 400; 
+    background: #fff;
+    max-height: 15vw;
+    overflow: hidden;
+    /* transform: translateX(50%); */
+    top: 15vw;
+    left: 50vw;
+    display: none;
+    visibility: none;
+    pointer-events: none;
+    user-select: none;
+}
+
+.simple-calendar.active{
+    display: block;
+    visibility: visible;
+    pointer-events: auto;
+    user-select: auto;
+    animation: revealcalendar 0.3s ease-in-out forwards;
+}
+
+.simple-calendar .prevMonth,
+.simple-calendar .nextMonth{
+    outline: none;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+    font-size: var(--p-fontsize);
+    background-color: transparent;
+    color: white;
+}
+
+.cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3vw;
+    background: rgba(var(--black), 1);
+    font-size: var(--p-fontsize);
+    border: none;
+    color: white;
+}
+
+.cal-weekdays, .cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.6vw;
+}
+
+.cal-weekdays div {
+    font-weight: bold;
+    font-size: 0.6vw;
+    padding: 0.15vw 0;
+}
+
+.cal-day {
+    padding: 0.5vw;
+    cursor: pointer;
+    border: none;
+    background: white; 
+    transition: background-color 0.2s, color 0.2s;
+    color: rgba(var(--black), 1);
+}
+
+.cal-day:hover { 
+    background: rgba(var(--black), 0.4); 
+}
+
+.cal-day.today { 
+    border: 0.1vw solid rgba(var(--black), 0.4);
+    font-weight: bold; 
+}
+
+.cal-day.today.selected{
+    border: 0.1vw solid rgba(var(--black), 0.4);
+    background: rgba(var(--green-yellow), 1); 
+    font-weight: bold; 
+}
+
+.cal-day.selected { 
+    background: rgba(var(--green-yellow), 1); 
+    font-weight: bold; 
+}
+
+.cal-day.selected:hover{
+    background: rgba(var(--dark-green), 1);
+    color: white;
+}
+
+.cal-day.empty { cursor: default; }
+
+@keyframes revealcalendar {
+    0% {
+        transform: translateX(6.5vw);
+        width: 0;
+        max-height: 0;
+    }
+    5%{
+        transform: translateX(5.6875vw);
+        width: 5%;
+        max-height: 0.1vw;
+    }
+    40% {
+        transform: translateX(0);
+        width: 13vw;
+        max-height: 0.1vw;
+    }
+    100% {
+        transform: translateX(0);
+        width: 13vw;
+        max-height: 15vw;
+    }
+}

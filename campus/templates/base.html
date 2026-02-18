@@ -1,0 +1,150 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}My App{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'css/root.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+        {% block extra_head %}{% endblock %}
+    </head>
+    <body>
+        <div id="background"></div>
+        
+        <header>
+            <div class="logo">
+                <h4>SCMS</h4>
+            </div>
+
+            <div class="navbarContent">
+                <ul>
+                    {% if user.is_authenticated %}
+                        <li>
+                            <svg><rect></rect></svg>
+                            <a>Dashboard</a>
+                        </li>
+                        <li>
+                            <svg><rect></rect></svg>
+                            <a>Announcements</a>
+                        </li>
+                        
+                        {% if user.role == "student" or user.role == "lecturer" %}
+                            <li>
+                                <svg><rect></rect></svg>
+                                <a>TimeTable</a>
+                            </li>
+                            <li>
+                                <svg><rect></rect></svg>
+                                <a>Attendance</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% if user.role == "admin" %}
+
+                        {% endif %}
+
+                        <li>
+                            <svg><rect></rect></svg>
+                            <a>Facility</a>
+                        </li>
+                        <li>
+                            <svg><rect></rect></svg>
+                            <a>Directory</a>
+                        </li>
+                    {% endif %}
+
+                    <li>
+                        <svg><rect></rect></svg>
+                        <a href="{% url 'about' %}">About</a>
+                    </li>
+                    <li>
+                        <svg><rect></rect></svg>
+                        <a href="{% url 'help' %}">Help</a>
+                    </li>
+                </ul>
+            </div>
+            
+
+            <div class="profileWrapper">
+                <a class="singinText" href="{% url 'login' %}">Sign In</a>
+                <p class="username">Username</p>
+                <div class="profileIcon">
+                    <?xml version="1.0" ?>
+                    <svg viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <desc/>
+                        <g>
+                            <circle cx="16" cy="16"  r="15"  />
+                            <path d="M26,27L26,27   c0-5.523-4.477-10-10-10h0c-5.523,0-10,4.477-10,10v0"/>
+                            <circle cx="16" cy="11"  r="6"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+            
+        </header>
+
+        <div class="bannerTicker">
+            <div class="banner">
+                <span>Welcome to Smart Campus Management System</span>
+                <span>@ Capstone Assignment Group 17</span>
+                <span>Annnouncement Placement</span>
+
+                <span>Welcome to Smart Campus Management System</span>
+                <span>@ Capstone Assignment Group 17</span>
+                <span>Annnouncement Placement</span>
+                
+                <span>Welcome to Smart Campus Management System</span>
+                <span>@ Capstone Assignment Group 17</span>
+                <span>Annnouncement Placement</span>
+                
+                <span>Welcome to Smart Campus Management System</span>
+                <span>@ Capstone Assignment Group 17</span>
+                <span>Annnouncement Placement</span>
+            </div>
+        </div>
+
+        <div class="notifContainer">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="notif {{ message.tags }}">
+                        <p class="message">{{ message }}</p>
+                        <span class="closeBtn">&times;</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="mainScrollWrapper">
+            <main>
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer class="footerContent">
+                {% block footer %}{% endblock %} 
+                <div class="upperFooter">
+                    <div class="AboutUs">
+                        <h3>About Us</h3>
+                        <p>Smart Campus Management System (SCMS) is a comprehensive platform designed to streamline campus operations and enhance the overall experience for students, faculty, and staff. Our mission is to leverage technology to create a more connected and efficient campus environment.</p>
+                    </div>
+                    <div class="quickLinks">
+                        <h3>Quick Links</h3>
+                        <ul>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">Features</a></li>
+                            <li><a href="#">Contact Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bottomFooter">
+                    <p>&copy; 2026 Capstone Project Group 17</p>
+                </div>
+            </footer>
+        </div>
+        
+        {% block background_scripts %}{% endblock %} 
+        {% block extra_scripts %}{% endblock %} 
+        <script src="{% static 'js/global.js' %}"></script>
+    </body>
+</html>                                                     
