@@ -37,4 +37,4 @@ The system extends the default Django authentication system to handle campus-spe
 ## 🔧 Installation & Setup
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/JunHOtt69/Capstone-Assignment.git
+   git clone gg
