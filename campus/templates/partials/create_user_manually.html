@@ -69,4 +69,40 @@
             </td>
         </tr>
     </template>
+
+    <template id="departmentInput">
+        <td class="departmentField">
+            <div class="selectInput">
+                {{form.department.as_widget}}
+                <div class="selectedLabel">
+                    <label for="">Select A Department (Optional)</label>
+                    <span class="arrow">
+                        <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="optionContainer">
+                </div>
+            </div>
+        </td>
+    </template>
+
+    <template id="termInput">
+        <td class="termField">
+            <div class="selectInput">
+                {{form.term.as_widget}}
+                <div class="selectedLabel">
+                    <label>Select A Term</label>
+                    <span class="arrow">
+                        <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="optionContainer">
+                </div>
+            </div>
+        </td>
+    </template>
 {% endblock %}

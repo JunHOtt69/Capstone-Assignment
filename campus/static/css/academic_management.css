@@ -178,29 +178,6 @@
     animation: revealBorder 0.3s ease-in-out forwards;
 }
 
-@keyframes revealBorder {
-    0% {
-        left: 50%;
-        width: 0;
-        max-height: 0;
-    }
-    5%{
-        left: 43.75%;
-        width: 5%;
-        max-height: 0.1vw;
-    }
-    40% {
-        left: 0;
-        width: 100%;
-        max-height: 0.1vw;
-    }
-    100% {
-        left: 0;
-        width: 100%;
-        max-height: 6vw;
-    }
-}
-
 .selectInput .optionContainer .option{
     padding: 0.3vw 0.5vw;
     cursor: pointer;
@@ -387,12 +364,12 @@ p #id_start_date{
 
 #termsList th.intake, 
 #termsList td.intake{
-    width: 10%;
+    width: 13%;
 } 
 
 #termsList th.course, 
 #termsList td.course{
-    width: 40%;
+    width: 37%;
 } 
 
 #termsList td.course span{

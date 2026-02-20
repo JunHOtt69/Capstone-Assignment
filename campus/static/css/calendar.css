@@ -95,25 +95,3 @@
 
 .cal-day.empty { cursor: default; }
 
-@keyframes revealcalendar {
-    0% {
-        transform: translateX(6.5vw);
-        width: 0;
-        max-height: 0;
-    }
-    5%{
-        transform: translateX(5.6875vw);
-        width: 5%;
-        max-height: 0.1vw;
-    }
-    40% {
-        transform: translateX(0);
-        width: 13vw;
-        max-height: 0.1vw;
-    }
-    100% {
-        transform: translateX(0);
-        width: 13vw;
-        max-height: 15vw;
-    }
-}

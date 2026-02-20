@@ -450,3 +450,49 @@ header li a{
     --green-yellow: 173, 255, 47;
     --line-height: 0.3vw;
 }
+
+@keyframes revealBorder {
+    0% {
+        left: 50%;
+        width: 0;
+        max-height: 0;
+    }
+    5%{
+        left: 43.75%;
+        width: 5%;
+        max-height: 0.1vw;
+    }
+    40% {
+        left: 0;
+        width: 100%;
+        max-height: 0.1vw;
+    }
+    100% {
+        left: 0;
+        width: 100%;
+        max-height: 6vw;
+    }
+}
+
+@keyframes revealcalendar {
+    0% {
+        transform: translateX(6.5vw);
+        width: 0;
+        max-height: 0;
+    }
+    5%{
+        transform: translateX(5.6875vw);
+        width: 5%;
+        max-height: 0.1vw;
+    }
+    40% {
+        transform: translateX(0);
+        width: 13vw;
+        max-height: 0.1vw;
+    }
+    100% {
+        transform: translateX(0);
+        width: 13vw;
+        max-height: 15vw;
+    }
+}
