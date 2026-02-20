@@ -13,7 +13,10 @@
             <button type="button" id="student_role">Student</button>
         </div>
     </div>
-    {{form.user_role}}
+    {{ form.user_role }}
+    {{ dept|json_script:"dept-data" }}
+    {{ available_term|json_script:"term-data" }}
+
     <form method="POST" action="">
         {% csrf_token %}
         <table id="user-table">
@@ -38,7 +41,7 @@
         </div>
     </form>
 
-    <template id="row-template-admin">
+    <template id="row-template">
         <tr>
             <td class="number-cell"></td>
             <td class="f-nField">
@@ -57,40 +60,6 @@
                 <div class="inputWrapper">
                     {{ form.email }}
                     <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
-                </div>
-            </td>
-            <td class="actionField">
-                <div class="inputWrapper">
-                    <button type="button" class="delete-btn" onclick="removeRow(this)">Remove</button>
-                </div>
-            </td>
-        </tr>
-    </template>
-
-    <template id="row-template-lecturer">
-        <tr>
-            <td class="number-cell"></td>
-            <td class="f-nField">
-                <div class="inputWrapper">
-                    {{ form.first_name }}
-                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
-                </div>
-            </td>
-            <td class="l-nField">
-                <div class="inputWrapper">
-                    {{ form.last_name }}
-                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
-                </div>
-            </td>
-            <td class="emailField">
-                <div class="inputWrapper">
-                    {{ form.email }}
-                    <button class="clearBtn" type="button" onclick=clearBtn(this)>&times;</button>
-                </div>
-            </td>
-            <td class="departmentField">
-                <div class="inputWrapper">
-                    
                 </div>
             </td>
             <td class="actionField">

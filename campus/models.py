@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.dateparse import parse_date
+from datetime import date
 # Create your models here.
 
 class academic_rules(models.Model):
@@ -30,9 +32,19 @@ class academic_term(models.Model):
         if not self.term_id:
             self.current_semester = 1
         
-        if self.start_date and not self.intake_code:
-            date_str = self.start_date.strftime('%Y%m')
-            self.intake_code = f"{self.course.course_code}-{date_str}"
+        if self.start_date and self.course:
+            course_code = getattr(self.course, 'course_code', '')
+            
+            if isinstance(self.start_date, str):
+                d = parse_date(self.start_date)
+            else:
+                d = self.start_date
+
+            if d and course_code:
+                date_str = d.strftime('%Y%m')
+
+                if not self.intake_code or self.intake_code.endswith('-'):
+                    self.intake_code = f"{self.course.course_code}-{date_str}"
             
         super().save(*args, **kwargs)
 

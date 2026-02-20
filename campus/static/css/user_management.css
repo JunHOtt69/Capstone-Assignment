@@ -65,7 +65,7 @@
 
 .managementContent{
     background-color: black;
-    margin: 2vw;
+    margin: 0 2vw 2vw 2vw;
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
@@ -168,6 +168,12 @@
     width: 5%;
 }
 
+tr td.actionField{
+    height: 1px;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
 .managementContent .rightContent table thead th.no-col{
     width: 5%;
     border-right: 0.1vw solid rgba(var(--black), 1);
@@ -200,7 +206,7 @@
     align-items: center;
     flex-direction: row;
     width: 100%;
-    height: 1.3vw;
+    height: 100%;
     overflow: hidden;
     position: relative;
 }

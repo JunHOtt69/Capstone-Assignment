@@ -1,5 +1,6 @@
 const addBtn = document.getElementById('add-row-btn');
-
+let lecRow = 0;
+let stuRow = 0;
 
 window.addEventListener('beforeunload', (event) => {
     const inputs = document.querySelectorAll('#form-body input');
@@ -18,6 +19,9 @@ window.addEventListener('beforeunload', (event) => {
 });
 
 document.addEventListener('DOMContentLoaded', async function() {
+    lecRow = 0;
+    stuRow = 0;
+
     const user_role = document.getElementById('id_user_role');
     const user_role_button = document.getElementById('user_role');
     const admin_button = document.getElementById('admin_role');
@@ -58,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 addBtn.addEventListener('click', (event) => {
     const tableBody = document.getElementById('form-body');
-    const admin_template = document.getElementById('row-template-admin');
+    const admin_template = document.getElementById('row-template');
     const num_of_row = document.getElementById('num-of-row');
     const user_role = document.getElementById('id_user_role');
 
@@ -100,16 +104,64 @@ function clearBtn(btn){
     }
 }
 
+function renderLecturerForm(i, data){
+    const template = document.getElementById('row-template');
+    const actionCell = template.querySelector('.actionField');
+
+    const newTd = document.createElement('td');
+    newTd.className = 'departmentField';
+
+    const selectInput = document.createElement('div');
+    selectInput.className = 'selectInput';
+    selectInput.id = "deptInput_" + i;
+    
+    const selectedLabel = document.createElement('div');
+    selectedLabel.className = "selectedLabel";
+    selectedLabel.innerHTML =  `
+        <label for="">Select A Department (Optional)</label>
+        <span class="arrow">
+            <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+            </svg>
+        </span>
+    `
+    
+    const optionContainer = document.createElement('div');
+    optionContainer.className = 'optionContainer';
+    optionContainer.id = "deptOptions_" + i;
+
+    optionContainer.innerHTML = data.map(department => `
+        <div class="option">
+            <input type="radio" name="dept" id="${department.dept_id}-${i}" value="${department.dept_id}">
+            <label for="${department.dept_id}-${i}">${department.name}</label>
+        </div>
+    `).join('');
+
+    selectedLabel.addEventListener('click', () => {
+        optionContainer.classList.add('active');
+    });
+
+    selectInput.appendChild(optionContainer);
+    newTd.appendChild(selectInput);
+
+    const row = template.querySelector('tr');
+    row.insertBefore(newTd, actionCell);
+
+    return template;
+}
 
 function renderTable(role){
     const user_table = document.getElementById('user-table');
     const header = document.querySelector('#user-table thead tr');
     const body = document.querySelector('#form-body');
-    const admin_template = document.getElementById('row-template-admin');
+    const admin_template = document.getElementById('row-template');
     header.innerHTML = '';
     body.innerHTML = '';
     let clone;
     
+    const deptData = JSON.parse(document.getElementById('dept-data').textContent);
+    const termData = JSON.parse(document.getElementById('term-data').textContent);
+
     if(role == 1){
         header.innerHTML = `
             <th class="no-col">No.</th>

@@ -434,7 +434,7 @@ header li a{
 }
 
 .pageTitle{
-    margin-left: 2vw;
+    margin: 0.5vw 1vw 0.5vw 2vw;
 }
 
 :root{
