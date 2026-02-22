@@ -1,12 +1,11 @@
 const addBtn = document.getElementById('add-row-btn');
-
+const form = document.querySelector('form');
 let lecRow = 0;
 let stuRow = 0;
 let isSubmitting = false;
 
 window.addEventListener('beforeunload', (event) => {
     const inputs = document.querySelectorAll('#form-body input');
-
     let hasData = false;
 
     inputs.forEach(input => {
@@ -15,7 +14,8 @@ window.addEventListener('beforeunload', (event) => {
         }
     });
 
-    if (hasData && !isSubmitting) {
+    if(isSubmitting) return;
+    if (hasData) {
         event.preventDefault();
         event.returnValue = ''; 
     }
@@ -24,41 +24,29 @@ window.addEventListener('beforeunload', (event) => {
 document.addEventListener('DOMContentLoaded', async function() {
     lecRow = 0;
     stuRow = 0;
+
     const user_role = document.getElementById('id_user_role');
+    const admin_button = document.getElementById('admin_role');
+    const lecturer_button = document.getElementById('lecturer_role');
+    const student_button = document.getElementById('student_role');
     const groupData = JSON.parse(document.getElementById('groups-data').textContent);
-    const form = document.querySelector('form');
-    if(form){
-        form.addEventListener('submit', () => {
-            isSubmitting = true;
-        })
+
+    function attemptSwitchRole(role){
+        user_role.value = role;
+        renderTable(user_role.value);
     }
 
-    const roleContext = document.getElementById('role-context');
-    const savedRole = roleContext ? JSON.parse(roleContext.textContent) : null;
+    admin_button.onclick = () => attemptSwitchRole(groupData['admin']);
+    lecturer_button.onclick = () => attemptSwitchRole(groupData['lecturer']); 
+    student_button.onclick = () => attemptSwitchRole(groupData['student']); 
 
-    function attemptRoleSwitch(role){
-        if(checkEmpty()){
-            user_role.value = role;
-            renderTable(user_role.value);
-        }
-    }
-
-    document.getElementById('admin_role').onclick = () => attemptRoleSwitch(groupData['admin']);
-    document.getElementById('lecturer_role').onclick = () => attemptRoleSwitch(groupData['lecturer']);
-    document.getElementById('student_role').onclick = () => attemptRoleSwitch(groupData['student']);
-
-    if(savedRole){
-        user_role.value = savedRole;
-    }
-    else{
-        user_role.value = groupData['admin'];
-    }
-
+    user_role.value = groupData['admin'];
     renderTable(user_role.value);
 });
 
 document.addEventListener('click', (event) => {
     const allSelect = document.querySelectorAll('.selectInput');
+    const allCalendar = document.querySelectorAll('.simple-calendar');
     
     allSelect.forEach(dropdown => {
         if (!dropdown.contains(event.target)) {
@@ -105,23 +93,44 @@ addBtn.addEventListener('click', (event) => {
     }
 });
 
-function checkEmpty(){
-    const inputs = document.querySelectorAll('#form-body input');
-    const hasData = Array.from(inputs).some(input => {
-        if(input.type === 'radio' || input.type === 'checkbox'){
-            return input.checked;
+form.onsubmit = async function(event) {
+    event.preventDefault(); 
+    console.log("Form submission intercepted!");
+    isSubmitting = true;
+
+    const messageContainer = document.getElementById('errorMessageContainer');
+    messageContainer.innerHTML = ``;
+
+    const emailInputs = document.getElementsByName('email');
+    const emailList = Array.from(emailInputs).map(input => input.value);
+    
+    if (emailList.length === 0) return;
+
+    const params = new URLSearchParams();
+    emailList.forEach(email => params.append('emails[]', email));
+    
+    try{
+        const response = await fetch(`/check-email/?${params.toString()}`);
+        const data = await response.json();
+        console.log("check-email response:", data);
+        if(data.is_taken){
+            isSubmitting = false;
+            data.taken_emails.forEach(email => {
+                const errorMessage = document.createElement('p');
+                errorMessage.innerHTML = `Error during user creation: ${email} is already registered.`
+                messageContainer.appendChild(errorMessage);
+            });
+            return;
+        } else{
+            form.submit();
         }
-
-        return input.value.trim() !== '';
-    });
-
-    if (hasData){
-        const userConfirmed = confirm("You have unsaved changes. Are you sure you want to switch roles?");
-        return userConfirmed;
+    } catch(error){
+        console.error('validation failed: ', error);
+        const errorMessage = document.createElement('p');
+        errorMessage.innerHTML = `An error occurred during validation. Please try again.`
+        messageContainer.appendChild(errorMessage);
     }
-
-    return true;
-}
+};
 
 function removeRow(btn) {
     const tableBody = document.getElementById('form-body');
@@ -151,13 +160,13 @@ function renderRoleButton(role){
         user_role_button.classList.add('admin');
     }
 
-    else if(role == groupData['lecturer']){
+    if(role == groupData['lecturer']){
         user_role_button.classList.remove('admin');
         user_role_button.classList.remove('student');
         user_role_button.classList.add('lecturer');
     }
 
-    else if(role == groupData['student']){
+    if(role == groupData['student']){
         user_role_button.classList.remove('lecturer');
         user_role_button.classList.remove('admin');
         user_role_button.classList.add('student');
@@ -171,10 +180,30 @@ function renderAdminForm(){
     const row = clone.querySelector('tr');
 
     row.classList.add('adminUser');
+
+    const first_name = row.querySelector('#id_first_name');
+    const last_name = row.querySelector('#id_last_name');
+    const email = row.querySelector('#id_email');
+
+    if(first_name){
+        first_name.name = 'first_name';
+        first_name.id = '';
+    }
+
+    if(last_name){
+        last_name.name = 'last_name';
+        last_name.id = '';
+    }
+
+    if(email){
+        email.name = 'email';
+        email.id = '';
+    }
+
     return row;
 }
 
-function renderLecturerForm(i, data, initialValue){
+function renderLecturerForm(i, data){
     const template = document.getElementById('row-template');
     const clone_template  = template.content.cloneNode(true);
     const row = clone_template.querySelector('tr');
@@ -185,6 +214,26 @@ function renderLecturerForm(i, data, initialValue){
     const departmentCell = _input.querySelector('td');
 
     const djangoHiddenInput = departmentCell.querySelector('input[type="hidden"]');
+
+    const first_name = row.querySelector('#id_first_name');
+    const last_name = row.querySelector('#id_last_name');
+    const email = row.querySelector('#id_email');
+
+    if(first_name){
+        first_name.name = 'first_name';
+        first_name.id = '';
+    }
+
+    if(last_name){
+        last_name.name = 'last_name';
+        last_name.id = '';
+    }
+
+    if(email){
+        email.name = 'email';
+        email.id = '';
+    }
+
     if (djangoHiddenInput) {
         djangoHiddenInput.name = "department_" + i; 
         djangoHiddenInput.id = "id_department_" + i;
@@ -194,24 +243,12 @@ function renderLecturerForm(i, data, initialValue){
     const selectedLabel = departmentCell.querySelector('.selectedLabel');
     const optionContainer = departmentCell.querySelector('.optionContainer');
 
-    optionContainer.innerHTML = data.map(department => {
-        const isChecked = (initialValue && String(department.dept_id) === String(initialValue)) ? 'checked' : '';
-        
-        return `
-            <div class="option">
-                <input type="radio" name="temp_radio_${i}" id="${department.dept_id}-${i}" value="${department.dept_id}" ${isChecked}>
-                <label for="${department.dept_id}-${i}">${department.dept_name}</label>
-            </div>
-        `;
-    }).join('');
-
-    if (initialValue) {
-        const selectedDept = data.find(d => String(d.dept_id) === String(initialValue));
-        if (selectedDept) {
-            departmentCell.querySelector('.selectedLabel label').innerText = selectedDept.dept_name;
-            djangoHiddenInput.value = initialValue;
-        }
-    }
+    optionContainer.innerHTML = data.map(department => `
+        <div class="option">
+            <input type="radio" name="temp_radio_${i}" id="${department.dept_id}-${i}" value="${department.dept_id}">
+            <label for="${department.dept_id}-${i}">${department.dept_name}</label>
+        </div>
+    `).join('');
 
     selectedLabel.addEventListener('click', () => {
         selectInput.classList.add('active');
@@ -234,7 +271,7 @@ function renderLecturerForm(i, data, initialValue){
     return row;
 }
 
-function renderStudentForm(i, data, initialValue){
+function renderStudentForm(i, data){
     const template = document.getElementById('row-template');
     const clone_template  = template.content.cloneNode(true);
     const row = clone_template.querySelector('tr');
@@ -243,6 +280,25 @@ function renderStudentForm(i, data, initialValue){
 
     const _input = document.getElementById('termInput').content.cloneNode(true);
     const termCell = _input.querySelector('td');
+
+    const first_name = row.querySelector('#id_first_name');
+    const last_name = row.querySelector('#id_last_name');
+    const email = row.querySelector('#id_email');
+
+    if(first_name){
+        first_name.name = 'first_name';
+        first_name.id = '';
+    }
+
+    if(last_name){
+        last_name.name = 'last_name';
+        last_name.id = '';
+    }
+
+    if(email){
+        email.name = 'email';
+        email.id = '';
+    }
 
     const djangoHiddenInput = termCell.querySelector('input[type="hidden"]');
     if (djangoHiddenInput) {
@@ -254,24 +310,12 @@ function renderStudentForm(i, data, initialValue){
     const selectedLabel = termCell.querySelector('.selectedLabel');
     const optionContainer = termCell.querySelector('.optionContainer');
 
-    optionContainer.innerHTML = data.map(term => {
-        const isChecked = (initialValue && String(term.term_id) === String(initialValue)) ? 'checked' : '';
-        
-        return `
-            <div class="option">
-                <input type="radio" name="temp_radio_${i}" id="${term.term_id}-${i}" value="${term.term_id}" ${isChecked}>
-                <label for="${term.term_id}-${i}">${term.intake_code}</label>
-            </div>
-        `;
-    }).join('');
-
-    if (initialValue) {
-        const selectedTerm = data.find(d => String(d.term_id) === String(initialValue));
-        if (selectedTerm) {
-            termCell.querySelector('.selectedLabel label').innerText = selectedTerm.intake_code;
-            djangoHiddenInput.value = initialValue;
-        }
-    }
+    optionContainer.innerHTML = data.map(term => `
+        <div class="option">
+            <input type="radio" name="temp_radio_${i}" id="${term.term_id}-${i}" value="${term.term_id}">
+            <label for="${term.term_id}-${i}">${term.intake_code}</label>
+        </div>
+    `).join('');
 
     selectedLabel.addEventListener('click', () => {
         selectInput.classList.add('active');
@@ -295,28 +339,23 @@ function renderStudentForm(i, data, initialValue){
 }
 
 function renderTable(role){
+    const user_table = document.getElementById('user-table');
     const header = document.querySelector('#user-table thead tr');
     const body = document.querySelector('#form-body');
-
+    
     renderRoleButton(role);
-
-    
-    const deptData = JSON.parse(document.getElementById('dept-data').textContent);
-    const termData = JSON.parse(document.getElementById('term-data').textContent);
-    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
-    const savedOpts = JSON.parse(document.getElementById('selected-opts-data').textContent || '[]');
-
-    const rowCountContext = document.getElementById('row-count-data'); // Add this to HTML
-    const savedRowCount = rowCountContext ? JSON.parse(rowCountContext.textContent) : 0;
-    const existingRowsCount = document.getElementsByName('first_name').length;
-    
-    const rowsToCreate = Math.max(savedRowCount, existingRowsCount, 1);
 
     header.innerHTML = '';
     body.innerHTML = '';
     lecRow = 0;
     stuRow = 0;
-
+    
+    const deptData = JSON.parse(document.getElementById('dept-data').textContent);
+    const termData = JSON.parse(document.getElementById('term-data').textContent);
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
+    const messageContainer = document.getElementById('errorMessageContainer');
+    messageContainer.innerHTML = ``;
+    
     if(role == groupData['admin']){
         header.innerHTML = `
             <th class="no-col">No.</th>
@@ -325,6 +364,9 @@ function renderTable(role){
             <th class="emailField">Email</th>
             <th class="actionField">Action</th>
         `;
+        
+        const form = renderAdminForm();
+        body.appendChild(form);
     }
 
     else if(role == groupData['lecturer']){
@@ -336,6 +378,10 @@ function renderTable(role){
             <th class="departmentField">Department</th>
             <th class="actionField">Action</th>
         `;
+
+        lecRow = 1;
+        const form = renderLecturerForm(lecRow, deptData);
+        body.appendChild(form);
     }
 
     else if(role == groupData['student']){
@@ -347,27 +393,9 @@ function renderTable(role){
             <th class="intakeField">Intake</th>
             <th class="actionField">Action</th>
         `;
-    }
-
-    
-
-    for(let i = 1; i <= rowsToCreate; i++){
-        let row;
-
-        if(role == groupData['admin']){
-            row = renderAdminForm();
-        }
-
-        else if(role == groupData['lecturer']){
-            lecRow += 1;
-            row = renderLecturerForm(lecRow, deptData, savedOpts[i-1]);
-        }
-
-        else if(role == groupData['student']){
-            stuRow += 1;
-            row = renderStudentForm(stuRow, termData, savedOpts[i-1]);
-        }
-
-        body.appendChild(row);
+        
+        stuRow = 1;
+        const form = renderStudentForm(stuRow, termData);
+        body.appendChild(form);
     }
 }

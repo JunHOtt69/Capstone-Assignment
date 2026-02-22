@@ -13,11 +13,8 @@
             <button type="button" id="student_role">Student</button>
         </div>
     </div>
-
+    
     {{ groups|json_script:"groups-data" }}
-    {{ selected_role|json_script:"role-context" }}
-    {{ row_count|json_script:"row-count-data" }}
-    {{ selected_opts|json_script:"selected-opts-data" }}
     {{ dept|json_script:"dept-data" }}
     {{ available_term|json_script:"term-data" }}
 

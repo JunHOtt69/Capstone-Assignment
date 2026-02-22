@@ -6,9 +6,9 @@ from django.contrib import messages
 from django.db import transaction
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 import secrets
 import string
-
 
 from django.contrib.auth.models import User, Group
 from .forms import LoginForm, PasswordResetRequestForm, PasscordVerificationForm, SetNewPasswordForm, UserRowForm, AcademicTermForm
@@ -85,6 +85,23 @@ def generate_random_password(length=15):
     alphabet = string.ascii_letters + string.digits + string.punctuation
     return ''.join(secrets.choice(alphabet) for i in range(length))
 
+def check_email_exists(request):
+    emails = request.GET.getlist('emails[]')
+    existing = User.objects.filter(
+        Q(username__in = emails) | Q (email__in = emails)
+    )
+    
+    taken = list(
+        existing.values_list('username', flat=True)
+    )
+
+    taken = [e for e in emails if e in taken] or list(existing.values_list('email', flat=True))
+    
+    return JsonResponse({
+        'is_taken' : existing.exists(),
+        'taken_emails' : list(set(taken)),
+    })
+
 def create_user_manually(request):
     groups = {g.name: g.id for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
@@ -93,11 +110,8 @@ def create_user_manually(request):
     context = {
         "groups" : groups,
         "dept" : dept,
-        'selected_role' : None,
-        'row_count' : None,
-        'selected_opt' : None,
         "available_term" : available_term,
-        "form" : None,
+        "form":  None,
     }
 
     if request.method == 'POST':
@@ -112,7 +126,7 @@ def create_user_manually(request):
                 for i in range(len(first_names)):
                     email = emails[i]
                     
-                    if User.objects.filter(username = email).exists():
+                    if User.objects.filter(Q(username = email) | Q(email=email)).exists():
                         raise Exception(f"The email {email} is already registered.")
 
                     new_user = User.objects.create_user(
@@ -155,14 +169,6 @@ def create_user_manually(request):
             print(f"Error during user creation: {e}")
             messages.error(request, f"An error occurred: {str(e)}")
 
-            context['selected_role'] = request.POST.get('user_role')
-            context['row_count'] = len(request.POST.getlist('first_name'))
-            if str(role_id) == str(groups.get('lecturer')):
-                context['selected_opt'] = request.POST.getlist('department')
-            
-            elif str(role_id) == str(groups.get('student')):
-                context['selected_opt'] = request.POST.getlist('term')
-
     else: context["form"] = UserRowForm()
 
     return render(request, "partials/create_user_manually.html", context)
@@ -178,7 +184,7 @@ def manage_academic_term(request):
         form = AcademicTermForm(request.POST)
         if form.is_valid():
             form.save()
-            #should have store the admin actions in admin log as history
+
             # LogEntry.objects.log_action(
             #     user_id=request.user.id,
             #     content_type_id=ContentType.objects.get_for_model(academic_term).pk,
@@ -191,9 +197,8 @@ def manage_academic_term(request):
             messages.success(request, "Academic Term created successfully!")
 
             return redirect('manage_academic_term')
-        
         else: 
-            print(f"Error during user creation: {form.errors}")
+            print(f"Error during academic term creation: {form.errors}")
             messages.error(request, f"An error occurred: {form.errors}")
 
     else: form = AcademicTermForm()

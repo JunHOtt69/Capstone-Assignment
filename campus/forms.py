@@ -43,13 +43,13 @@ class UserRowForm(forms.Form):
     user_role = forms.CharField(widget=forms.HiddenInput())
 
     first_name = forms.CharField(
-        max_length=100, widget=forms.TextInput(attrs={'placeholder': 'First Name', 'autocomplete' : 'off'})
+        max_length=100, widget=forms.TextInput(attrs={'placeholder': 'First Name'})
     )
     last_name = forms.CharField(
-        max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Last Name', 'autocomplete' : 'off'})
+        max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Last Name'})
     )
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'placeholder': 'Email', 'autocomplete' : 'off'})
+        widget=forms.EmailInput(attrs={'placeholder': 'Email'})
     )
 
     # for lecturer
