@@ -57,7 +57,15 @@
             </div>
             <button type="submit">Save</button>
         </form>
-        <div class="errorMessage"></div>
+        <div class="errorMessage">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if "error" in message.tags %}
+                        <p>{{ message }}</p>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
     </div>
 
     <div class="tableWrapper" id="tableWrapper">
