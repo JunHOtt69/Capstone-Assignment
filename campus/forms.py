@@ -63,11 +63,11 @@ class UserRowForm(forms.Form):
         role = cleaned_data.get("user_role")
 
         # Validation Logic based on Role
-        if role == "student":
+        if role == "3":
             if not cleaned_data.get("term"):
                 self.add_error('term', "Academic Term is required for students.")
         
-        elif role == "lecturer":
+        elif role == "2":
             # Department is optional according to your requirements
             pass
             

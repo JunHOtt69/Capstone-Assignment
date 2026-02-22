@@ -14,6 +14,7 @@
         </div>
     </div>
     {{ form.user_role }}
+    {{ groups|json_script:"groups-data" }}
     {{ dept|json_script:"dept-data" }}
     {{ available_term|json_script:"term-data" }}
 

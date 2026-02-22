@@ -7,6 +7,7 @@ from django.db import transaction
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 
+from django.contrib.auth.models import User, Group
 from .forms import LoginForm, PasswordResetRequestForm, PasscordVerificationForm, SetNewPasswordForm, UserRowForm, AcademicTermForm
 from .models import course, academic_term, academic_rules, departments
 
@@ -77,15 +78,27 @@ def user_management(request):
     return render(request, "user_management.html")
 
 def create_user_manually(request):
+    groups = {g.name: g.id for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
     available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
-    form = UserRowForm()
+    
+    if request.method == 'POST':
+        form = UserRowForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+            messages.success(request, "User(s) saved successfully!")
+            return redirect('create_user_manually')
+        else: print(form.errors)
+    else: form = UserRowForm()
 
     context = {
+        "groups" : groups,
         "dept" : dept,
         "available_term" : available_term,
         "form": form,
     }
+
     return render(request, "partials/create_user_manually.html", context)
 
 def academic_management(request):

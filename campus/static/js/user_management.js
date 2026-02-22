@@ -1,4 +1,5 @@
 const addBtn = document.getElementById('add-row-btn');
+const form = document.querySelector('form');
 let lecRow = 0;
 let stuRow = 0;
 
@@ -22,33 +23,34 @@ document.addEventListener('DOMContentLoaded', async function() {
     lecRow = 0;
     stuRow = 0;
 
-    const user_role = document.getElementById('id_user_role');
-    const admin_button = document.getElementById('admin_role');
-    const lecturer_button = document.getElementById('lecturer_role');
-    const student_button = document.getElementById('student_role');
-
+    const user_role = this.getElementById('id_user_role');
+    const admin_button = this.getElementById('admin_role');
+    const lecturer_button = this.getElementById('lecturer_role');
+    const student_button = this.getElementById('student_role');
+    const groupData = JSON.parse(this.getElementById('groups-data').textContent);
+    
     admin_button.onclick = function() {
-        user_role.value = 1;
-        renderTable(1);
+        user_role.value = groupData['admin'];
+        renderTable(groupData['admin']);
     }
     
     lecturer_button.onclick = function() {
-        user_role.value = 2;
-        renderTable(2);
+        user_role.value = groupData['lecturer'];
+        renderTable(groupData['lecturer']);
     }
 
     student_button.onclick = function() {
-        user_role.value = 3;
-        renderTable(3);
+        user_role.value = groupData['student'];
+        renderTable(groupData['student']);
     }
 
-    user_role.value = 1;
+    user_role.value = groupData['admin'];
     renderTable(user_role.value);
 });
 
 document.addEventListener('click', (event) => {
-    const allSelect = document.querySelectorAll('.selectInput');
-    const allCalendar = document.querySelectorAll('.simple-calendar');
+    const allSelect = this.querySelectorAll('.selectInput');
+    const allCalendar = this.querySelectorAll('.simple-calendar');
     
     allSelect.forEach(dropdown => {
         if (!dropdown.contains(event.target)) {
@@ -67,20 +69,21 @@ addBtn.addEventListener('click', (event) => {
     const rowCount = Number(num_of_row.value);
     const deptData = JSON.parse(document.getElementById('dept-data').textContent);
     const termData = JSON.parse(document.getElementById('term-data').textContent);
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
 
     if (Number.isInteger(rowCount) && rowCount > 0){
         for(let i = 0; i < rowCount; i++){
             
-            if(user_role.value == 1){
+            if(user_role.value == groupData['admin']){
                 const form = renderAdminForm();
                 tableBody.appendChild(form);
             } 
-            else if(user_role.value == 2){
+            else if(user_role.value == groupData['lecturer']){
                 lecRow += 1; 
                 const form = renderLecturerForm(lecRow, deptData);
                 tableBody.appendChild(form);
             }
-            else if(user_role.value == 3){
+            else if(user_role.value == groupData['student']){
                 stuRow += 1; 
                 const form = renderStudentForm(stuRow, termData);
                 tableBody.appendChild(form);
@@ -92,6 +95,11 @@ addBtn.addEventListener('click', (event) => {
     else{
         alert("Number of row need to be at least 1.");
     }
+});
+
+form.addEventListener('submit', (event) => {
+    event.preventDefault(); 
+    console.log();
 });
 
 function removeRow(btn) {
@@ -114,20 +122,21 @@ function clearBtn(btn){
 
 function renderRoleButton(role){
     const user_role_button = document.getElementById('user_role');
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
 
-    if(role == 1){
+    if(role == groupData['admin']){
         user_role_button.classList.remove('lecturer');
         user_role_button.classList.remove('student');
         user_role_button.classList.add('admin');
     }
 
-    if(role == 2){
+    if(role == groupData['lecturer']){
         user_role_button.classList.remove('admin');
         user_role_button.classList.remove('student');
         user_role_button.classList.add('lecturer');
     }
 
-    if(role == 3){
+    if(role == groupData['student']){
         user_role_button.classList.remove('lecturer');
         user_role_button.classList.remove('admin');
         user_role_button.classList.add('student');
@@ -252,8 +261,9 @@ function renderTable(role){
     
     const deptData = JSON.parse(document.getElementById('dept-data').textContent);
     const termData = JSON.parse(document.getElementById('term-data').textContent);
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
 
-    if(role == 1){
+    if(role == groupData['admin']){
         header.innerHTML = `
             <th class="no-col">No.</th>
             <th class="f-nField">First Name</th>
@@ -268,7 +278,7 @@ function renderTable(role){
         body.appendChild(form);
     }
 
-    if(role == 2){
+    if(role == groupData['lecturer']){
         header.innerHTML = `
             <th class="no-col">No.</th>
             <th class="f-nField">First Name</th>
@@ -284,7 +294,7 @@ function renderTable(role){
         body.appendChild(form);
     }
 
-    if(role == 3){
+    if(role == groupData['lecturer']){
         header.innerHTML = `
             <th class="no-col">No.</th>
             <th class="f-nField">First Name</th>
