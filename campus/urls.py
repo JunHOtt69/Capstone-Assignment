@@ -16,5 +16,6 @@ urlpatterns = [
     path("get-courses/", views.get_courses_by_level, name="get_courses_by_level"),
     path("get-terms/", views.get_terms, name="get_terms"),
     path("check-email/", views.check_email_exists, name="check_email"),
+    path("navigation/map-data/", views.map_data, name="map_data"),
 ]
 
