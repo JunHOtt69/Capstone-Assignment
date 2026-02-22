@@ -1,0 +1,16 @@
+#mapWrapper {
+    position: relative;
+    border: 1px solid #ddd;
+    overflow: hidden;
+}
+
+/* This sits perfectly on top */
+#campusMap {
+    pointer-events: none; /* Allows clicking through the SVG to the image if needed */
+}
+
+/* Re-enable clicks for the nodes and POIs specifically */
+#campusMap circle, #campusMap g.poi {
+    pointer-events: auto;
+    cursor: pointer;
+}
