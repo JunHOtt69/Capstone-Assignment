@@ -31,7 +31,7 @@ class academic_term(models.Model):
     def save(self, *args, **kwargs):
         if not self.term_id:
             self.current_semester = 1
-        
+            # asdqw
         if self.start_date and self.course:
             course_code = getattr(self.course, 'course_code', '')
             

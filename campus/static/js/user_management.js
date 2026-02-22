@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         renderTable(3);
     }
 
-    user_role.value = 2;
+    user_role.value = 1;
     renderTable(user_role.value);
 });
 
