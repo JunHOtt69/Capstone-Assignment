@@ -13,13 +13,17 @@
             <button type="button" id="student_role">Student</button>
         </div>
     </div>
-    {{ form.user_role }}
+
     {{ groups|json_script:"groups-data" }}
+    {{ selected_role|json_script:"role-context" }}
+    {{ row_count|json_script:"row-count-data" }}
+    {{ selected_opts|json_script:"selected-opts-data" }}
     {{ dept|json_script:"dept-data" }}
     {{ available_term|json_script:"term-data" }}
 
     <form method="POST" action="">
         {% csrf_token %}
+        {{ form.user_role }}
         <table id="user-table">
             <thead>
                 <tr></tr>
@@ -29,7 +33,15 @@
         </table>
 
         <div class="controls">
-            <div class="errorMessage" id="errorMessageContainer"></div>
+            <div class="errorMessage" id="errorMessageContainer">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if "error" in message.tags %}
+                            <p>{{ message }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
             <div class="controlWrapper">
                 <div class="numInputWrapper">
                     <button type="button" onclick="this.parentNode.querySelector('input').stepDown()">-</button>
