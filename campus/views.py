@@ -146,3 +146,44 @@ def get_courses_by_level(request):
     level = request.GET.get('level')
     courses = course.objects.filter(level=level).values('course_id', 'course_code',  'course_name', 'semester_week')
     return JsonResponse(list(courses), safe=False)
+
+def map_data(request):
+    # Sample graph and POIs for client-side rendering and pathfinding
+    # Coordinates are pixel positions for the SVG map (800x600)
+
+    # nodes need to figure out how to import from database, so i am not hard coding
+    nodes = [
+        {"id": "A", "name": "Classroom 1", "type": "classroom", "x": 170, "y": 151},
+        {"id": "B", "name": "Administration Building", "type": "office", "x": 300, "y": 120},
+        {"id": "C", "name": "Library", "type": "academic", "x": 480, "y": 100},
+        {"id": "D", "name": "Auditorium 1", "type": "academic", "x": 150, "y": 300},
+        {"id": "E", "name": "Cafeteria / Student Hub", "type": "facility", "x": 350, "y": 320},
+        {"id": "F", "name": "Science & Computer Labs", "type": "academic", "x": 540, "y": 310},
+        {"id": "G", "name": "Sports Complex", "type": "recreation", "x": 260, "y": 480},
+        {"id": "H", "name": "Student Hostel", "type": "residence", "x": 460, "y": 480}
+    ]
+
+    edges = [
+        {"from": "A", "to": "B"},
+        {"from": "B", "to": "C"},
+        {"from": "A", "to": "D"},
+        {"from": "B", "to": "E"},
+        {"from": "C", "to": "F"},
+        {"from": "D", "to": "E"},
+        {"from": "E", "to": "F"},
+        {"from": "D", "to": "G"},
+        {"from": "E", "to": "G"},
+        {"from": "E", "to": "H"},
+        {"from": "F", "to": "H"},
+        {"from": "G", "to": "H"}
+    ]
+
+    pois = [
+        {"id": "lib", "name": "Library", "node": "A", "description": "Main library"},
+        {"id": "admin", "name": "Administration", "node": "C", "description": "Admin offices"},
+        {"id": "caf", "name": "Cafeteria", "node": "E", "description": "Food and coffee"},
+        {"id": "gym", "name": "Gym", "node": "G", "description": "Sports center"}
+    ]
+
+    data = {"nodes": nodes, "edges": edges, "pois": pois}
+    return JsonResponse(data)

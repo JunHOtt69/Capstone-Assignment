@@ -1,0 +1,36 @@
+{% extends "base.html" %} 
+
+{% load static %}  
+
+{% block title %} Navigation {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/campus_map.css' %}">
+{% endblock %}
+
+{% block content %}
+    <h2>Campus Navigation</h2>
+
+    <div class="map-controls">
+        <label>Start: <select id="startSelect"></select></label>
+        <label>End: <select id="endSelect"></select></label>
+        <button id="findPath">Find Path</button>
+        <select id="poiFilter"><option value="">Show POIs</option></select>
+    </div>
+
+    <div id="mapWrapper">
+        <img 
+            id="campusMap"
+            src="{% static 'myapp/images/campus-map.svg' %}" 
+            alt="Campus Map"
+        />
+    </div>
+
+    <h3>Quick Navigation:</h3>
+    <div id="poiList" class="poi-list"></div>
+
+    <script>window.MAP_DATA_URL = "{% url 'map_data' %}";</script>
+    <script src="{% static 'js/campus_map.js' %}"></script>
+
+{% endblock %}~
