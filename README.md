@@ -153,6 +153,8 @@ Repeat this cycle for every feature 🚀
 2. Create database named `smart_campus`
 3. Run:
 
+```bash
 python manage.py migrate
 python manage.py loaddata seed.json
 python manage.py runserver
+```
