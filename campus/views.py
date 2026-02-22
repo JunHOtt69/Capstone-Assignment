@@ -8,7 +8,7 @@ from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 
 from .forms import LoginForm, PasswordResetRequestForm, PasscordVerificationForm, SetNewPasswordForm, UserRowForm, AcademicTermForm
-from .models import course, academic_term, academic_rules
+from .models import course, academic_term, academic_rules, departments
 
 
 # Create your views here.
@@ -77,8 +77,16 @@ def user_management(request):
     return render(request, "user_management.html")
 
 def create_user_manually(request):
+    dept = list(departments.objects.values('dept_id', 'dept_name'))
+    available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
     form = UserRowForm()
-    return render(request, "partials/create_user_manually.html", {"form": form})
+
+    context = {
+        "dept" : dept,
+        "available_term" : available_term,
+        "form": form,
+    }
+    return render(request, "partials/create_user_manually.html", context)
 
 def academic_management(request):
     return render(request, "academic_management.html")
