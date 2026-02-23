@@ -1,44 +1,32 @@
 from django import forms
 from .models import course, academic_term, departments
+from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, PasswordResetForm
 
-class LoginForm(forms.Form):
-    # Defining the fields that will appear in {{ form.as_p }}
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'placeholder': 'Email Address', 'class': 'input-field'})
-    )
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'placeholder': 'Password', 'class': 'input-field'})
-    )
+class CustomLoginForm(AuthenticationForm):
+    username = forms.EmailField(widget=forms.EmailInput(attrs={
+        'placeholder': ' ',
+        'autofocus': True,
+    }))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': ' ',
+    }))
 
-class PasswordResetRequestForm(forms.Form):
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'placeholder': 'Email Address', 'class': 'input-field'})
-    )
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'placeholder': ' ',
+    }))
 
-class PasscordVerificationForm(forms.Form):
-    passcode = forms.CharField(
-        max_length=6,
-        min_length=6,
-        widget=forms.HiddenInput()
-    )
+class CustomSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-class SetNewPasswordForm(forms.Form):
-    new_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'placeholder': 'New Password', 'class': 'input-field'})
-    )
-    confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password', 'class': 'input-field'})
-    )
+        self.fields["new_password1"].widget.attrs.update({
+            "placeholder": " ",
+        })
+        self.fields["new_password2"].widget.attrs.update({
+            "placeholder": " ",
+        })
 
-    def clean(self):
-        cleaned_data = super().clean()
-        new_password = cleaned_data.get("new_password")
-        confirm_password = cleaned_data.get("confirm_password")
-
-        if new_password and confirm_password:
-            if new_password != confirm_password:
-                raise forms.ValidationError("The new password and confirm password do not match.")
-            
 class UserRowForm(forms.Form):
     user_role = forms.CharField(widget=forms.HiddenInput())
 

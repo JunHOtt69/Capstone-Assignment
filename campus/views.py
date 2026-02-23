@@ -7,11 +7,16 @@ from django.db import transaction
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.urls import reverse
 import secrets
 import string
 
 from django.contrib.auth.models import User, Group
-from .forms import LoginForm, PasswordResetRequestForm, PasscordVerificationForm, SetNewPasswordForm, UserRowForm, AcademicTermForm
+from .forms import UserRowForm, AcademicTermForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment
 
 
@@ -26,51 +31,6 @@ def about(request):
 def help(request): 
     return render(request, "help.html")
 
-def login(request): 
-    if request.method == "POST":
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data.get('email')
-            password = form.cleaned_data.get('password')
-
-            user = authenticate(request, username=email, password=password)
-
-            if user is not None:
-                auth_login(request, user)
-
-                if not request.POST.get('remember_me'):
-                    request.session.set_expiry(0)
-                
-                if user.groups.filter(name = 'admin').exists():
-                    return redirect('admin_dashboard')
-                elif user.groups.filter(name = 'admin').exists():
-                    return redirect('lecturer_dashboard')
-                else:
-                    return redirect('student_dashboard')
-            else:
-                messages.error(request, "Invalid email or password.")
-    else: 
-        form = LoginForm()
-    return render(request, "partials/login.html", {"form": form})
-
-def password_reset_view(request, step=1):
-    if step == 1:
-        form = PasswordResetRequestForm()
-        template = "partials/step1_form.html"
-    elif step == 2:
-        form = PasscordVerificationForm()
-        template = "partials/step2_form.html"
-    elif step == 3:
-        form = SetNewPasswordForm()
-        template = "partials/step3_form.html"
-    
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        html = render_to_string(template, {'form': form}, request=request)
-        return JsonResponse({'html': html})
-    
-    # Fallback for direct page load
-    return render(request, template, {"form": form})
-
 def navigation(request): 
     return render(request, "navigation.html")
 
@@ -80,7 +40,13 @@ def attendance(request):
 def user_management(request):
     return render(request, "user_management.html")
 
-def generate_random_password(length=15):
+def build_set_password_link(request, user):
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    path = reverse("password_reset_confirm", kwargs = {"uidb64": uidb64, "token": token})
+    return request.build_absolute_uri(path)
+
+# def generate_random_password(length=15):
     #generate a random password in a length of 15 characters
     alphabet = string.ascii_letters + string.digits + string.punctuation
     return ''.join(secrets.choice(alphabet) for i in range(length))
@@ -132,10 +98,33 @@ def create_user_manually(request):
                     new_user = User.objects.create_user(
                         username = email,
                         email = email,
-                        password = generate_random_password(),
+                        password = None,
                         first_name = first_names[i],
                         last_name = last_names[i],
                     )
+                    
+                    new_user.set_unusable_password()
+                    new_user.save()
+
+                    #schedule email after transaction succeeds
+                    def send_invite(to_email = email, first_name = first_names[i], user_id = new_user.id):
+                        user = User.objects.get(id=user_id)
+                        link = build_set_password_link(request, user)
+                        send_mail(
+                            subject = 'Set your Smart Campus password',
+                            message = (
+                                f"Hi {first_name},\n\n"
+                                f"Your Smart Campus account has been created.\n"
+                                f"Login email: {to_email}\n"
+                                f"Set your password here: {link}\n\n"
+                                f"If you didn\'t request this, you can ignore this email."
+                            ),
+                            from_email=None,
+                            recipient_list = [to_email],
+                            fail_silently = False,
+                        )
+                        print('SET PASSWORD LINK:', link)
+                    transaction.on_commit(send_invite)
 
                     if str(role_id) == str(groups.get('admin')):
                         new_user.is_staff = True
@@ -147,6 +136,7 @@ def create_user_manually(request):
 
                     if str(role_id) == str(groups.get('lecturer')):
                         dept_val = request.POST.get(f'department_{i+1}')
+                        new_user.is_staff = True
                         lecturer_profiles.objects.create(
                             # passing the user object, instead of the id, because the id is automatically incremented, django will handle the id extraction
                             user = new_user,
@@ -162,6 +152,7 @@ def create_user_manually(request):
                         )
 
             messages.success(request, f'Successfully created {len(first_names)} user(s)!')
+
             return redirect('create_user_manually')
         
         except Exception as e:
