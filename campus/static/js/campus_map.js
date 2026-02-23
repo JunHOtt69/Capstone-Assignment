@@ -57,47 +57,66 @@
 
   function clearSvg(){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
 
-  function draw(nodes, edges, pois, path){
-    clearSvg();
-    // edges
-    edges.forEach(e=>{
-      const a = nodes.find(n=>n.id===e.from); const b = nodes.find(n=>n.id===e.to);
-      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  function drawEdges(nodes, edges){
+    edges.forEach(e => {
+      const a = nodes.find(n => n.id === e.from);
+      const b = nodes.find(n => n.id === e.to);
+      
+      if (!a || !b) return;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
       line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
-      line.setAttribute('stroke','#bbb'); line.setAttribute('stroke-width','3');
+      line.setAttribute('stroke', '#AAAAAA'); line.setAttribute('stroke-width', '3');
       svg.appendChild(line);
     });
-    // path polyline
-    if(path && path.length>0){
+  }
+
+  function drawPath(nodes, path){
+    if(path && path.length > 0){
       const points = path.map(id=>{ const n = nodes.find(x=>x.id===id); return n.x+","+n.y; }).join(' ');
       const poly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
       poly.setAttribute('points', points); poly.setAttribute('fill','none');
       poly.setAttribute('stroke','#ff6f00'); poly.setAttribute('stroke-width','6'); poly.setAttribute('stroke-linecap','round');
       svg.appendChild(poly);
     }
-    // nodes
+  }
+
+  function drawNodes(nodes, pathNodeIds){
+    // Only draw nodes that are in the path and are terminals
     nodes.forEach(n=>{
+      // Skip all pathway nodes
+      if(n.type === 'pathway') return;
+      
+      // Only draw terminals that are in the path
+      if(!pathNodeIds || !pathNodeIds.includes(n.id)) return;
+      
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
       g.setAttribute('data-id', n.id);
       const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
       c.setAttribute('cx', n.x); c.setAttribute('cy', n.y); c.setAttribute('r','8');
-      c.setAttribute('fill','#2b7'); c.setAttribute('stroke','#064'); c.setAttribute('stroke-width','1');
+      c.setAttribute('fill','#2b7'); c.setAttribute('stroke','#064'); c.setAttribute('stroke-width','2');
       g.appendChild(c);
       const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-      t.setAttribute('x', n.x+12); t.setAttribute('y', n.y+4); t.setAttribute('font-size','12'); t.textContent = n.id;
+      t.setAttribute('x', n.x+12); t.setAttribute('y', n.y+4); t.setAttribute('font-size','12');
+      t.setAttribute('font-weight','bold'); t.textContent = n.name || n.id;
       g.appendChild(t);
       svg.appendChild(g);
     });
-    // POIs
+  }
+
+  function drawPOIs(nodes, pois, pathNodeIds){
     pois.forEach(p=>{
       const node = nodes.find(n=>n.id===p.node);
       if(!node) return;
+      // Only show POIs on nodes that are in path or if no path yet
+      if(pathNodeIds && !pathNodeIds.includes(p.node)) return;
+      
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
       g.classList.add('poi'); g.setAttribute('data-poi', p.id);
       const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
       rect.setAttribute('x', node.x-10); rect.setAttribute('y', node.y-28); rect.setAttribute('width',20); rect.setAttribute('height',20);
-      rect.setAttribute('rx',4); rect.setAttribute('fill','#1976d2'); rect.setAttribute('opacity','0.95');
+      rect.setAttribute('rx',4); rect.setAttribute('fill','#ff6f00'); rect.setAttribute('opacity','0.95');
       g.appendChild(rect);
       const text = document.createElementNS('http://www.w3.org/2000/svg','text');
       text.setAttribute('x', node.x); text.setAttribute('y', node.y-14); text.setAttribute('text-anchor','middle'); text.setAttribute('font-size','11');
@@ -110,48 +129,88 @@
     });
   }
 
+  function draw(nodes, edges, pois, path){
+    clearSvg();
+    drawEdges(nodes, edges);
+    
+    const pathNodeIds = path ? path : null;
+    drawPath(nodes, path);
+    drawNodes(nodes, pathNodeIds);
+  }
+
   function populateControls(nodes, pois){
-    // allow selecting POIs (node ids) as start/end
     startSelect.innerHTML = '';
     endSelect.innerHTML = '';
     const addOpt = (sel, value, label)=>{ const o = document.createElement('option'); o.value = value; o.textContent = label; sel.appendChild(o); };
-    addOpt(startSelect,'','-- select start --'); addOpt(endSelect,'','-- select end --');
-    pois.forEach(p=>{ addOpt(startSelect, p.node, p.name + ' ('+p.name+')'); addOpt(endSelect, p.node, p.name + ' ('+p.name+')'); });
-    // Node fallback
-    nodes.forEach(n=>{ addOpt(startSelect, n.id, 'Node '+n.id); addOpt(endSelect, n.id, 'Node '+n.id); });
-
-    poiFilter.innerHTML = '<option value="">All POIs</option>';
-    pois.forEach(p=>{ const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; poiFilter.appendChild(o); });
-
-    poiList.innerHTML = '';
-    pois.forEach(p=>{
-      const d = document.createElement('div'); d.className = 'poi-item'; d.textContent = p.name + ' — ' + p.description; d.addEventListener('click', ()=>{
-        // highlight
-        const node = nodes.find(x=>x.id===p.node); if(!node) return;
-        window.scrollTo(0,0);
-        alert(p.name + '\nLocated at node ' + p.node);
-      }); poiList.appendChild(d);
+    addOpt(startSelect,'','-- select start --'); 
+    addOpt(endSelect,'','-- select end --');
+    
+    // Only add terminal nodes to dropdowns
+    nodes.forEach(n => {
+      if (n.type === 'terminal') {
+        addOpt(startSelect, n.id, n.name || 'Node '+n.id);
+        addOpt(endSelect, n.id, n.name || 'Node '+n.id);
+      }
     });
+
+    poiFilter.innerHTML = '<option value="">All Locations</option>';
+    pois.forEach(p=>{ 
+      const o = document.createElement('option'); 
+      o.value = p.id; 
+      o.textContent = p.name; 
+      poiFilter.appendChild(o); 
+    });
+
+    if(poiList) {
+      poiList.innerHTML = '';
+      pois.forEach(p=>{
+        const d = document.createElement('div'); 
+        d.className = 'poi-item'; 
+        d.textContent = p.name + ' — ' + p.description; 
+        d.addEventListener('click', ()=>{
+          startSelect.value = p.node;
+          alert('Selected: ' + p.name + '\nLocation: ' + p.node);
+        }); 
+        poiList.appendChild(d);
+      });
+    }
   }
 
-  // initialize
+  // Initialize
   fetchData().then(data=>{
     const {nodes, edges, pois} = data;
     const {byId, adj} = buildGraph(nodes, edges);
     populateControls(nodes, pois);
+    
+    // Initial draw with no path and no visible nodes
     draw(nodes, edges, pois, null);
 
     findBtn.addEventListener('click', ()=>{
-      const s = startSelect.value; const e = endSelect.value;
-      if(!s || !e){ alert('Please select start and end'); return; }
+      const s = startSelect.value; 
+      const e = endSelect.value;
+      if(!s || !e){ 
+        alert('Please select both start and end locations'); 
+        return; 
+      }
       const path = dijkstra(adj, s, e);
-      if(!path){ alert('No path found'); return; }
+      if(!path){ 
+        alert('No path found between selected locations'); 
+        return; 
+      }
+      // Redraw with path - nodes will only show on path
       draw(nodes, edges, pois, path);
     });
 
     poiFilter.addEventListener('change', ()=>{
-      const filter = poiFilter.value; if(!filter){ draw(nodes, edges, pois, null); return; }
-      const p = pois.find(x=>x.id===filter); if(!p) return; draw(nodes, edges, [p], null);
+      const filter = poiFilter.value; 
+      if(!filter){ 
+        draw(nodes, edges, pois, null); 
+        return; 
+      }
+      const p = pois.find(x=>x.id===filter); 
+      if(!p) return; 
+      // Just highlight the POI location
+      alert(p.name + '\nLocated at: ' + p.node);
     });
   }).catch(err=>{ console.error('map load failed', err); });
 })();
