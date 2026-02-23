@@ -3,7 +3,7 @@
 {% block title %} Login {% endblock %}
 
 {% block form_content %}
-    <form method="post">
+    <form method="post" id="login">
         {% csrf_token %}
         
         <h3>Fill in your details.</h3>
@@ -43,7 +43,7 @@
                     <p>{{ error }}</p>
                     {% endfor %}
                 {% endif %}
-                
+
                 {% if messages %}
                     {% for message in messages %}
                         {% if "error" in message.tags %}

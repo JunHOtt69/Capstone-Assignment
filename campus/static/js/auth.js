@@ -1,5 +1,48 @@
 document.addEventListener('DOMContentLoaded', function() {
     togglePasswordVisibility();
+
+    const password_reset_form = document.getElementById('password-reset');
+    const login_form = document.getElementById('login');
+    const send_link_form = document.getElementById('send-link');
+    const errorMessageContainer = document.getElementById('errorMessageContainer');
+    
+    function outputMessage(dataList){
+        dataList.forEach(item => {
+            console.log(item);
+            const p = document.createElement('p');
+            p.innerHTML = `${item}`;
+            errorMessageContainer.appendChild(p);
+        })
+    }
+
+    if(password_reset_form){
+        password_reset_form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            errorMessageContainer.innerHTML = '';
+
+            const new_password1 = document.getElementById('id_new_password1').value;
+            const new_password2 = document.getElementById('id_new_password2').value;
+            let error = [];
+            
+            if(new_password1.length < 8){
+                error.push('Password must be at least 8 characters.');
+                
+            }
+            if(new_password1 != new_password2){
+                error.push('Password do not match.');
+            }
+            if(/^\d+$/.test(new_password1)){
+                error.push('Password cannot be only numbers.');
+            }
+            console.log(error);
+            if(error.length > 0){
+                outputMessage(error);
+                return;
+            }else this.submit();
+            
+        });
+    };
 });
 
 function togglePasswordVisibility() {
