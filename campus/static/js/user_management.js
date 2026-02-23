@@ -1,6 +1,8 @@
 const addBtn = document.getElementById('add-row-btn');
+const form = document.querySelector('form');
 let lecRow = 0;
 let stuRow = 0;
+let isSubmitting = false;
 
 window.addEventListener('beforeunload', (event) => {
     const inputs = document.querySelectorAll('#form-body input');
@@ -12,6 +14,7 @@ window.addEventListener('beforeunload', (event) => {
         }
     });
 
+    if(isSubmitting) return;
     if (hasData) {
         event.preventDefault();
         event.returnValue = ''; 
@@ -26,23 +29,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     const admin_button = document.getElementById('admin_role');
     const lecturer_button = document.getElementById('lecturer_role');
     const student_button = document.getElementById('student_role');
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
 
-    admin_button.onclick = function() {
-        user_role.value = 1;
-        renderTable(1);
-    }
-    
-    lecturer_button.onclick = function() {
-        user_role.value = 2;
-        renderTable(2);
+    function attemptSwitchRole(role){
+        user_role.value = role;
+        renderTable(user_role.value);
     }
 
-    student_button.onclick = function() {
-        user_role.value = 3;
-        renderTable(3);
-    }
+    admin_button.onclick = () => attemptSwitchRole(groupData['admin']);
+    lecturer_button.onclick = () => attemptSwitchRole(groupData['lecturer']); 
+    student_button.onclick = () => attemptSwitchRole(groupData['student']); 
 
-    user_role.value = 1;
+    user_role.value = groupData['admin'];
     renderTable(user_role.value);
 });
 
@@ -67,20 +65,21 @@ addBtn.addEventListener('click', (event) => {
     const rowCount = Number(num_of_row.value);
     const deptData = JSON.parse(document.getElementById('dept-data').textContent);
     const termData = JSON.parse(document.getElementById('term-data').textContent);
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
 
     if (Number.isInteger(rowCount) && rowCount > 0){
         for(let i = 0; i < rowCount; i++){
             
-            if(user_role.value == 1){
+            if(user_role.value == groupData['admin']){
                 const form = renderAdminForm();
                 tableBody.appendChild(form);
             } 
-            else if(user_role.value == 2){
+            else if(user_role.value == groupData['lecturer']){
                 lecRow += 1; 
                 const form = renderLecturerForm(lecRow, deptData);
                 tableBody.appendChild(form);
             }
-            else if(user_role.value == 3){
+            else if(user_role.value == groupData['student']){
                 stuRow += 1; 
                 const form = renderStudentForm(stuRow, termData);
                 tableBody.appendChild(form);
@@ -93,6 +92,45 @@ addBtn.addEventListener('click', (event) => {
         alert("Number of row need to be at least 1.");
     }
 });
+
+form.onsubmit = async function(event) {
+    event.preventDefault(); 
+    console.log("Form submission intercepted!");
+    isSubmitting = true;
+
+    const messageContainer = document.getElementById('errorMessageContainer');
+    messageContainer.innerHTML = ``;
+
+    const emailInputs = document.getElementsByName('email');
+    const emailList = Array.from(emailInputs).map(input => input.value);
+    
+    if (emailList.length === 0) return;
+
+    const params = new URLSearchParams();
+    emailList.forEach(email => params.append('emails[]', email));
+    
+    try{
+        const response = await fetch(`/check-email/?${params.toString()}`);
+        const data = await response.json();
+        console.log("check-email response:", data);
+        if(data.is_taken){
+            isSubmitting = false;
+            data.taken_emails.forEach(email => {
+                const errorMessage = document.createElement('p');
+                errorMessage.innerHTML = `Error during user creation: ${email} is already registered.`
+                messageContainer.appendChild(errorMessage);
+            });
+            return;
+        } else{
+            form.submit();
+        }
+    } catch(error){
+        console.error('validation failed: ', error);
+        const errorMessage = document.createElement('p');
+        errorMessage.innerHTML = `An error occurred during validation. Please try again.`
+        messageContainer.appendChild(errorMessage);
+    }
+};
 
 function removeRow(btn) {
     const tableBody = document.getElementById('form-body');
@@ -114,20 +152,21 @@ function clearBtn(btn){
 
 function renderRoleButton(role){
     const user_role_button = document.getElementById('user_role');
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
 
-    if(role == 1){
+    if(role == groupData['admin']){
         user_role_button.classList.remove('lecturer');
         user_role_button.classList.remove('student');
         user_role_button.classList.add('admin');
     }
 
-    if(role == 2){
+    if(role == groupData['lecturer']){
         user_role_button.classList.remove('admin');
         user_role_button.classList.remove('student');
         user_role_button.classList.add('lecturer');
     }
 
-    if(role == 3){
+    if(role == groupData['student']){
         user_role_button.classList.remove('lecturer');
         user_role_button.classList.remove('admin');
         user_role_button.classList.add('student');
@@ -141,6 +180,26 @@ function renderAdminForm(){
     const row = clone.querySelector('tr');
 
     row.classList.add('adminUser');
+
+    const first_name = row.querySelector('#id_first_name');
+    const last_name = row.querySelector('#id_last_name');
+    const email = row.querySelector('#id_email');
+
+    if(first_name){
+        first_name.name = 'first_name';
+        first_name.id = '';
+    }
+
+    if(last_name){
+        last_name.name = 'last_name';
+        last_name.id = '';
+    }
+
+    if(email){
+        email.name = 'email';
+        email.id = '';
+    }
+
     return row;
 }
 
@@ -155,6 +214,26 @@ function renderLecturerForm(i, data){
     const departmentCell = _input.querySelector('td');
 
     const djangoHiddenInput = departmentCell.querySelector('input[type="hidden"]');
+
+    const first_name = row.querySelector('#id_first_name');
+    const last_name = row.querySelector('#id_last_name');
+    const email = row.querySelector('#id_email');
+
+    if(first_name){
+        first_name.name = 'first_name';
+        first_name.id = '';
+    }
+
+    if(last_name){
+        last_name.name = 'last_name';
+        last_name.id = '';
+    }
+
+    if(email){
+        email.name = 'email';
+        email.id = '';
+    }
+
     if (djangoHiddenInput) {
         djangoHiddenInput.name = "department_" + i; 
         djangoHiddenInput.id = "id_department_" + i;
@@ -202,10 +281,29 @@ function renderStudentForm(i, data){
     const _input = document.getElementById('termInput').content.cloneNode(true);
     const termCell = _input.querySelector('td');
 
+    const first_name = row.querySelector('#id_first_name');
+    const last_name = row.querySelector('#id_last_name');
+    const email = row.querySelector('#id_email');
+
+    if(first_name){
+        first_name.name = 'first_name';
+        first_name.id = '';
+    }
+
+    if(last_name){
+        last_name.name = 'last_name';
+        last_name.id = '';
+    }
+
+    if(email){
+        email.name = 'email';
+        email.id = '';
+    }
+
     const djangoHiddenInput = termCell.querySelector('input[type="hidden"]');
     if (djangoHiddenInput) {
-        djangoHiddenInput.name = "department_" + i; 
-        djangoHiddenInput.id = "id_department_" + i;
+        djangoHiddenInput.name = "term_" + i; 
+        djangoHiddenInput.id = "id_term_" + i;
     }
 
     const selectInput = termCell.querySelector('.selectInput');
@@ -249,11 +347,16 @@ function renderTable(role){
 
     header.innerHTML = '';
     body.innerHTML = '';
+    lecRow = 0;
+    stuRow = 0;
     
     const deptData = JSON.parse(document.getElementById('dept-data').textContent);
     const termData = JSON.parse(document.getElementById('term-data').textContent);
-
-    if(role == 1){
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
+    const messageContainer = document.getElementById('errorMessageContainer');
+    messageContainer.innerHTML = ``;
+    
+    if(role == groupData['admin']){
         header.innerHTML = `
             <th class="no-col">No.</th>
             <th class="f-nField">First Name</th>
@@ -262,13 +365,11 @@ function renderTable(role){
             <th class="actionField">Action</th>
         `;
         
-        lecRow = 0;
-        stuRow = 0;
         const form = renderAdminForm();
         body.appendChild(form);
     }
 
-    if(role == 2){
+    else if(role == groupData['lecturer']){
         header.innerHTML = `
             <th class="no-col">No.</th>
             <th class="f-nField">First Name</th>
@@ -279,12 +380,11 @@ function renderTable(role){
         `;
 
         lecRow = 1;
-        stuRow = 0;
         const form = renderLecturerForm(lecRow, deptData);
         body.appendChild(form);
     }
 
-    if(role == 3){
+    else if(role == groupData['student']){
         header.innerHTML = `
             <th class="no-col">No.</th>
             <th class="f-nField">First Name</th>
@@ -294,7 +394,6 @@ function renderTable(role){
             <th class="actionField">Action</th>
         `;
         
-        lecRow = 0;
         stuRow = 1;
         const form = renderStudentForm(stuRow, termData);
         body.appendChild(form);

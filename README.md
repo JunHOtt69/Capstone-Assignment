@@ -69,18 +69,61 @@ code .
 
 ---
 
-# 🛠 Development Workflow
+## 2️⃣ First-Time Git Setup (Only Once Per Computer)
 
-⚠️ **Important:**  
-Do NOT work directly on the `main` branch.
+If this is your first time using Git on this computer, you must set your username and email.  
+This ensures your commits are properly identified.
 
-Follow this workflow for every new feature.
+Run the following commands in your terminal:
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+### ✅ Example
+
+```bash
+git config --global user.name "Lim Jun Hong"
+git config --global user.email "junhong@example.com"
+```
+
+> ⚠️ You only need to do this **once per computer**.
 
 ---
 
-## 🔹 Step 1: Create Your Own Branch
+## 3️⃣ First-Time Django + Database Setup
 
-Before writing any code, create a new branch:
+1. Start XAMPP MySQL and Apache
+2. Create database named `smart_campus`
+3. Run:
+
+```bash
+python manage.py makemigrations campus
+python manage.py migrate
+python manage.py loaddata seed.json
+python manage.py runserver
+```
+
+If loaddata fails with encoding issues, make sure seed.json is saved as UTF-8.
+
+## 🛠 Team Workflow (Branches)
+
+⚠️ **Do NOT work directly on `main`.**  
+Always create a branch for your feature, then open a Pull Request.
+
+---
+
+### A) Start a New Feature (Recommended Every Time)
+
+Update your local `main` to the latest version:
+
+```bash
+git checkout main
+git pull origin main
+```
+
+Create a new feature branch from the latest `main`:
 
 ```bash
 git checkout -b your-name-feature-name
@@ -94,17 +137,12 @@ git checkout -b junhong-navbar-design
 
 ---
 
-## 🔹 Step 2: Save Your Progress (Commit)
+### B) Save Your Work (Commit)
 
-After finishing a small piece of work (e.g., fixing a CSS bug or adding a UI element):
+After finishing a small task (CSS fix, UI change, etc.):
 
-### Stage Changes
 ```bash
 git add .
-```
-
-### Commit Changes
-```bash
 git commit -m "Brief description of what you did"
 ```
 
@@ -116,9 +154,7 @@ git commit -m "Add responsive navbar layout"
 
 ---
 
-## 🔹 Step 3: Upload to GitHub (Push)
-
-When you're ready to back up or share your work:
+### C) Push Your Branch to GitHub
 
 ```bash
 git push -u origin your-name-feature-name
@@ -126,35 +162,49 @@ git push -u origin your-name-feature-name
 
 ---
 
-## 🔹 Step 4: Merge via Pull Request
+### D) Open a Pull Request (Merge to Main)
 
-Since the `main` branch is protected:
-
-1. Go to the GitHub repository.
-2. Click **"Compare & pull request"**
-3. Wait for review before merging into `main`.
+1. Go to the GitHub repository  
+2. Click **"Compare & pull request"**  
+3. Wait for review before merging into `main`
 
 ---
 
-# ✅ Workflow Summary
+### E) Update Your Current Branch (When `main` Has New Changes)
+
+If someone merged new code into `main` while you’re still working:
 
 ```bash
+git checkout main
+git pull origin main
+git checkout your-branch-name
+git merge main
+```
+
+This brings the latest `main` updates into your branch and reduces merge conflicts later.
+
+---
+
+## ✅ Quick Workflow Summary
+
+### New Feature
+```bash
+git checkout main
+git pull origin main
 git checkout -b your-branch-name
+```
+
+### Work + Save + Push
+```bash
 git add .
-git commit -m "Your message"
+git commit -m "message"
 git push -u origin your-branch-name
 ```
 
-Repeat this cycle for every feature 🚀
-
-## First Time Setup
-
-1. Start XAMPP MySQL
-2. Create database named `smart_campus`
-3. Run:
-
+### If `main` Updated While You Work
 ```bash
-python manage.py migrate
-python manage.py loaddata seed.json
-python manage.py runserver
+git checkout main
+git pull origin main
+git checkout your-branch-name
+git merge main
 ```

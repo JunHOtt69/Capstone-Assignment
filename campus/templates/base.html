@@ -108,10 +108,12 @@
         <div class="notifContainer">
             {% if messages %}
                 {% for message in messages %}
-                    <div class="notif {{ message.tags }}">
-                        <p class="message">{{ message }}</p>
-                        <span class="closeBtn">&times;</span>
-                    </div>
+                    {% if "success" in message.tags %}
+                        <div class="notif {{ message.tags }}">
+                            <p class="message">{{ message }}</p>
+                            <span class="closeBtn">&times;</span>
+                        </div>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
         </div>
