@@ -12,6 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse
+from django.core.mail import EmailMultiAlternatives
 import secrets
 import string
 
@@ -105,20 +106,31 @@ def create_user_manually(request):
                     def send_invite(to_email = email, first_name = first_names[i], user_id = new_user.id):
                         user = User.objects.get(id=user_id)
                         link = build_set_password_link(request, user)
-                        send_mail(
-                            subject = 'Set your Smart Campus password',
-                            message = (
-                                f"Hi {first_name},\n\n"
-                                f"Your Smart Campus account has been created.\n"
-                                f"Login email: {to_email}\n"
-                                f"Set your password here: {link}\n\n"
-                                f"If you didn\'t request this, you can ignore this email."
-                            ),
-                            from_email=None,
-                            recipient_list = [to_email],
-                            fail_silently = False,
+
+                        subject = "Set your Smart Campus password"
+                        from_email=None
+                        to = [to_email]
+                        
+                        html_content = render_to_string(
+                            'emails/set_password_email.html',
+                            {
+                                "first_name" : first_name,
+                                "reset_link": link,
+                            },
                         )
-                        print('SET PASSWORD LINK:', link)
+                        text_content = f"""
+                    Hi{first_name},
+                    Your Smart Campus account has been created
+
+                    Set your password here:
+                    {link}
+
+                    If you didn't request this, ignore this email.
+                    """
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+
                     transaction.on_commit(send_invite)
 
                     if str(role_id) == str(groups.get('admin')):

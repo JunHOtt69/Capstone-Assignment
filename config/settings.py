@@ -134,13 +134,9 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# EMAIL_HOST_USER = 'limjunhong1015@gmail.com'
-# EMAIL_HOST_PASSWORD = "negs mjgw svpi wkhb"
-
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
 DEFAULT_FROM_EMAIL = "Smart Campus <limjunhong1015@gmail.com>"
-
 
 DOMAIN = "127.0.0.1:8000"
