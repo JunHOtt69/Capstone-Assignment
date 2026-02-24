@@ -46,11 +46,6 @@ def build_set_password_link(request, user):
     path = reverse("password_reset_confirm", kwargs = {"uidb64": uidb64, "token": token})
     return request.build_absolute_uri(path)
 
-# def generate_random_password(length=15):
-    #generate a random password in a length of 15 characters
-    alphabet = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(secrets.choice(alphabet) for i in range(length))
-
 def check_email_exists(request):
     emails = request.GET.getlist('emails[]')
     existing = User.objects.filter(
