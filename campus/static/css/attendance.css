@@ -1,0 +1,60 @@
+.attendance-container{
+    padding: 5px;
+}
+.attendance-container .student-box{
+    border: 2px solid black;
+}
+
+
+.attendance-container .overall-box {
+  text-align: center; 
+  border: 3px solid black;
+  background-color: yellowgreen;
+}
+
+.attendance-container .current-sem-box{
+    max-width: 1500px;
+    width:90%;
+    border: 3px solid black;
+    border-radius: 12px;
+    padding: 20px;
+    background-color: yellowgreen;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+    margin: 20px auto;
+}
+
+.attendance-container .sem-header h2 {
+    margin: 0 0 10px 0;
+    font-size: 2.4rem;
+    color: black;
+    text-align: center;
+}
+
+.attendance-container .sem-stats {
+    text-align: center;
+    background-color: yellowgreen;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.attendance-container .sem-stats p {
+    font-size: 1.65rem;
+}
+
+.attendance-container .thick-line {
+    border: none;
+    height: 6px;
+    background-color: yellowgreen;
+    margin: 20px 0;
+}
+
+.attendance-container .previous-sem-box {
+    max-width: 1500px;
+    width: 90%;
+    border: 3px solid black;
+    border-radius: 12px;
+    padding: 20px;
+    background-color: yellowgreen;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+    margin: 20px auto;
+}

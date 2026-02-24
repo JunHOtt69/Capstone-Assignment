@@ -9,8 +9,80 @@
 {% endblock %}
 
 {% block content %}
-    <h1>attendance</h1>
+    <h2>Attendance Dashboard</h2>
+<div class="attendance-container">
+<div class="student-box"> 
+    <hr>
+    <h5><strong>Name:</strong> {{student.name}}</h5>
+    <p><strong>Intake Code:</strong> {{student.intake_code}}</p>
+    <hr>
+</div>
+
+<div class="overall-box">
+    <h2>Overall Attendance</h2>
+    <h3>{{overall_percentage}}%</h3>
+
+    <button class="signup-btn">
+        <h3>Sign up Attendance</h3>
+    </button>
+</div>
+
+<div class="current-sem-box">
+    <div class="sem-header">
+    <h2>Current Semester: {{current_sem}}</h2>
+    {% for course in current_courses %}
+        <div class="course-card">
+            <h4>{{ course.name }}</h4>
+            <p>{{ course.percentage }}%</p>
+        </div>
+{% empty %}
+        <p>No courses in current semester.</p>
+{% endfor %}
+    </div>
+    
+    <div class="sem-stats">
+        <p>Semester Attendance: <strong>{{sem_percentage}}%</strong></p>
+    </div>
+
+    <hr class="thick-line">
+
+</div>
+
+<div class="previous-sem-box">
+    <h2>Previous Semesters</h2>
+
+    {% for sem_data in previous_sem_data %}
+        <div class="semester-group">
+          
+            <button class="accordion">
+                Semester {{sem_data.semester}}
+            </button>
+
+            <div class="panel">
+
+                {% for course in sem_data.courses %}
+                    <div class="course-card">
+                        <h4>{{course_name}}</h4>
+                        <p>{{course.percentage}}%</p>
+                    </div>
+                {% endfor %}
+
+                <div class="sem-stats">
+                    <p> Semester Attendance:
+                        <strong>{{sem_data.percentage}}%</strong>
+                    </p>
+                </div>
+            </div>
+    {% empty %}
+        <p>No previous semesters.</p>
+    {% endfor %}
+</div>
+    
+</div>
 {% endblock %}
 
+
+
 {% block background_scripts %}
+
 {% endblock %}
