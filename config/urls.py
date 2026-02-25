@@ -16,23 +16,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from campus.forms import CustomSetPasswordForm, CustomLoginForm, CustomPasswordResetForm # adjust import
+from campus.views import RoleBasedLoginView, CustomPasswordResetView
 from django.contrib.auth import views as auth_views
-from campus.forms import CustomSetPasswordForm, CustomLoginForm, CustomPasswordResetForm  # adjust import
-from campus.views import RoleBasedLoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("campus.urls")),
     path('accounts/login/', 
         RoleBasedLoginView.as_view(authentication_form=CustomLoginForm),
-        name='login',
-        ),
+        name='login',),
 
-    path('accounts/password_reset/', auth_views.PasswordResetView.as_view(
+    path('accounts/password_reset/', CustomPasswordResetView.as_view(
         template_name='registration/password_reset_form.html',
         form_class=CustomPasswordResetForm
     ), name='password_reset'),
-
+    
     path(
         "accounts/reset/<uidb64>/<token>/",
         auth_views.PasswordResetConfirmView.as_view(
@@ -40,6 +39,11 @@ urlpatterns = [
             form_class=CustomSetPasswordForm,
         ),
         name="password_reset_confirm",
+    ),
+
+    path("accounts/password_reset/done",
+        auth_views.PasswordResetDoneView.as_view(template_name="registration/password_reset_done.html"),
+        name="password_reset_done",
     ),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
