@@ -38,6 +38,8 @@ main{
     width: 19vw;
     color: white;
     mix-blend-mode: difference;
+    user-select: none;
+    pointer-events: none;
 }
 
 .welcomeText h2:first-child{
@@ -75,6 +77,20 @@ main{
     position: absolute;
 }
 
+.fieldWrapper .contentWrapper{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.fieldWrapper .contentWrapper h3{
+    margin: 0;
+}
+
 .fieldWrapper form{
     width: 100%;
     height: 100%;
@@ -97,28 +113,105 @@ main{
 }
 
 .fieldWrapper .input-field{
+    position: relative;
     width: 15vw;
     height: 2vw;
     padding: 0.5vw;
     margin: 1vw 0;
     font-size: var(--p-fontsize);
     border: rgba(var(--black), 1) solid 0.1vw;
+    border-top: none;
     outline: rgba(var(--black), 1);
     background-color: white;
     margin: 0;
     transition: background-color 0.2s;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }
 
-.fieldWrapper .input-field:focus{
+.fieldWrapper .input-field::before,
+.fieldWrapper .input-field::after{
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 100%;
+    pointer-events: none;
+    user-select: none;
+    transition: width 0.2s;
+    border-top: rgba(var(--black), 1) solid 0.1vw;
+}
+
+.fieldWrapper .input-field::before{
+    left: 0;
+    width: 10%;
+}
+
+.fieldWrapper .input-field::after{
+    right: 0;
+    width: 90%;
+}
+
+.fieldWrapper .input-field:has(input:focus)::before,
+.fieldWrapper .input-field:has(input:not(:placeholder-shown))::before{
+    width: 3%;
+}
+
+.fieldWrapper .input-field.new-password:has(input:focus)::after,
+.fieldWrapper .input-field.new-password:has(input:not(:placeholder-shown))::after{
+    width: 70%;
+}
+
+.fieldWrapper .input-field.confirm-new-password:has(input:focus)::after,
+.fieldWrapper .input-field.confirm-new-password:has(input:not(:placeholder-shown))::after{
+    width: 56%;
+}
+
+.fieldWrapper .input-field.email:has(input:focus)::after,
+.fieldWrapper .input-field.email:has(input:not(:placeholder-shown))::after{
+    width: 71%;
+}
+
+.fieldWrapper .input-field.password:has(input:focus)::after,
+.fieldWrapper .input-field.password:has(input:not(:placeholder-shown))::after{
+    width: 79%;
+}
+
+.fieldWrapper .input-field:has(input:focus){
     background-color: rgba(var(--black), 0.1);
 }
 
-.fieldWrapper input[type="password"]{
+.input-field .placeholder{
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    font-size: var(--xs-fontsize);
+    color: rgba(var(--black), 0.8);
+    transform: translate(0, 0) scale(1);
+    transition: transform 0.2s;
+    background-color: transparent;
+}
+
+.input-field:has(input:focus) .placeholder,
+.input-field:has(input:not(:placeholder-shown)) .placeholder{
+    transform: translate(-10%, -100%) scale(0.8);
+}
+
+.password-wrapper input[type="password"],
+.password-wrapper input[type="text"],
+.input-field input[type="email"]{
     padding-right: 2.1vw;
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: var(--xs-fontsize);
 }
 
 .password-wrapper{
-    width: 15vw;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     position: relative;
     display: flex;
@@ -141,6 +234,17 @@ main{
     stroke: rgba(var(--black), 1);
 }
 
+.helperText{
+    font-size: var(--xxs-fontsize);
+    color: red;
+    width: 15vw;
+    overflow: hidden;
+    padding-left: 0.8vw;
+    margin-top: -0.6vw;
+    margin-bottom: -0.5vw;
+    text-align: justify;
+}
+
 .fieldWrapper .formOptions{
     display: flex;
     justify-content: space-between;
@@ -149,6 +253,7 @@ main{
     margin: 0;
     margin-top: -0.3vw;
     padding: 0;
+    font-size: var(--xs-fontsize);
 }
 
 .fieldWrapper .formOptions input[type="checkbox"]{
@@ -208,7 +313,7 @@ main{
 
 .forget-password,
 .return-login{
-    font-size: var(--p-fontsize);
+    font-size: var(--xs-fontsize);
     color: rgba(var(--dark-green), 1);
     text-decoration: underline;
     cursor: pointer;
@@ -231,20 +336,37 @@ main{
     justify-content: center;
     align-items: center;
     font-size: 0.8vw;
-    margin-top: 1vw;
+    margin-top: 0.5vw;
     gap: 0.5vw;
 }
 
-.fieldWrapper #errorMessage{
+.fieldWrapper #errorMessageContainer{
     width: 15vw;
     color: red;
     text-align: left;
     overflow: hidden;
-    display: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    font-size: var(--xs-fontsize);
+}
+
+.fieldWrapper #errorMessageContainer p{
+    font-size: var(--xs-fontsize);
+}
+
+.fieldWrapper .contentWrapper .return-login{
+    margin-top: 2vw;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .fieldWrapper #loginButton,
-.fieldWrapper #sendCodeButton{
+.fieldWrapper #sendCodeButton,
+.fieldWrapper .contentWrapper .return-login{
     width: 15vw;
     height: 2vw;
     background-color: rgba(var(--black), 1);
@@ -257,7 +379,8 @@ main{
 }
 
 .fieldWrapper #loginButton:hover,
-.fieldWrapper #sendCodeButton:hover{
+.fieldWrapper #sendCodeButton:hover,
+.fieldWrapper .contentWrapper .return-login:hover{
     color: rgba(var(--black), 1);
     background-color: greenyellow;
 }
