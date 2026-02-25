@@ -57,6 +57,9 @@ Paste the following command and press Enter:
 
 ```bash
 git clone https://github.com/JunHOtt69/Capstone-Assignment.git
+
+--or--
+git clone git@github.com:JunHOtt69/Capstone-Assignment.git
 ```
 
 ### 🖥 Open in VS Code
