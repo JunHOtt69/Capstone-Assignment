@@ -1,33 +1,108 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login as auth_login
-from django.contrib import messages
 from django.db import transaction
-from django.contrib.admin.models import LogEntry, ADDITION
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.urls import reverse_lazy
 from django.urls import reverse
-from django.core.mail import EmailMultiAlternatives
+from django.contrib import messages
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.contrib.auth.views import LoginView, PasswordResetView
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User, Group
 import secrets
 import string
-
-from django.contrib.auth.models import User, Group
 from .forms import UserRowForm, AcademicTermForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment
 
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    success_url = "/accounts/password_reset/done/"
+    
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        User = get_user_model()
+        users = User.objects.filter(username=email, is_active=True)
+
+        for user in users:
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token=default_token_generator.make_token(user)
+            path = reverse("password_reset_confirm", kwargs={"uidb64": uidb64, "token": token})
+            link = self.request.build_absolute_uri(path)
+
+            from_email = None
+            group = user.groups.first()
+            role = group.name if group else "User"
+            subject = "Reset your Smart Campus password"
+            text_content = f"""Hi {user.first_name},
+We received a request to reset the password for your {role} account associated with Asia Pacific University.
+Note: This link is time-sensitive and will expire in 15 minutes.
+{link}
+If you did not request a password reset, please disregard this email or contact IT support if you have concerns about your account security.
+"""
+            html_content = render_to_string("emails/forget_password_email.html",{
+                "first_name": user.first_name,
+                "role": role,
+                "reset_link": link,
+            })
+
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            
+        return super().form_valid(form)
+
+
+class RoleBasedLoginView(LoginView):
+    template_name = "registration/login.html"
+
+    def get_success_url(self):
+        user = self.request.user
+
+        # redirect based on group name
+        if user.groups.filter(name="admin").exists():
+            return reverse_lazy("admin_dashboard")
+        if user.groups.filter(name="lecturer").exists():
+            return reverse_lazy("lecturer_dashboard")
+        if user.groups.filter(name="student").exists():
+            return reverse_lazy("student_dashboard")
+
+        # fallback
+        else: 
+            logout(self.request)
+            return reverse_lazy("account_error")
 
 # Create your views here.
-
 def home(request): 
     return render(request, "home.html")
 
 def about(request): 
     return render(request, "about.html")
+
+@login_required
+def account_error(request):
+    return render(request, "account_error.html")
+
+@login_required
+def admin_dashboard(request):
+    return render(request, "dashboards/admin_dashboard.html")
+
+@login_required
+def lecturer_dashboard(request):
+    return render(request, "dashboards/lecturer_dashboard.html")
+
+@login_required
+def student_dashboard(request):
+    return render(request, "dashboards/student_dashboard.html")
 
 def help(request): 
     return render(request, "help.html")
@@ -119,14 +194,14 @@ def create_user_manually(request):
                             },
                         )
                         text_content = f"""
-                    Hi{first_name},
-                    Your Smart Campus account has been created
+Hi{first_name},
+Your administrative account for the Smart Campus Management System has been successfully created.
 
-                    Set your password here:
-                    {link}
+To get started, please click the button below to set your account password.
+{link}
 
-                    If you didn't request this, ignore this email.
-                    """
+If you have any issues accessing your account, please contact the IT Helpdesk.
+"""
                         msg = EmailMultiAlternatives(subject, text_content, from_email, to)
                         msg.attach_alternative(html_content, "text/html")
                         msg.send()

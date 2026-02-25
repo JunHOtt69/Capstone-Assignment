@@ -125,7 +125,6 @@ STATIC_URL = 'static/'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', 
-    'smart_campus.backends.EmailBackend', 
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -140,3 +139,5 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = "Smart Campus <limjunhong1015@gmail.com>"
 
 DOMAIN = "127.0.0.1:8000"
+
+PASSWORD_RESET_TIMEOUT = 15 * 60
