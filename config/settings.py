@@ -125,7 +125,6 @@ STATIC_URL = 'static/'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', 
-    'smart_campus.backends.EmailBackend', 
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

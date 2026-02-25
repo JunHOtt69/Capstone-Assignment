@@ -5,6 +5,10 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("about/", views.about, name="about"),
     path("help/", views.help, name="help"),
+    path("account-error/", views.account_error, name="account_error"),
+    path("dashboard/admin/", views.admin_dashboard, name="admin_dashboard"),
+    path("dashboard/lecturer/", views.lecturer_dashboard, name="lecturer_dashboard"),
+    path("dashboard/student/", views.student_dashboard, name="student_dashboard"),
     path("attendance/", views.attendance, name="attendance"),
     path("navigation/", views.navigation, name="navigation"),
     path("user/", views.user_management, name="user_management"),
@@ -15,6 +19,5 @@ urlpatterns = [
     path("get-terms/", views.get_terms, name="get_terms"),
     path("check-email/", views.check_email_exists, name="check_email"),
     path("navigation/map-data/", views.map_data, name="map_data"),
-    
 ]
 

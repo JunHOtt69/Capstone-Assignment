@@ -18,14 +18,15 @@ from django.contrib import admin
 from django.urls import include, path
 from django.contrib.auth import views as auth_views
 from campus.forms import CustomSetPasswordForm, CustomLoginForm, CustomPasswordResetForm  # adjust import
+from campus.views import RoleBasedLoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("campus.urls")),
-    path('accounts/login/', auth_views.LoginView.as_view(
-        template_name='registration/login.html',
-        authentication_form=CustomLoginForm
-    ), name='login'),
+    path('accounts/login/', 
+        RoleBasedLoginView.as_view(authentication_form=CustomLoginForm),
+        name='login',
+        ),
 
     path('accounts/password_reset/', auth_views.PasswordResetView.as_view(
         template_name='registration/password_reset_form.html',

@@ -13,6 +13,11 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse
 from django.core.mail import EmailMultiAlternatives
+from django.contrib.auth.views import LoginView
+from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+
 import secrets
 import string
 
@@ -21,13 +26,47 @@ from .forms import UserRowForm, AcademicTermForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment
 
 
-# Create your views here.
+class RoleBasedLoginView(LoginView):
+    template_name = "registration/login.html"
 
+    def get_success_url(self):
+        user = self.request.user
+
+        # redirect based on group name
+        if user.groups.filter(name="admin").exists():
+            return reverse_lazy("admin_dashboard")
+        if user.groups.filter(name="lecturer").exists():
+            return reverse_lazy("lecturer_dashboard")
+        if user.groups.filter(name="student").exists():
+            return reverse_lazy("student_dashboard")
+
+        # fallback
+        else: 
+            logout(self.request)
+            return reverse_lazy("account_error")
+
+# Create your views here.
 def home(request): 
     return render(request, "home.html")
 
 def about(request): 
     return render(request, "about.html")
+
+@login_required
+def account_error(request):
+    return render(request, "account_error.html")
+
+@login_required
+def admin_dashboard(request):
+    return render(request, "dashboards/admin_dashboard.html")
+
+@login_required
+def lecturer_dashboard(request):
+    return render(request, "dashboards/lecturer_dashboard.html")
+
+@login_required
+def student_dashboard(request):
+    return render(request, "dashboards/student_dashboard.html")
 
 def help(request): 
     return render(request, "help.html")

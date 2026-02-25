@@ -1,5 +1,5 @@
 from django import forms
-from .models import course, academic_term, departments
+from .models import course, academic_term
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, PasswordResetForm
 
 class CustomLoginForm(AuthenticationForm):
