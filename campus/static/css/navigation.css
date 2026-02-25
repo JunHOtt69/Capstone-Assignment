@@ -1,0 +1,11 @@
+/* Style for actual rooms/labs */
+.node-terminal {
+    fill: #4A90E2;
+    cursor: pointer;
+}
+
+/* Style for hallway points */
+.node-pathway {
+    display: none; /* This hides them completely */
+    /* OR use 'opacity: 0;' if you want them to stay clickable for testing */
+}

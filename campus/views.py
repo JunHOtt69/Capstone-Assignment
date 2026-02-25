@@ -237,38 +237,81 @@ def map_data(request):
     # Sample graph and POIs for client-side rendering and pathfinding
     # Coordinates are pixel positions for the SVG map (800x600)
 
-    # nodes need to figure out how to import from database, so i am not hard coding
     nodes = [
-        {"id": "A", "name": "Classroom 1", "type": "classroom", "x": 170, "y": 151},
-        {"id": "B", "name": "Administration Building", "type": "office", "x": 300, "y": 120},
-        {"id": "C", "name": "Library", "type": "academic", "x": 480, "y": 100},
-        {"id": "D", "name": "Auditorium 1", "type": "academic", "x": 150, "y": 300},
-        {"id": "E", "name": "Cafeteria / Student Hub", "type": "facility", "x": 350, "y": 320},
-        {"id": "F", "name": "Science & Computer Labs", "type": "academic", "x": 540, "y": 310},
-        {"id": "G", "name": "Sports Complex", "type": "recreation", "x": 260, "y": 480},
-        {"id": "H", "name": "Student Hostel", "type": "residence", "x": 460, "y": 480}
+        {"id": "A", "name": "Classroom 1", "type": "terminal", "x": 170, "y": 160},
+        {"id": "B", "name": "Classroom 2", "type": "terminal", "x": 263, "y": 160},
+        {"id": "C", "name": "Classroom 3", "type": "terminal", "x": 567, "y": 106},
+        {"id": "D", "name": "Classroom 4", "type": "terminal", "x": 730, "y": 106},
+        {"id": "E", "name": "Classroom 5", "type": "terminal", "x": 567, "y": 220},
+        {"id": "F", "name": "Classroom 6", "type": "terminal", "x": 730, "y": 220},
+        {"id": "G", "name": "Auditorium 1", "type": "terminal", "x": 471, "y": 288},
+        {"id": "H", "name": "Auditorium 2", "type": "terminal", "x": 471, "y": 465},
+        {"id": "I", "name": "Lab 1", "type": "terminal", "x": 170, "y": 502},
+        {"id": "J", "name": "Lab 2", "type": "terminal", "x": 263, "y": 502},
+        {"id": "K", "name": "Cafeteria", "type": "terminal", "x": 395, "y": 288},
+        {"id": "Entrance", "name": "Entrance", "type": "terminal", "x": 152, "y": 576},
+
+        {"id": "C1", "name": "C1 Junction", "type": "pathway", "x": 170, "y": 177},
+        {"id": "C2", "name": "C2 Junction", "type": "pathway", "x": 263, "y": 177},
+        {"id": "U", "name": "Upper Junction", "type": "pathway", "x": 433, "y": 121},
+        {"id": "C3", "name": "C3 Junction", "type": "pathway", "x": 567, "y": 121},
+        {"id": "C4", "name": "C4 Junction", "type": "pathway", "x": 730, "y": 121},
+        {"id": "M", "name": "Mid Junction", "type": "pathway", "x": 433, "y": 235},
+        {"id": "LM", "name": "Lower-Mid Junction", "type": "pathway", "x": 433, "y": 288},
+        {"id": "A2", "name": "A2 Junction", "type": "pathway", "x": 433, "y": 465},
+        {"id": "L", "name": "Lower Junction", "type": "pathway", "x": 433, "y": 526},
+        {"id": "LAB2", "name": "Lab 2 Junction", "type": "pathway", "x": 263, "y": 526},
+        {"id": "LAB1", "name": "Lab 1 Junction", "type": "pathway", "x": 170, "y": 526},
+        {"id": "C5", "name": "C5 Junction", "type": "pathway", "x": 567, "y": 235},
+        {"id": "C6", "name": "C6 Junction", "type": "pathway", "x": 730, "y": 235},
+        {"id": "C2 Out", "name": "C2 Out Junction", "type": "pathway", "x": 433, "y": 177},
+        {"id": "Entrance Junction", "name": "Entrance Junction", "type": "pathway", "x": 152, "y": 526},
     ]
 
+    # Connection edges - create routes through pathway junctions
     edges = [
-        {"from": "A", "to": "B"},
-        {"from": "B", "to": "C"},
-        {"from": "A", "to": "D"},
-        {"from": "B", "to": "E"},
-        {"from": "C", "to": "F"},
-        {"from": "D", "to": "E"},
-        {"from": "E", "to": "F"},
-        {"from": "D", "to": "G"},
-        {"from": "E", "to": "G"},
-        {"from": "E", "to": "H"},
-        {"from": "F", "to": "H"},
-        {"from": "G", "to": "H"}
+        # Top row connections
+        {"from": "A", "to": "C1"},
+        {"from": "C1", "to": "C2"},
+        {"from": "C2", "to": "B"},
+        {"from": "C2", "to": "C2 Out"},
+        {"from": "C2 Out", "to": "U"},
+        {"from": "U", "to": "C3"},
+        {"from": "C3", "to": "C"},
+        {"from": "C3", "to": "C4"},
+        {"from": "C4", "to": "D"},
+        {"from": "C2 Out", "to": "M"},
+        
+        # Middle row connections
+        {"from": "C5", "to": "E"},
+        {"from": "C6", "to": "F"},
+        {"from": "M", "to": "U"},
+        {"from": "M", "to": "LM"},
+        {"from": "C5", "to": "M"},
+        {"from": "C6", "to": "M"},
+        
+        # Cafeteria and Auditorium connections
+        {"from": "LM", "to": "K"},
+        {"from": "LM", "to": "G"},
+        {"from": "A2", "to": "H"},
+        
+        # Bottom row connections
+        {"from": "A2", "to": "LM"},
+        {"from": "A2", "to": "L"},
+        {"from": "L", "to": "LAB2"},
+        {"from": "LAB2", "to": "LAB1"},
+        {"from": "LAB1", "to": "L"},
+        {"from": "LAB1", "to": "I"},
+        {"from": "LAB2", "to": "J"},
+        {"from": "Entrance", "to": "Entrance Junction"},
+        {"from": "Entrance Junction", "to": "LAB1"},
     ]
 
     pois = [
-        {"id": "lib", "name": "Library", "node": "A", "description": "Main library"},
-        {"id": "admin", "name": "Administration", "node": "C", "description": "Admin offices"},
-        {"id": "caf", "name": "Cafeteria", "node": "E", "description": "Food and coffee"},
-        {"id": "gym", "name": "Gym", "node": "G", "description": "Sports center"}
+        {"id": "lib", "name": "Library", "node": "A", "description": "Main library facility"},
+        {"id": "admin", "name": "Administration", "node": "B", "description": "Admin offices"},
+        {"id": "caf", "name": "Cafeteria", "node": "K", "description": "Food and beverage"},
+        {"id": "gym", "name": "Gym", "node": "I", "description": "Sports center"},
     ]
 
     data = {"nodes": nodes, "edges": edges, "pois": pois}

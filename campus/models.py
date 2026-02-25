@@ -162,3 +162,25 @@ class subject(models.Model):
     credit_hour = models.IntegerField(default=0)
     class Meta:
         db_table = 'subject'
+
+class MapNode(models.Model):
+    NODE_TYPES = [
+        ('terminal', 'Terminal (Visible)'),
+        ('pathway', 'Pathway (Invisible)'),
+    ]
+    
+    node_id = models.CharField(max_length=10, unique=True, help_text="e.g., 'A' or 'P1'")
+    name = models.CharField(max_length=100, blank=True)
+    node_type = models.CharField(max_length=10, choices=NODE_TYPES, default='terminal')
+    x = models.IntegerField()
+    y = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.node_id} - {self.name if self.name else 'Pathway'}"
+
+class MapEdge(models.Model):
+    from_node = models.ForeignKey(MapNode, related_name='edges_from', on_delete=models.CASCADE)
+    to_node = models.ForeignKey(MapNode, related_name='edges_to', on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f"{self.from_node.node_id} to {self.to_node.node_id}"
