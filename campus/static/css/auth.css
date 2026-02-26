@@ -254,11 +254,16 @@ main{
     margin-top: -0.3vw;
     padding: 0;
     font-size: var(--xs-fontsize);
+    position: relative;
 }
 
 .fieldWrapper .formOptions input[type="checkbox"]{
     display: none;
     visibility: hidden;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .fieldWrapper .formOptions .cbx{
@@ -266,7 +271,7 @@ main{
     position: relative;
     left: 0;
     top: 0;
-    width: 0.8vw;
+    width: 0.78vw;
     height: 0.8vw;
     border: 0.1vw solid rgba(var(--black), 1);
     background-color: white;
@@ -309,6 +314,11 @@ main{
     justify-content: center;
     align-items: center;
     gap: 0.5vw;
+}
+
+.remember-me span{
+    cursor: pointer;
+    user-select: none;
 }
 
 .forget-password,

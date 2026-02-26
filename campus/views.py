@@ -63,6 +63,17 @@ If you did not request a password reset, please disregard this email or contact 
 class RoleBasedLoginView(LoginView):
     template_name = "registration/login.html"
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        remember_me = form.cleaned_data.get('remember_me')
+
+        if remember_me: 
+            self.request.session.set_expiry(1 * 7 * 24 * 60 * 60)
+        else:
+            self.request.session.set_expiry(0)
+
+        return response
+    
     def get_success_url(self):
         user = self.request.user
 
