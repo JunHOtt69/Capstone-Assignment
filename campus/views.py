@@ -17,11 +17,14 @@ from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.mixins import UserPassesTestMixin
 import datetime
 import random
 from .forms import UserRowForm, AcademicTermForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles
 
+# auth custom views
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
     success_url = "/accounts/password_reset/done/"
@@ -80,6 +83,17 @@ class RoleBasedLoginView(LoginView):
             return reverse_lazy("account_error")
 
 # Create your views here.
+# verify logged in user role
+def is_admin(user):
+    return user.groups.filter(name='admin').exists()
+
+def is_lecturer(user):
+    return user.groups.filter(name='lecturer').exists()
+
+def is_student(user):
+    return user.groups.filter(name='student').exists()
+
+# page redirecting
 def home(request): 
     return render(request, "home.html")
 
@@ -90,15 +104,15 @@ def about(request):
 def account_error(request):
     return render(request, "account_error.html")
 
-@login_required
+@user_passes_test(is_admin)
 def admin_dashboard(request):
     return render(request, "dashboards/admin_dashboard.html")
 
-@login_required
+@user_passes_test(is_lecturer)
 def lecturer_dashboard(request):
     return render(request, "dashboards/lecturer_dashboard.html")
 
-@login_required
+@user_passes_test(is_student)
 def student_dashboard(request):
     return render(request, "dashboards/student_dashboard.html")
 
