@@ -141,3 +141,5 @@ DEFAULT_FROM_EMAIL = "Smart Campus <limjunhong1015@gmail.com>"
 DOMAIN = "127.0.0.1:8000"
 
 PASSWORD_RESET_TIMEOUT = 15 * 60
+
+LOGOUT_REDIRECT_URL = 'home'

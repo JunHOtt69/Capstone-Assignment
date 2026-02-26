@@ -3,7 +3,6 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Q
-from django.core.mail import send_mail
 from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -16,13 +15,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView, PasswordResetView
-from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
-import secrets
-import string
+import datetime
+import random
 from .forms import UserRowForm, AcademicTermForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -128,27 +126,70 @@ def check_email_exists(request):
         Q(username__in = emails) | Q (email__in = emails)
     )
     
-    taken = list(
-        existing.values_list('username', flat=True)
-    )
+    taken_set = set(existing.values_list('username', flat=True)) | \
+                set(existing.values_list('email', flat=True))
 
-    taken = [e for e in emails if e in taken] or list(existing.values_list('email', flat=True))
+    taken_details = []
+
+    for index, email in enumerate(emails):
+        if email in taken_set:
+            taken_details.append({
+                'email': email,
+                'index': index + 1 
+            })
     
     return JsonResponse({
-        'is_taken' : existing.exists(),
-        'taken_emails' : list(set(taken)),
+        'is_taken' : len(taken_details) > 0,
+        'taken_emails' : taken_details,
     })
 
+def generate_user_id(role):
+    prefixes = {
+        'admin' : 'AD',
+        'lecturer': 'LC',
+        'student': 'TP'
+    }
+
+    prefix = prefixes.get(role)
+    year = datetime.datetime.now().strftime("%y")
+    
+    model_map = {
+        'admin': admin_profiles,
+        'lecturer': lecturer_profiles,
+        'student': student_profiles,
+    }
+
+    targetModel = model_map.get(role)
+
+    field_map = {
+        'admin': 'ad_id',
+        'lecturer': 'lc_id',
+        'student': 'tp_id',
+    }
+
+    field_name = field_map.get(role)
+
+    while True:
+        random_digits = random.randint(1000, 9999)
+        new_id = f"{prefix}{year}{random_digits}"
+
+        exists = targetModel.objects.filter(**{field_name: new_id}).exists()
+
+        if not exists:
+            return new_id
+        
 def create_user_manually(request):
-    groups = {g.name: g.id for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
+    groups = {g.name: str(g.id) for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
     available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
+    id_to_name = {v: k for k, v in groups.items()}
     
     context = {
         "groups" : groups,
         "dept" : dept,
         "available_term" : available_term,
         "form":  None,
+        "selected_role": None
     }
 
     if request.method == 'POST':
@@ -157,7 +198,8 @@ def create_user_manually(request):
         last_names = request.POST.getlist('last_name')
         emails = request.POST.getlist('email')
         role_id = request.POST.get('user_role')
-        
+        request.session['selected_role_id'] = role_id
+
         try:
             with transaction.atomic():
                 for i in range(len(first_names)):
@@ -173,7 +215,8 @@ def create_user_manually(request):
                         first_name = first_names[i],
                         last_name = last_names[i],
                     )
-                    
+
+                    unique_id = generate_user_id(id_to_name.get(str(role_id)))
                     new_user.set_unusable_password()
                     new_user.save()
 
@@ -205,33 +248,57 @@ If you have any issues accessing your account, please contact the IT Helpdesk.
                         msg = EmailMultiAlternatives(subject, text_content, from_email, to)
                         msg.attach_alternative(html_content, "text/html")
                         msg.send()
-
+                        print(f"New User Created. Set Password: {link}")
                     transaction.on_commit(send_invite)
+                    
 
                     if str(role_id) == str(groups.get('admin')):
                         new_user.is_staff = True
-
                         new_user.save()
+
+                        admin_profiles.objects.create(
+                            user = new_user,
+                            ad_id = unique_id
+                        )
                     
                     group = Group.objects.get(id=role_id)
                     new_user.groups.add(group)
 
                     if str(role_id) == str(groups.get('lecturer')):
-                        dept_val = request.POST.get(f'department_{i+1}')
                         new_user.is_staff = True
-                        lecturer_profiles.objects.create(
-                            # passing the user object, instead of the id, because the id is automatically incremented, django will handle the id extraction
-                            user = new_user,
-                            dept_id = dept_val if dept_val else None
-                        )
+                        new_user.save()
+                        dept_val = request.POST.get(f'department_{i+1}')
+                        dept_obj = None
+
+                        try: 
+                            if(dept_val and dept_val.strip()):
+                                dept_obj = departments.objects.filter(dept_id= dept_val).first()
+                            lecturer_profiles.objects.create(
+                                # passing the user object, instead of the id, because the id is automatically incremented, django will handle the id extraction
+                                user = new_user,
+                                lc_id = unique_id,
+                                dept = dept_obj
+                            )
+                        except departments.DoesNotExist:
+                            messages.error(request, f"The selected department for lecturer {i+1} does not exists. ")
 
                     elif str(role_id) == str(groups.get('student')):
                         term_val = request.POST.get(f'term_{i+1}')
-                        course_enrollment.objects.create(
-                            student = new_user,
-                            term_id = term_val,
-                            enrollment_status = 'Active'
+
+                        student_profiles.objects.create(
+                            user = new_user,
+                            tp_id = unique_id
                         )
+
+                        try: 
+                            term_obj = academic_term.objects.filter(term_id=term_val).first()
+                            course_enrollment.objects.create(
+                                student = new_user,
+                                term = term_obj,
+                                enrollment_status = 'Active'
+                            )
+                        except academic_term.DoesNotExist:
+                            raise Exception(f"The selected academic term for student {i+1} does not exists. ")
 
             messages.success(request, f'Successfully created {len(first_names)} user(s)!')
 
@@ -241,8 +308,11 @@ If you have any issues accessing your account, please contact the IT Helpdesk.
             # If anything fails, print to console and show error to user
             print(f"Error during user creation: {e}")
             messages.error(request, f"An error occurred: {str(e)}")
+            context["selected_role"] = request.session.get('role_id')
 
-    else: context["form"] = UserRowForm()
+    else: 
+        context["form"] = UserRowForm()
+        context["selected_role"] = request.session.get('selected_role_id')
 
     return render(request, "partials/create_user_manually.html", context)
 

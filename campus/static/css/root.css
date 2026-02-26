@@ -287,8 +287,10 @@ header li a{
     user-select: none;
     color: rgba(var(--black), 1);
     text-decoration: none;
-    display: none;
+    display: block;
     font-size: var(--xs-fontsize);
+    text-transform: uppercase;
+    cursor: pointer;
 }
 
 .profileIcon{
@@ -301,6 +303,11 @@ header li a{
     cursor: pointer;
     overflow: hidden;
     user-select: none;
+    transition: background-color 0.2s;
+}
+
+.profileIcon:hover{
+    background-color: rgba(var(--black), 0.1);
 }
 
 .profileIcon svg,

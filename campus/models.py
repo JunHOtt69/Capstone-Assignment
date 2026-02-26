@@ -48,6 +48,14 @@ class academic_term(models.Model):
             
         super().save(*args, **kwargs)
 
+class admin_profiles(models.Model):
+    id = models.AutoField(primary_key = True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ad_id = models.CharField(max_length=12, unique=True)
+    
+    class Meta:
+        db_table = 'admin_profiles'
+
 class class_session(models.Model):
     id = models.AutoField(primary_key = True)
     session	= models.ForeignKey('session', on_delete=models.CASCADE)
@@ -125,6 +133,7 @@ class facilities(models.Model):
 class lecturer_profiles(models.Model):
     id = models.AutoField(primary_key = True)
     user	= models.ForeignKey(User, on_delete=models.CASCADE)
+    lc_id	= models.CharField(max_length=12, unique=True)
     dept	= models.ForeignKey('departments', on_delete=models.CASCADE, null=True, blank=True)
     specialization = models.TextField(null=True, blank=True)
     is_head	= models.BooleanField(default = False)
@@ -154,6 +163,14 @@ class session(models.Model):
     day_of_week	= models.CharField(max_length=3, choices=DAY_CHOICES)
     class Meta:
         db_table = 'session'
+
+class student_profiles(models.Model):
+    id = models.AutoField(primary_key = True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    tp_id = models.CharField(max_length=12, unique=True)
+    
+    class Meta:
+        db_table = 'student_profiles'
 
 class subject(models.Model):
     subject_id = models.AutoField(primary_key = True)
