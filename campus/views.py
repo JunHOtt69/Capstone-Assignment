@@ -8,6 +8,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse_lazy
 from django.urls import reverse
+#from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
@@ -17,14 +18,12 @@ from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.mixins import UserPassesTestMixin
 import datetime
 import random
 from .forms import UserRowForm, AcademicTermForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles
+from .decorators import role_required
 
-# auth custom views
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
     success_url = "/accounts/password_reset/done/"
@@ -62,7 +61,8 @@ If you did not request a password reset, please disregard this email or contact 
             
         return super().form_valid(form)
 
-
+# if applying role based view on class:
+#@method_decorator(role_required(allowed_roles=['admin']), name='dispatch')
 class RoleBasedLoginView(LoginView):
     template_name = "registration/login.html"
 
@@ -94,17 +94,6 @@ class RoleBasedLoginView(LoginView):
             return reverse_lazy("account_error")
 
 # Create your views here.
-# verify logged in user role
-def is_admin(user):
-    return user.groups.filter(name='admin').exists()
-
-def is_lecturer(user):
-    return user.groups.filter(name='lecturer').exists()
-
-def is_student(user):
-    return user.groups.filter(name='student').exists()
-
-# page redirecting
 def home(request): 
     return render(request, "home.html")
 
@@ -115,15 +104,15 @@ def about(request):
 def account_error(request):
     return render(request, "account_error.html")
 
-@user_passes_test(is_admin)
+@role_required(allowed_roles=['admin'])
 def admin_dashboard(request):
     return render(request, "dashboards/admin_dashboard.html")
 
-@user_passes_test(is_lecturer)
+@role_required(allowed_roles=['lecturer'])
 def lecturer_dashboard(request):
     return render(request, "dashboards/lecturer_dashboard.html")
 
-@user_passes_test(is_student)
+@role_required(allowed_roles=['student'])
 def student_dashboard(request):
     return render(request, "dashboards/student_dashboard.html")
 
