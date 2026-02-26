@@ -21,32 +21,31 @@
             <div class="navbarContent">
                 <ul>
                     {% if user.is_authenticated %}
-                        <li>
+                        <li class="{% if request.resolver_match.url_name in 'admin_dashboard lecturer_dashboard student_dashboard' %}active{% endif %}">
                             <svg><rect></rect></svg>
                             <a>Dashboard</a>
                         </li>
-                        <li>
+                        <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                             <svg><rect></rect></svg>
                             <a>Announcements</a>
                         </li>
                         
                         {% if user.role == "student" or user.role == "lecturer" %}
-                            <li>
+                            <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                                 <svg><rect></rect></svg>
                                 <a>TimeTable</a>
                             </li>
-                            <li>
+                            <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                                 <svg><rect></rect></svg>
                                 <a>Attendance</a>
                             </li>
                         {% endif %}
-                    
-                        <li>
+                        <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                             <svg><rect></rect></svg>
                             <a>Services</a>
                         </li>
                         {% if user.role == "admin" %}
-                            <li>
+                            <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                                 <svg><rect></rect></svg>
                                 <a>Management</a>
                             </li>
@@ -54,17 +53,23 @@
 
                     {% endif %}
 
-                    <li>
+                    <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                         <svg><rect></rect></svg>
                         <a href="{% url 'about' %}">About</a>
                     </li>
-                    <li>
+                    <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                         <svg><rect></rect></svg>
                         <a href="{% url 'help' %}">Help</a>
                     </li>
                 </ul>
             </div>
-            
+            <div class="navbarDropdown">
+                <div class="dropDownContentWrapper">
+                    <div class="functionG1">ABC</div>
+                    <div class="functionG1">ABC</div>
+                    <div class="functionG1">ABC</div>
+                </div>
+            </div>
 
             <div class="profileWrapper">
                 {% if user.is_authenticated %}

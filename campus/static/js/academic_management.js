@@ -74,8 +74,8 @@ document.addEventListener('click', (event) => {
     });
 
     allCalendar.forEach(calendar => {
-        if (!calendar .contains(event.target)) {
-            calendar .classList.remove('active');
+        if (!calendar.contains(event.target)) {
+            calendar.classList.remove('active');
         }
     });
 });
