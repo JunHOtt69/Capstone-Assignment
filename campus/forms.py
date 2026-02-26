@@ -41,10 +41,10 @@ class UserRowForm(forms.Form):
     )
 
     # for lecturer
-    department = forms.HiddenInput()
+    department = forms.CharField(widget=forms.HiddenInput())
 
     #student
-    term = forms.HiddenInput()
+    term = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -54,10 +54,6 @@ class UserRowForm(forms.Form):
         if role == "3":
             if not cleaned_data.get("term"):
                 self.add_error('term', "Academic Term is required for students.")
-        
-        elif role == "2":
-            # Department is optional according to your requirements
-            pass
             
         return cleaned_data
 

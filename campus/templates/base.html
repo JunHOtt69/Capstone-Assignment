@@ -40,19 +40,18 @@
                                 <a>Attendance</a>
                             </li>
                         {% endif %}
-                        
+                    
+                        <li>
+                            <svg><rect></rect></svg>
+                            <a>Services</a>
+                        </li>
                         {% if user.role == "admin" %}
-
+                            <li>
+                                <svg><rect></rect></svg>
+                                <a>Management</a>
+                            </li>
                         {% endif %}
 
-                        <li>
-                            <svg><rect></rect></svg>
-                            <a>Facility</a>
-                        </li>
-                        <li>
-                            <svg><rect></rect></svg>
-                            <a>Directory</a>
-                        </li>
                     {% endif %}
 
                     <li>
@@ -68,8 +67,11 @@
             
 
             <div class="profileWrapper">
-                <a class="singinText" href="{% url 'login' %}">Sign In</a>
-                <p class="username">Username</p>
+                {% if user.is_authenticated %}
+                    <p class="username">{{ user.first_name }} {{ user.last_name }}</p>
+                {% else %}
+                    <a class="singinText" href="{% url 'login' %}">Sign In</a>
+                {% endif %}
                 <div class="profileIcon">
                     <?xml version="1.0" ?>
                     <svg viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

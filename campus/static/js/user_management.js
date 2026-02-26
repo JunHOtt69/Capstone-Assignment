@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     const lecturer_button = document.getElementById('lecturer_role');
     const student_button = document.getElementById('student_role');
     const groupData = JSON.parse(document.getElementById('groups-data').textContent);
-
+    const roleRaw = JSON.parse(document.getElementById('role-data').textContent);
+    const roleIdInt = roleRaw ? parseInt(roleRaw, 10) : null;
+    console.log(roleIdInt)
+    console.log(roleRaw)
     function attemptSwitchRole(role){
         user_role.value = role;
         renderTable(user_role.value);
@@ -40,8 +43,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     lecturer_button.onclick = () => attemptSwitchRole(groupData['lecturer']); 
     student_button.onclick = () => attemptSwitchRole(groupData['student']); 
 
-    user_role.value = groupData['admin'];
-    renderTable(user_role.value);
+    if(roleIdInt == groupData['lecturer']){
+        user_role.value = groupData['lecturer'];
+        renderTable(user_role.value);
+    }else if(roleIdInt == groupData['student']){
+        user_role.value = groupData['student'];
+        renderTable(user_role.value);
+    }else{
+        user_role.value = groupData['admin'];
+        renderTable(user_role.value);
+    }
+    
 });
 
 document.addEventListener('click', (event) => {
@@ -101,27 +113,78 @@ form.onsubmit = async function(event) {
     const messageContainer = document.getElementById('errorMessageContainer');
     messageContainer.innerHTML = ``;
 
+    const roleInputs = document.getElementById('id_user_role').value;
     const emailInputs = document.getElementsByName('email');
+    const f_nameInputs = document.getElementsByName('first_name')
+    const l_nameInputs = document.getElementsByName('last_name')
     const emailList = Array.from(emailInputs).map(input => input.value);
-    
+    const f_nameList = Array.from(f_nameInputs).map(input => input.value);
+    const l_nameList = Array.from(l_nameInputs).map(input => input.value);
+    const groupData = JSON.parse(document.getElementById('groups-data').textContent);
+
+    let errors = [];
     if (emailList.length === 0) return;
 
     const params = new URLSearchParams();
-    emailList.forEach(email => params.append('emails[]', email));
+    emailList.forEach((email, index) => params.append('emails[]', email));
     
+    f_nameInputs.forEach((input, index) => {
+        const rowNumber = index + 1;
+        if (!input.value.trim()) {
+            errors.push(`Error in row No.${rowNumber}: first name is empty.`);
+        }
+    });
+
+    l_nameInputs.forEach((input, index) => {
+        const rowNumber = index + 1;
+        if (!input.value.trim()) {
+            errors.push(`Error in row No.${rowNumber}: last name is empty.`);
+        }
+    });
+
+    if(roleInputs == groupData['student']){
+        const totalRow = f_nameList.length;
+        for(let i = 0; i < totalRow; i++){
+            const rowNumber = i + 1;
+            const checkedRadio = document.querySelector(`input[name="temp_radio_${rowNumber}"]:checked`);
+            
+            if(!checkedRadio){
+                errors.push(`Error in row No.${rowNumber}: Please select an academic term.`);
+            }
+        }
+    }
+    
+    if(errors.length > 0){
+            isSubmitting = false;
+            errors.forEach(error => {
+                const errorMessage = document.createElement('p');
+                errorMessage.innerHTML = error;
+                messageContainer.appendChild(errorMessage);
+            })
+            return;
+        }
+
     try{
         const response = await fetch(`/check-email/?${params.toString()}`);
         const data = await response.json();
-        console.log("check-email response:", data);
+        
+
         if(data.is_taken){
-            isSubmitting = false;
             data.taken_emails.forEach(email => {
-                const errorMessage = document.createElement('p');
-                errorMessage.innerHTML = `Error during user creation: ${email} is already registered.`
-                messageContainer.appendChild(errorMessage);
+                const rowNumber = email.index;
+                errors.push(`Error in row No.${rowNumber}: ${email.email} is already registered.`)
             });
+        } 
+
+        if(errors.length > 0){
+            isSubmitting = false;
+            errors.forEach(error => {
+                const errorMessage = document.createElement('p');
+                errorMessage.innerHTML = error;
+                messageContainer.appendChild(errorMessage);
+            })
             return;
-        } else{
+        }else{
             form.submit();
         }
     } catch(error){

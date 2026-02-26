@@ -7,7 +7,11 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Lecturer</h1>
+<h1>Lecturer</h1>
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="logout-btn">Log Out</button>
+</form>
 {% endblock %} 
 
 <!-- {% block background_scripts %}
