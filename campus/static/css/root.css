@@ -209,29 +209,83 @@ p{
     width: 100%;
     height: var(--dropdown-height);
     max-height: 30vh;
-    background-color: blue;
+    background-color: white;
     z-index: 101;
     user-select: none;
     pointer-events: none;
     visibility: hidden;
     overflow: hidden;
+    opacity: 0;
+    box-shadow: 0 1vw 1vw -0.8vw rgba(var(--black), 0.2);
+    margin: 0;
 }
 
 .navbarDropdown.animatingExtend{
     transition: 
         height 240ms cubic-bezier(0.4, 0, 0.6, 1) 0.12s,
+        opacity 240ms ease-out 0.15s,
         visibility 0s step-start;
 }
 
 .navbarDropdown.animatingShrink{
     transition: 
         height 240ms cubic-bezier(0.4, 0, 0.6, 1) 0.12s,
+        opacity 240ms ease-in 0.20s,
         visibility 240ms step-end 0.12s;
 }
 
 .navbarDropdown[data-open='true']{
     visibility: visible;
     pointer-events: auto;
+    opacity: 1;
+}
+
+.dropDownContentWrapper{
+    display: flow-root;
+    box-sizing: border-box;
+    width: 100%;
+    height: max-content;
+    padding: 1vw 2vw;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5vw;
+    background-color: transparent;
+}
+
+.dropDownContentWrapper .functionG1{
+    background-color: transparent;
+    height: 100%;
+    overflow: hidden;
+    text-align: justify;
+    text-align-last: left;
+    max-height: calc(30vh - 2vw);
+}
+
+.navCurtain{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(0.5vw);
+    -webkit-backdrop-filter: blur(0.5vw);
+    z-index: 1;
+    visibility: hidden;
+    opacity: 0;
+    transition: 
+        opacity 0.4s ease 0.12s, 
+        visibility 0.4s step-end;
+    pointer-events: none;
+}
+
+body.nav-open .navCurtain{
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: 
+        opacity 0.4s ease 0.12s, 
+        visibility 0.4s step-start;
 }
 
 header li {

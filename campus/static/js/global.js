@@ -21,7 +21,8 @@ const toggleDropdown = {
                 this.setHeight(e);
                 e.setAttribute('data-open', 'true');
                 e.classList.add('animatingExtend'); 
-        
+                document.body.classList.add('nav-open');
+
                 // Listen for the exact moment the transition ends
                 e.addEventListener('transitionend', () => {
                     e.classList.remove('animatingExtend');
@@ -42,6 +43,7 @@ const toggleDropdown = {
             requestAnimationFrame(() => {
                 e.setAttribute('data-open', 'false');
                 e.classList.add('animatingShrink');
+                document.body.classList.remove('nav-open');
                 
                 this.setHeight(e, 0);
 
@@ -68,25 +70,6 @@ navDropdown.addEventListener('mouseenter', () => toggleDropdown.open(navDropdown
 navDropdown.addEventListener('mouseleave', () => toggleDropdown.close(navDropdown));
 
 profileWrapper.addEventListener('mouseenter', () => toggleDropdown.open(navDropdown));
-
-// document.addEventListener('click', (event) => {
-//     navItems.forEach(item => {
-//         if (!item.contains(event.target)) {
-//             clearTimeout(transitionTimeout);
-//             navDropdown.setAttribute('data-active', 'false');
-//         }
-//     });
-
-//     if(!navDropdown.contains(event.target)){
-//         clearTimeout(transitionTimeout);
-//         navDropdown.setAttribute('data-active', 'false');
-//     }
-
-//     if(!profileWrapper.contains(event.target)){
-//         clearTimeout(transitionTimeout);
-//         navDropdown.setAttribute('data-active', 'false');
-//     }
-// });
 
 document.addEventListener('DOMContentLoaded', () => {
     const notifications = document.querySelectorAll('.notifContainer .notif');
