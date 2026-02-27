@@ -11,6 +11,8 @@ class CustomLoginForm(AuthenticationForm):
         'placeholder': ' ',
     }))
 
+    remember_me = forms.BooleanField(required=False, initial=False, widget=forms.CheckboxInput())
+
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={
         'placeholder': ' ',

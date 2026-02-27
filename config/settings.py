@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-6w5(#3de8ys3+oua)zv)cb(7p40+2m-cr$f_r@i#vnt4jz9kl6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
 # Application definition
@@ -79,8 +79,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smart_campus', # Create this database in PHPMyAdmin first!
         'USER': 'root',               # Default XAMPP username
-        'PASSWORD': '',               # Default XAMPP password is empty
-        'HOST': 'localhost',          # Or 'localhost'
+        'PASSWORD': 'password123',               # Default XAMPP password is empty
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),          # Or 'localhost'
         'PORT': '3306',               # Default MySQL port
     }
 }

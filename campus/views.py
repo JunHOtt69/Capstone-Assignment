@@ -8,6 +8,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse_lazy
 from django.urls import reverse
+#from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
@@ -21,6 +22,7 @@ import datetime
 import random
 from .forms import UserRowForm, AcademicTermForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles
+from .decorators import role_required
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -59,10 +61,22 @@ If you did not request a password reset, please disregard this email or contact 
             
         return super().form_valid(form)
 
-
+# if applying role based view on class:
+#@method_decorator(role_required(allowed_roles=['admin']), name='dispatch')
 class RoleBasedLoginView(LoginView):
     template_name = "registration/login.html"
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        remember_me = form.cleaned_data.get('remember_me')
+
+        if remember_me: 
+            self.request.session.set_expiry(1 * 7 * 24 * 60 * 60)
+        else:
+            self.request.session.set_expiry(0)
+
+        return response
+    
     def get_success_url(self):
         user = self.request.user
 
@@ -90,15 +104,15 @@ def about(request):
 def account_error(request):
     return render(request, "account_error.html")
 
-@login_required
+@role_required(allowed_roles=['admin'])
 def admin_dashboard(request):
     return render(request, "dashboards/admin_dashboard.html")
 
-@login_required
+@role_required(allowed_roles=['lecturer'])
 def lecturer_dashboard(request):
     return render(request, "dashboards/lecturer_dashboard.html")
 
-@login_required
+@role_required(allowed_roles=['student'])
 def student_dashboard(request):
     return render(request, "dashboards/student_dashboard.html")
 

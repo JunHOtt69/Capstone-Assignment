@@ -31,7 +31,7 @@ header{
     background-color: rgba(255, 255, 255, 0.9);
     padding: 0.5vw 2vw;
     user-select: auto;
-    z-index: 1;
+    z-index: 100;
     border-bottom: 0.05vw solid rgba(var(--black), 0.95);
     height: 3vw;
     right: 0;
@@ -187,6 +187,10 @@ p{
 
 .navbarContent{
     z-index: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .navbarContent ul{
@@ -196,6 +200,38 @@ p{
     gap: 2vw;
     flex-direction: row;
     list-style-type: none;
+}
+
+.navbarDropdown{
+    --dropdown-height: 0px;
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    height: var(--dropdown-height);
+    max-height: 30vh;
+    background-color: blue;
+    z-index: 101;
+    user-select: none;
+    pointer-events: none;
+    visibility: hidden;
+    overflow: hidden;
+}
+
+.navbarDropdown.animatingExtend{
+    transition: 
+        height 240ms cubic-bezier(0.4, 0, 0.6, 1) 0.12s,
+        visibility 0s step-start;
+}
+
+.navbarDropdown.animatingShrink{
+    transition: 
+        height 240ms cubic-bezier(0.4, 0, 0.6, 1) 0.12s,
+        visibility 240ms step-end 0.12s;
+}
+
+.navbarDropdown[data-open='true']{
+    visibility: visible;
+    pointer-events: auto;
 }
 
 header li {
@@ -226,7 +262,7 @@ header li svg rect{
 }
 
 header li svg rect{
-    stroke: rgba(var(--black), 0.95);
+    stroke: rgba(var(--black), 0.6);
     stroke-width: 0.1vw;
     stroke-dasharray: 1200;
     stroke-dashoffset: 1200;
@@ -237,8 +273,12 @@ header li:hover svg rect{
     stroke-dashoffset: 0;
 }
 
+header li.active a{
+    font-weight: 750;
+}
+
 header li a{
-    color: rgba(var(--black), 1);
+    color: rgba(var(--black), 0.7);
     text-decoration: none;
     transition: color 0.2s;
     font-size: var(--xs-fontsize);

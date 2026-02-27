@@ -1,0 +1,34 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: always
+    environment:
+      MYSQL_DATABASE: smart_campus
+      MYSQL_ROOT_PASSWORD: password123 #for docker manually check database tables.
+    volumes:
+      # This saves the DB data in your project folder!
+      - ./db_data:/var/lib/mysql
+      # This imports your XAMPP data on the first run
+      - ./db_init:/docker-entrypoint-initdb.d 
+    ports:
+      - "3306:3306"
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      # This tells Django to look for 'db' instead of 'localhost'
+      - DB_HOST=db
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - DB_HOST=db
