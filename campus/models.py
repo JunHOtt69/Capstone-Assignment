@@ -50,7 +50,7 @@ class academic_term(models.Model):
 
 class admin_profiles(models.Model):
     id = models.AutoField(primary_key = True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
     ad_id = models.CharField(max_length=12, unique=True)
     
     class Meta:
@@ -132,7 +132,7 @@ class facilities(models.Model):
 
 class lecturer_profiles(models.Model):
     id = models.AutoField(primary_key = True)
-    user	= models.ForeignKey(User, on_delete=models.CASCADE)
+    user	= models.OneToOneField(User, on_delete=models.CASCADE, related_name='lecturer_profile')
     lc_id	= models.CharField(max_length=12, unique=True)
     dept	= models.ForeignKey('departments', on_delete=models.CASCADE, null=True, blank=True)
     specialization = models.TextField(null=True, blank=True)
@@ -166,7 +166,7 @@ class session(models.Model):
 
 class student_profiles(models.Model):
     id = models.AutoField(primary_key = True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     tp_id = models.CharField(max_length=12, unique=True)
     
     class Meta:

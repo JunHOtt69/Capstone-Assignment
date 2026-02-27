@@ -30,7 +30,7 @@
                             <a>Announcements</a>
                         </li>
                         
-                        {% if user.role == "student" or user.role == "lecturer" %}
+                        {% if "lecturer" in user.groups.all.0.name or "lecturer" in request.resolver_match.url_name or "student" in user.groups.all.0.name or "student" in request.resolver_match.url_name %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                                 <svg><rect></rect></svg>
                                 <a>TimeTable</a>
@@ -44,7 +44,7 @@
                             <svg><rect></rect></svg>
                             <a>Services</a>
                         </li>
-                        {% if user.role == "admin" %}
+                        {% if "admin" in user.groups.all.0.name or "admin" in request.resolver_match.url_name %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                                 <svg><rect></rect></svg>
                                 <a>Management</a>
@@ -65,9 +65,14 @@
             </div>
             <div class="navbarDropdown">
                 <div class="dropDownContentWrapper">
-                    <div class="functionG1">ABC</div>
-                    <div class="functionG1">ABC</div>
-                    <div class="functionG1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perspiciatis consequatur beatae nostrum qui perferendis quam explicabo nesciunt ratione. Esse eligendi, aspernatur aliquid blanditiis nesciunt dignissimos eveniet temporibus quidem ex! Iste fugit eaque doloribus accusantium perspiciatis repellendus modi officia, libero corrupti earum, a placeat tenetur iusto sit ex asperiores harum. Mollitia dolorem accusamus eveniet. Dolore minus aperiam pariatur, similique ipsa consequuntur tempora ducimus, nostrum dolores at doloribus autem. Quas impedit esse, tempora adipisci illum laborum beatae blanditiis ut nemo perspiciatis repellendus repudiandae mollitia, quos ullam rerum delectus tenetur pariatur cum minus libero quia atque est sapiente. Reiciendis asperiores tempora error cupiditate nemo quidem dolore nam aut sequi perspiciatis! Vitae doloribus, ipsa eius aspernatur cumque, et praesentium voluptatibus assumenda quia rem atque tempora suscipit ut optio ipsum obcaecati. Obcaecati voluptatem beatae asperiores corporis cupiditate officiis earum eos porro numquam tenetur. Consequatur, tempore minus. Dolorum incidunt ea at atque, quis libero laboriosam pariatur quidem error beatae iusto repellendus laudantium, ad eveniet minus? Itaque ex expedita accusantium assumenda nobis, delectus est animi voluptatum natus aut laborum nihil deserunt veniam pariatur voluptate nemo repellendus molestiae nostrum neque reiciendis consequatur. Vero, nemo autem libero explicabo ipsa mollitia aperiam, illum eum fugit velit sit quo, debitis harum.</div>
+                    <div class="studentCard">
+                        <div class="imageWrappeer" style="width: 100%; text-align: center; margin-bottom: 20px;">
+                            <img src="https://www.apu.edu.my/themes/custom/apu/images/navbar/navbar-logo--scrolled.png" alt="University Logo" width: 200 style=" display: inline-block; vertical-align: middle;">
+                        </div>
+                        <span class="fullname">{{ user.first_name }} {{ user.last_name }}</span>
+                        <span class="id">ID: {{ card_id|default:"NA" }}</span>
+                    </div>
+                    <div class="functionG1">Quick Action Button Placeholder</div>
                 </div>
             </div>
 
@@ -158,4 +163,12 @@
         {% block extra_scripts %}{% endblock %} 
         <script src="{% static 'js/global.js' %}"></script>
     </body>
-</html>                                                     
+</html>    
+
+<template id="profileDropdown">
+    <div class="dropDownContentWrapper">
+        <div class="functionG1">Navigation Links</div>
+        <div class="functionG1">ABC</div>
+        <div class="functionG1">Quick Action Button Placeholder</div>
+    </div>
+</template>
