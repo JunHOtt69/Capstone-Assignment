@@ -11,7 +11,7 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: smart_campus
-      MYSQL_ROOT_PASSWORD: password123 #for docker manually check database tables.
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} #for docker manually check database tables.
     volumes:
       # This saves the DB data in your project folder!
       - ./db_data:/var/lib/mysql
@@ -24,7 +24,7 @@ services:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./backend:/code
+      - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -33,6 +33,7 @@ services:
     environment:
       # This tells Django to look for 'db' instead of 'localhost'
       - DB_HOST=db
+      - DB_PASSWORD=${DB_PASSWORD}
 
   phpmyadmin:
     image: phpmyadmin
