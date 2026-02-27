@@ -73,14 +73,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+IS_DOCKER = os.environ.get('DOCKER_RUNNING') == 'True'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smart_campus', # Create this database in PHPMyAdmin first!
         'USER': 'root',               # Default XAMPP username
-        'PASSWORD': 'password123',               # Default XAMPP password is empty
-        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),          # Or 'localhost'
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),               # Default XAMPP password is empty
+        'HOST': os.getenv('DB_HOST', 'db' if IS_DOCKER else '127.0.0.1'),          # Or 'localhost'
         'PORT': '3306',               # Default MySQL port
     }
 }
