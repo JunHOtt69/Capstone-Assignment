@@ -71,6 +71,15 @@ navDropdown.addEventListener('mouseleave', () => toggleDropdown.close(navDropdow
 
 profileWrapper.addEventListener('mouseenter', () => toggleDropdown.open(navDropdown));
 
+const cardSpan = document.getElementById('card_id');
+const idText = cardSpan.innerText.trim();
+
+cardSpan.innerHTML = idText
+    .split('')
+    .map(char => `<span>${char}</span>`)
+    .join('')
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const notifications = document.querySelectorAll('.notifContainer .notif');
 

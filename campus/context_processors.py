@@ -40,8 +40,17 @@ def card_context(request):
             code128 = barcode.get_barcode_class('code128')
             buffer = io.BytesIO()
 
+            options = {
+                'module_height': 5.0,    # Default is 15.0 (Shorter height)
+                'module_width': 0.25,    # Increase this to make it wider 
+                'quiet_zone': 1.0,       # Margin on the sides
+                'font_size': 10,         # Size of the text under the bars
+                'text_distance': 4.0,    # Space between bars and text
+                'write_text': False       # Set to False if you want bars ONLY
+            }
+
             barcode_instance = code128(str(card_id), writer= ImageWriter())
-            barcode_instance.write(buffer)
+            barcode_instance.write(buffer, options=options)
 
             base64_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
             barcode_base64 = f"data:image/png;base64,{base64_str}"
