@@ -65,13 +65,7 @@
             </div>
             <div class="navbarDropdown">
                 <div class="dropDownContentWrapper">
-                    <div class="studentCard">
-                        <div class="imageWrappeer" style="width: 100%; text-align: center; margin-bottom: 20px;">
-                            <img src="https://www.apu.edu.my/themes/custom/apu/images/navbar/navbar-logo--scrolled.png" alt="University Logo" width: 200 style=" display: inline-block; vertical-align: middle;">
-                        </div>
-                        <span class="fullname">{{ user.first_name }} {{ user.last_name }}</span>
-                        <span class="id">ID: {{ card_id|default:"NA" }}</span>
-                    </div>
+                    
                     <div class="functionG1">Quick Action Button Placeholder</div>
                 </div>
             </div>
@@ -134,6 +128,28 @@
 
         <div class="mainScrollWrapper">
             <main>
+                <div class="studentCard">
+                    <div class="infoWrapper">
+                        <div class="imageWrappeer">
+                            <img src="https://www.apu.edu.my/themes/custom/apu/images/icons/footer/footer-logo.png" alt="University Logo">
+                        </div>
+                        <span class="fullname">{{ user.first_name }} {{ user.last_name }}</span>
+                        <span class="id">ID: {{ card_id|default:"NA" }}</span>
+                    </div>
+                    <span><svg width="118" height="139" viewBox="0 0 118 139" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M30 85.5H88C104.292 85.5 117.5 98.7076 117.5 115V138.5H0.5V115C0.5 98.7076 13.7076 85.5 30 85.5ZM59 0.5C80.263 0.5 97.5 17.737 97.5 39C97.5 60.263 80.263 77.5 59 77.5C37.737 77.5 20.5 60.263 20.5 39C20.5 17.737 37.737 0.5 59 0.5Z" stroke="black"/>
+                        </svg>
+                    </span>
+                    <div class="cardFooter">
+                        <div class="barcode_container">
+                            {% if user_barcode %}
+                                <img src="{{ user_barcode }}" alt="User Barcode" srcset="">
+                            {% else %}
+                                <p>No barcode available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
                 {% block content %}{% endblock %}
             </main>
 
