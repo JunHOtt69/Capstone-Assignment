@@ -1,8 +1,11 @@
 const navItems = document.querySelectorAll('.navbarContent li')
 const navDropdown = document.querySelector('.navbarDropdown')
 const profileWrapper = document.querySelector('.profileWrapper')
+const header = document.querySelector('header');
 let transitionTimeout;
 let hoverTimeout;
+let navOpened = false;
+let isMouseHovering = false;
 let abortController = new AbortController();
 
 const toggleDropdown = {
@@ -13,15 +16,18 @@ const toggleDropdown = {
 
     open(e) {
         clearTimeout(transitionTimeout);
+
         hoverTimeout = setTimeout(() => {
             abortController.abort();
             abortController = new AbortController();
-            
+            navOpened = true;
+
             requestAnimationFrame(() => {
                 this.setHeight(e);
                 e.setAttribute('data-open', 'true');
                 e.classList.add('animatingExtend'); 
-        
+                document.body.classList.add('nav-open');
+
                 // Listen for the exact moment the transition ends
                 e.addEventListener('transitionend', () => {
                     e.classList.remove('animatingExtend');
@@ -36,12 +42,14 @@ const toggleDropdown = {
         clearTimeout(transitionTimeout);
 
         transitionTimeout = setTimeout(() => {
+            if(isMouseHovering) return;
             abortController.abort();
             abortController = new AbortController();
-            
+            navOpened = false;
             requestAnimationFrame(() => {
                 e.setAttribute('data-open', 'false');
                 e.classList.add('animatingShrink');
+                document.body.classList.remove('nav-open');
                 
                 this.setHeight(e, 0);
 
@@ -64,29 +72,48 @@ navItems.forEach(item => {
     });
 });
 
+header.addEventListener('mousemove', () => { 
+    if(!navOpened) return;
+    else if(navOpened) isMouseHovering = true;
+});
+
+header.addEventListener('mouseleave', () => { 
+    if(navOpened) isMouseHovering = false;
+});
+
 navDropdown.addEventListener('mouseenter', () => toggleDropdown.open(navDropdown));
 navDropdown.addEventListener('mouseleave', () => toggleDropdown.close(navDropdown));
 
 profileWrapper.addEventListener('mouseenter', () => toggleDropdown.open(navDropdown));
+profileWrapper.addEventListener('mouseleave', () => toggleDropdown.close(navDropdown));
 
-// document.addEventListener('click', (event) => {
-//     navItems.forEach(item => {
-//         if (!item.contains(event.target)) {
-//             clearTimeout(transitionTimeout);
-//             navDropdown.setAttribute('data-active', 'false');
-//         }
-//     });
 
-//     if(!navDropdown.contains(event.target)){
-//         clearTimeout(transitionTimeout);
-//         navDropdown.setAttribute('data-active', 'false');
-//     }
 
-//     if(!profileWrapper.contains(event.target)){
-//         clearTimeout(transitionTimeout);
-//         navDropdown.setAttribute('data-active', 'false');
-//     }
-// });
+document.addEventListener('click', (event) => {
+    navItems.forEach(item => {
+        if (!item.contains(event.target)) {
+            toggleDropdown.close(navDropdown);
+        }
+    });
+
+    if (!navDropdown.contains(event.target)) {
+        toggleDropdown.close(navDropdown);
+    }
+
+    if(!profileWrapper.contains(event.target)) {
+        toggleDropdown.close(navDropdown);
+    }
+});
+
+
+const cardSpan = document.getElementById('card_id');
+const idText = cardSpan.innerText.trim();
+
+cardSpan.innerHTML = idText
+    .split('')
+    .map(char => `<span>${char}</span>`)
+    .join('')
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const notifications = document.querySelectorAll('.notifContainer .notif');

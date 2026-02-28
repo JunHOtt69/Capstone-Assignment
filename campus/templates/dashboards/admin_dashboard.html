@@ -10,7 +10,6 @@
 
 {% block content %}
 <h1>Admin</h1>
-<h2>HELLOOOOO1234</h2>
 <form action="{% url 'logout' %}" method="post">
     {% csrf_token %}
     <button type="submit" class="logout-btn">Log Out</button>

@@ -50,7 +50,7 @@ class academic_term(models.Model):
 
 class admin_profiles(models.Model):
     id = models.AutoField(primary_key = True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
     ad_id = models.CharField(max_length=12, unique=True)
     
     class Meta:
@@ -88,7 +88,7 @@ class course(models.Model):
 
 class course_enrollment(models.Model):
     id = models.AutoField(primary_key = True)
-    student	= models.ForeignKey(User, on_delete=models.CASCADE)
+    student	= models.OneToOneField(User, on_delete=models.CASCADE, related_name='course_enrollment')
     term	= models.ForeignKey('academic_term', on_delete=models.CASCADE)
     enrollment_status = models.CharField(max_length=20)
     class Meta:
@@ -106,6 +106,13 @@ class departments(models.Model):
     dept_id = models.AutoField(primary_key = True)
     dept_name	= models.CharField(max_length=100)
     dept_code	= models.CharField(max_length=10, unique=True)
+    head = models.OneToOneField(
+        'lecturer_profiles',
+        on_delete= models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='headed_department'
+    )
     class Meta:
         db_table = 'departments'
 
@@ -132,7 +139,7 @@ class facilities(models.Model):
 
 class lecturer_profiles(models.Model):
     id = models.AutoField(primary_key = True)
-    user	= models.ForeignKey(User, on_delete=models.CASCADE)
+    user	= models.OneToOneField(User, on_delete=models.CASCADE, related_name='lecturer_profile')
     lc_id	= models.CharField(max_length=12, unique=True)
     dept	= models.ForeignKey('departments', on_delete=models.CASCADE, null=True, blank=True)
     specialization = models.TextField(null=True, blank=True)
@@ -166,7 +173,7 @@ class session(models.Model):
 
 class student_profiles(models.Model):
     id = models.AutoField(primary_key = True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     tp_id = models.CharField(max_length=12, unique=True)
     
     class Meta:

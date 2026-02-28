@@ -30,7 +30,7 @@
                             <a>Announcements</a>
                         </li>
                         
-                        {% if user.role == "student" or user.role == "lecturer" %}
+                        {% if "lecturer" in user.groups.all.0.name or "lecturer" in request.resolver_match.url_name or "student" in user.groups.all.0.name or "student" in request.resolver_match.url_name %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                                 <svg><rect></rect></svg>
                                 <a>TimeTable</a>
@@ -44,7 +44,7 @@
                             <svg><rect></rect></svg>
                             <a>Services</a>
                         </li>
-                        {% if user.role == "admin" %}
+                        {% if "admin" in user.groups.all.0.name or "admin" in request.resolver_match.url_name %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                                 <svg><rect></rect></svg>
                                 <a>Management</a>
@@ -65,9 +65,60 @@
             </div>
             <div class="navbarDropdown">
                 <div class="dropDownContentWrapper">
-                    <div class="functionG1">ABC</div>
-                    <div class="functionG1">ABC</div>
-                    <div class="functionG1">ABC</div>
+                    <div class="cardContainer">
+                        <div class="studentCard">
+                            <div class="watermark">
+                                <svg viewBox="0 0 232 193" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M195.5 96.3955C195.5 140.026 160.13 175.396 116.5 175.396C72.8695 175.396 37.5 140.026 37.5 96.3955C37.5 52.765 72.8695 17.3955 116.5 17.3955C160.13 17.3955 195.5 52.765 195.5 96.3955Z" fill="#D9D9D9"/>
+                                <path d="M116 121.396C120.372 121.396 124.687 121.342 128.932 121.238C139.935 120.968 150.465 120.357 160.298 119.456C156.05 112.027 151.323 104.294 146.173 96.3956C143.089 91.665 139.853 86.8752 136.479 82.0561C133.971 78.4745 131.452 74.9706 128.932 71.5532C124.609 65.6902 120.281 60.0821 116 54.7743C111.719 60.0821 107.391 65.6902 103.068 71.5532C100.548 74.9706 98.029 78.4746 95.5212 82.0562C92.1468 86.8752 88.9113 91.665 85.827 96.3956C80.6775 104.294 75.9497 112.027 71.7017 119.456C81.5345 120.357 92.0653 120.968 103.068 121.238C107.313 121.342 111.628 121.396 116 121.396Z" fill="#D9D9D9"/>
+                                <path d="M71.7017 119.456C81.5345 120.357 92.0653 120.968 103.068 121.238C107.313 121.342 111.628 121.396 116 121.396C120.372 121.396 124.687 121.342 128.932 121.238C139.935 120.968 150.465 120.357 160.298 119.456M71.7017 119.456C75.9497 112.027 80.6775 104.294 85.827 96.3956C88.9113 91.665 92.1468 86.8752 95.5212 82.0562C98.029 78.4746 100.548 74.9706 103.068 71.5532C107.391 65.6902 111.719 60.0821 116 54.7743M71.7017 119.456C59.9036 118.374 49.1103 116.873 39.7125 115.039C16.2611 110.461 1.5 103.805 1.5 96.3955C1.5 88.9865 16.2611 82.3303 39.7125 77.7523M71.7017 119.456C65.7999 129.777 60.8241 139.512 56.9304 148.286C47.262 170.075 44.265 185.945 50.3255 190.188C56.3661 194.418 70.1832 186.242 87.2729 169.813M160.298 119.456C156.05 112.027 151.323 104.294 146.173 96.3956C143.089 91.665 139.853 86.8752 136.479 82.0561C133.971 78.4745 131.452 74.9706 128.932 71.5532C124.609 65.6902 120.281 60.0821 116 54.7743M160.298 119.456C166.37 130.074 171.461 140.071 175.403 149.041C184.806 170.441 187.665 185.994 181.674 190.188C175.668 194.394 161.973 186.334 145.018 170.092M160.298 119.456C172.538 118.334 183.697 116.76 193.337 114.831C216.179 110.261 230.5 103.693 230.5 96.3955C230.5 89.0977 216.179 82.5302 193.337 77.9598M116 54.7743C105.961 42.3285 96.173 31.5342 87.2729 22.9782C70.1832 6.54935 56.3661 -1.62706 50.3255 2.60262C44.265 6.84621 47.262 22.7166 56.9304 44.5048M116 54.7743C126.149 42.1929 136.04 31.2993 145.018 22.6995C161.973 6.45704 175.668 -1.60303 181.674 2.60266C187.665 6.79708 184.806 22.3504 175.403 43.7499M195.5 96.3955C195.5 140.026 160.13 175.396 116.5 175.396C72.8695 175.396 37.5 140.026 37.5 96.3955C37.5 52.765 72.8695 17.3955 116.5 17.3955C160.13 17.3955 195.5 52.765 195.5 96.3955Z" stroke="#D9D9D9" stroke-width="3"/>
+                                </svg>
+                            </div>
+                            <div class="cardHeader">
+                                <div class="imageWrappeer">
+                                    <img src="https://www.apu.edu.my/themes/custom/apu/images/icons/footer/footer-logo.png" alt="University Logo">
+                                </div>
+                                <span class="userRole">
+                                    {{ user_role }}
+                                </span>
+                            </div>
+                            <div class="cardContent">
+                                <div class="infoWrapper">
+                                    <span class="fullname">
+                                        {% if user.first_name and user.last_name %}
+                                            {{ user.first_name }} {{ user.last_name }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                    <span class="exInfo">
+                                        {% if user_role == 'lecturer' %}
+                                            <p>{{ extra_info }}</p>
+                                        {% else %}
+                                            <p>{{ extra_info.term }}</p>
+                                            <p>{{ extra_info.course }}</p>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <span class="profilePlaceholder">
+                                    <svg viewBox="0 0 118 139" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M30 85.5H88C104.292 85.5 117.5 98.7076 117.5 115V138.5H0.5V115C0.5 98.7076 13.7076 85.5 30 85.5ZM59 0.5C80.263 0.5 97.5 17.737 97.5 39C97.5 60.263 80.263 77.5 59 77.5C37.737 77.5 20.5 60.263 20.5 39C20.5 17.737 37.737 0.5 59 0.5Z" />
+                                    </svg>
+                                    <span class="card_id" id="card_id">ID: {{ card_id }}</span>
+                                </span>
+                            </div>
+                            <div class="cardFooter">
+                                <div class="barcode_container">
+                                    {% if user_barcode %}
+                                        <img src="{{ user_barcode }}" alt="User Barcode" srcset="">
+                                    {% else %}
+                                        <p>No barcode available.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="functionG1">Quick Action Button Placeholder</div>
                 </div>
             </div>
 
@@ -91,6 +142,8 @@
             </div>
             
         </header>
+
+        <div class="navCurtain"></div>
 
         <div class="bannerTicker">
             <div class="banner">
@@ -156,4 +209,12 @@
         {% block extra_scripts %}{% endblock %} 
         <script src="{% static 'js/global.js' %}"></script>
     </body>
-</html>                                                     
+</html>    
+
+<template id="profileDropdown">
+    <div class="dropDownContentWrapper">
+        <div class="functionG1">Navigation Links</div>
+        <div class="functionG1">ABC</div>
+        <div class="functionG1">Quick Action Button Placeholder</div>
+    </div>
+</template>
