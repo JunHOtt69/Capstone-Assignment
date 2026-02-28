@@ -238,7 +238,6 @@ p{
 }
 
 .dropDownContentWrapper{
-    display: flow-root;
     box-sizing: border-box;
     width: 100%;
     height: max-content;
@@ -246,6 +245,8 @@ p{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 5vw;
+    background-color: transparent;
+    align-items: start;
     background-color: transparent;
 }
 
@@ -535,6 +536,15 @@ header li a{
     margin: 0.5vw 1vw 0.5vw 2vw;
 }
 
+.cardContainer{
+    width: max-content;
+    height: max-content;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0;
+}
+
 .studentCard{
     background-color: rgba(var(--dark-blue), 1);
     width: 450px;
@@ -552,6 +562,8 @@ header li a{
     letter-spacing: 1px;
     border: 1px solid rgba(var(--black), 0.2);
     position: relative;
+    /* transform: scale(0.8); */
+    margin: 0;
 }
 
 .studentCard span,
@@ -559,6 +571,7 @@ header li a{
     font-family: "Nunito Sans", sans-serif;
     font-size: 14px;
     letter-spacing: 1px;
+    text-align: justify;
 }
 
 .studentCard .watermark{
@@ -633,6 +646,9 @@ header li a{
     gap: 5px;
     font-weight: 600;
     z-index: 2;
+    width: 290px; 
+    max-width: 290px; 
+    flex-shrink: 0;
 }
 
 .infoWrapper .fullname{
@@ -652,7 +668,7 @@ header li a{
 .profilePlaceholder{
     background-color: transparent;
     overflow: hidden;
-    width: 140px;
+    max-width: 140px;
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
@@ -762,5 +778,64 @@ header li a{
         transform: translateX(0);
         width: 13vw;
         max-height: 15vw;
+    }
+}
+
+@media screen and (max-width: 1920px) {
+    .studentCard{
+        width: 360px;
+        height: 200px;
+        border-radius: 12px;
+        font-size: 9.0px;
+    }
+
+    .studentCard span,
+    .studentCard p{
+        font-size: 11.2px;
+    }
+
+    .studentCard .watermark svg{
+        width: 80px;
+        height: 80px;
+    }
+
+    .cardHeader{
+        padding: 8px 16px 4px;
+    }
+
+    .cardHeader .imageWrappeer img{
+        width: 120px;
+        height: auto;
+    }
+
+    .cardContent{
+        min-height: 0;
+        width: 100%;
+        padding: 0px 16px;
+        gap: 16px;
+    }
+
+    .cardContent .infoWrapper{
+        gap: 4px;
+        width: 232px; 
+        max-width: 232px; 
+    }
+
+    .infoWrapper .fullname{
+        font-size: 19.2px;
+        margin-bottom: 8px;
+    }
+
+    .infoWrapper .exInfo{
+        gap: 4px;
+    }
+
+    .profilePlaceholder{
+        max-width: 112px;
+        gap: 4px;
+    }
+
+    .cardFooter .barcode_container{
+        padding: 4px 16px 8px;
     }
 }
