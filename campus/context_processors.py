@@ -13,6 +13,7 @@ def card_context(request):
     role = None
     card_id = None
     barcode_base64 = None
+    extra_info = None
 
     group_names = set(u.groups.values_list('name', flat=True))
     print('hello1')
@@ -23,9 +24,17 @@ def card_context(request):
         elif any('lecturer' in g.lower() for g in group_names) and hasattr(u, 'lecturer_profile'):
             role = 'lecturer'
             card_id = u.lecturer_profile.lc_id
+            department = u.lecturer_profile.dept_id.dept_name if u.lecturer_profile.dept_id else 'N/A'
+            extra_info = f"Head of department of {department}" if u.lecturer_profile.is_head else department
         elif any('student' in g.lower() for g in group_names) and hasattr(u, 'student_profile'):
             role = 'student'
             card_id = u.student_profile.tp_id
+            term = u.course_enrollment.term_id.intake_code
+            course = u.course_enrollment.term_id.course_id.course_name
+            extra_info = {
+                'term' : term if term else 'N/A',
+                'course' : course if course else 'N/A',
+            }
 
         if card_id:
             code128 = barcode.get_barcode_class('code128')
@@ -45,4 +54,5 @@ def card_context(request):
         'user_role': role,
         'card_id' : card_id,
         'user_barcode' : barcode_base64 if barcode_base64 else None,
+        'extra_info' : extra_info
     }

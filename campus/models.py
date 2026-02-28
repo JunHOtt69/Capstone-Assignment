@@ -88,7 +88,7 @@ class course(models.Model):
 
 class course_enrollment(models.Model):
     id = models.AutoField(primary_key = True)
-    student	= models.ForeignKey(User, on_delete=models.CASCADE)
+    student	= models.OneToOneField(User, on_delete=models.CASCADE, related_name='course_enrollment')
     term	= models.ForeignKey('academic_term', on_delete=models.CASCADE)
     enrollment_status = models.CharField(max_length=20)
     class Meta:
@@ -106,6 +106,13 @@ class departments(models.Model):
     dept_id = models.AutoField(primary_key = True)
     dept_name	= models.CharField(max_length=100)
     dept_code	= models.CharField(max_length=10, unique=True)
+    head = models.OneToOneField(
+        'lecturer_profiles',
+        on_delete= models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='headed_department'
+    )
     class Meta:
         db_table = 'departments'
 
