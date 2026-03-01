@@ -206,7 +206,8 @@ def create_user_manually(request):
         "dept" : dept,
         "available_term" : available_term,
         "form":  None,
-        "selected_role": None
+        "selected_role": None,
+        "error" : None,
     }
 
     if request.method == 'POST':
@@ -218,6 +219,8 @@ def create_user_manually(request):
         request.session['selected_role_id'] = role_id
 
         try:
+            users_to_invite = []
+
             with transaction.atomic():
                 for i in range(len(first_names)):
                     email = emails[i]
@@ -233,42 +236,18 @@ def create_user_manually(request):
                         last_name = last_names[i],
                     )
 
+                    users_to_invite.append({
+                        'email': emails[i],
+                        'first_name': first_names[i],
+                        'user': new_user
+                    })
+
                     unique_id = generate_user_id(id_to_name.get(str(role_id)))
                     new_user.set_unusable_password()
                     new_user.save()
 
                     #schedule email after transaction succeeds
-                    def send_invite(to_email = email, first_name = first_names[i], user_id = new_user.id):
-                        user = User.objects.get(id=user_id)
-                        link = build_set_password_link(request, user)
-
-                        subject = "Set your Smart Campus password"
-                        from_email=None
-                        to = [to_email]
-                        
-                        html_content = render_to_string(
-                            'emails/set_password_email.html',
-                            {
-                                "first_name" : first_name,
-                                "reset_link": link,
-                            },
-                        )
-                        text_content = f"""
-Hi{first_name},
-Your administrative account for the Smart Campus Management System has been successfully created.
-
-To get started, please click the button below to set your account password.
-{link}
-
-If you have any issues accessing your account, please contact the IT Helpdesk.
-"""
-                        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
-                        msg.attach_alternative(html_content, "text/html")
-                        msg.send()
-                        print(f"New User Created. Set Password: {link}")
-                    transaction.on_commit(send_invite)
                     
-
                     if str(role_id) == str(groups.get('admin')):
                         new_user.is_staff = True
                         new_user.save()
@@ -317,7 +296,48 @@ If you have any issues accessing your account, please contact the IT Helpdesk.
                         except academic_term.DoesNotExist:
                             raise Exception(f"The selected academic term for student {i+1} does not exists. ")
 
-            messages.success(request, f'Successfully created {len(first_names)} user(s)!')
+            email_errors = []
+            for invite in users_to_invite:
+                try: 
+                    user = invite['user']
+                    link = build_set_password_link(request, user)
+
+                    subject = "Set your Smart Campus password"
+                    from_email=None
+                    to = [invite['email']]
+                    
+                    html_content = render_to_string(
+                        'emails/set_password_email.html',
+                        {
+                            "first_name" : invite['first_name'],
+                            "reset_link": link,
+                        },
+                    )
+                    text_content = f"""
+    Hi{invite['first_name']},
+    Your administrative account for the Smart Campus Management System has been successfully created.
+
+    To get started, please click the button below to set your account password.
+    {link}
+
+    If you have any issues accessing your account, please contact the IT Helpdesk.
+    """
+                    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send()
+                    print(f"New User Created. Set Password: {link}")
+                    
+                except Exception as e: 
+                    email_errors.append(f"{invite['email']}: {e}")
+                    
+            if email_errors:
+                messages.warning(
+                    request,
+                    "Users were created, but email could not be sent. Please check email settings / resend."
+                )
+                print("Email sending errors:", email_errors)
+            else:
+                messages.success(request, f'Successfully created {len(first_names)} user(s)!')
 
             return redirect('create_user_manually')
         
@@ -326,6 +346,8 @@ If you have any issues accessing your account, please contact the IT Helpdesk.
             print(f"Error during user creation: {e}")
             messages.error(request, f"An error occurred: {str(e)}")
             context["selected_role"] = request.session.get('role_id')
+            context['error'] = f"An error occurred: {str(e)}"
+            return render(request, "partials/create_user_manually.html", context)
 
     else: 
         context["form"] = UserRowForm()

@@ -16,8 +16,8 @@
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_lecturer' %}active{% endif %}" href="">
                 Lecturer Management
             </a>
-            <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_academic_term' %}active{% endif %}" href="{% url 'manage_academic_term'%}">
-                Academic Term Management
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'student_enrollment' %}active{% endif %}" href="">
+                Student Enrollment
             </a>
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_academic_term' %}active{% endif %}" href="{% url 'manage_academic_term'%}">
                 Academic Term Management
