@@ -23,31 +23,31 @@
                     {% if user.is_authenticated %}
                         <li class="{% if request.resolver_match.url_name in 'admin_dashboard lecturer_dashboard student_dashboard' %}active{% endif %}">
                         
-                            <a>Dashboard</a>
+                            <a id="i-Dashboard">Dashboard</a>
                         </li>
                         <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                         
-                            <a>Announcements</a>
+                            <a id="i-Announcements">Announcements</a>
                         </li>
                         
                         {% if "lecturer" in user.groups.all.0.name or "lecturer" in request.resolver_match.url_name or "student" in user.groups.all.0.name or "student" in request.resolver_match.url_name %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                             
-                                <a>TimeTable</a>
+                                <a id="i-Timetable">TimeTable</a>
                             </li>
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                             
-                                <a>Attendance</a>
+                                <a id="i-Attendance">Attendance</a>
                             </li>
                         {% endif %}
                         <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                         
-                            <a>Services</a>
+                            <a id="i-Services">Services</a>
                         </li>
                         {% if "admin" in user.groups.all.0.name or "admin" in request.resolver_match.url_name %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                             
-                                <a>Management</a>
+                                <a id="i-Management">Management</a>
                             </li>
                         {% endif %}
 
@@ -55,11 +55,11 @@
 
                     <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                     
-                        <a href="{% url 'about' %}">About</a>
+                        <a href="{% url 'about' %}"  id="i-About">About</a>
                     </li>
                     <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                     
-                        <a href="{% url 'help' %}">Help</a>
+                        <a href="{% url 'help' %}"  id="i-Help">Help</a>
                     </li>
                 </ul>
             </div>
@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            <div class="profileWrapper">
+            <div class="profileWrapper" id="i-Profile">
                 {% if user.is_authenticated %}
                     <p class="username">{{ user.first_name }} {{ user.last_name }}</p>
                 {% else %}
@@ -166,7 +166,7 @@
     </div>
 </template>
 
-<template id="profileDropdown">
+<template id="i-Profile-dropdown">
     <div class="cardContainer">
         <div class="studentCard">
             <div class="watermark">
