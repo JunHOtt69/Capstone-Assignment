@@ -1,6 +1,7 @@
-const navItems = document.querySelectorAll('.navbarContent li')
-const navDropdown = document.querySelector('.navbarDropdown')
-const profileWrapper = document.querySelector('.profileWrapper')
+const navItems = document.querySelectorAll('.navbarContent li');
+const navDropdown = document.querySelector('.navbarDropdown');
+const navContent = document.querySelector('.dropDownContentWrapper');
+const profileWrapper = document.querySelector('.profileWrapper');
 const header = document.querySelector('header');
 let transitionTimeout;
 let hoverTimeout;
@@ -21,6 +22,10 @@ const toggleDropdown = {
             abortController.abort();
             abortController = new AbortController();
             navOpened = true;
+
+            const ItemR1 = navItems[0].getBoundingClientRect();
+            const leftInVw = (ItemR1.left / window.innerWidth) * 100;
+            if(leftInVw < 30) navContent.style.setProperty('--navItemLeft', `${ItemR1.left }px`);
 
             requestAnimationFrame(() => {
                 this.setHeight(e);
@@ -64,21 +69,29 @@ const toggleDropdown = {
 navItems.forEach(item => {
     item.addEventListener('mouseenter', () => {
         toggleDropdown.open(navDropdown);
-        console.log('extending');
     });
     item.addEventListener('mouseleave', () => {
         toggleDropdown.close(navDropdown);
-        console.log('shrinking');
     });
 });
 
-header.addEventListener('mousemove', () => { 
-    if(!navOpened) return;
-    else if(navOpened) isMouseHovering = true;
-});
+window.addEventListener('mousemove', (e) => {
+    const rect = header.getBoundingClientRect();
+    const dropdownRect = navDropdown.getBoundingClientRect();
+    let insideX, insideY;
 
-header.addEventListener('mouseleave', () => { 
-    if(navOpened) isMouseHovering = false;
+    insideX = e.clientX >= (rect.left + 20) && e.clientX <= (rect.right - 20);
+    if(navOpened){
+        insideY = e.clientY >= (rect.top + 20) && e.clientY <= dropdownRect.bottom;
+    }else{
+        insideY = e.clientY >= (rect.top + 20) && e.clientY <= rect.bottom;
+    }
+
+    isMouseHovering = insideX && insideY;
+    if(navOpened && !isMouseHovering){
+        isMouseHovering = false;
+        toggleDropdown.close(navDropdown);
+    }
 });
 
 navDropdown.addEventListener('mouseenter', () => toggleDropdown.open(navDropdown));
