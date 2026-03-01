@@ -331,7 +331,9 @@ p{
     opacity: 1;
 }
 
-.dropDownContentWrapper .title{
+.dropDownContentWrapper .title, 
+.dropDownContentWrapper .title a,
+.dropDownContentWrapper .title a:hover{
     font-size: var(--h4-fontsize);
     margin-bottom: 0.3vw;
 }

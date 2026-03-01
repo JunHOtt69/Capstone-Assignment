@@ -23,14 +23,22 @@
                     {% if user.is_authenticated %}
                         <li class="{% if request.resolver_match.url_name in 'admin_dashboard lecturer_dashboard student_dashboard' %}active{% endif %}">
                         
-                            <a id="i-Dashboard">Dashboard</a>
+                            <a 
+                            {% if user_role == 'admin' %}
+                                href="{% url 'admin_dashboard' %}"
+                            {% elif user_role == 'lecturer' %}
+                                href="{% url 'lecturer_dashboard' %}"
+                            {% elif user_role == 'student' %}
+                                href="{% url 'student_dashboard' %}"
+                            {% endif %}
+                            id="i-Dashboard">Dashboard</a>
                         </li>
                         <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                         
                             <a id="i-Announcements">Announcements</a>
                         </li>
                         
-                        {% if "lecturer" in user.groups.all.0.name or "lecturer" in request.resolver_match.url_name or "student" in user.groups.all.0.name or "student" in request.resolver_match.url_name %}
+                        {% if user_role == 'student' or user_role == 'lecturer' %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                             
                                 <a id="i-Timetable">TimeTable</a>
@@ -44,9 +52,12 @@
                         
                             <a id="i-Services">Services</a>
                         </li>
-                        {% if "admin" in user.groups.all.0.name or "admin" in request.resolver_match.url_name %}
-                            <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                            
+                        {% if user_role == 'admin' %}
+                            <li class="
+                            {% if request.resolver_match.url_name in 'user_management create_user_manually academic_management manage_academic_term' %}
+                                active
+                            {% endif %}
+                            ">
                                 <a id="i-Management">Management</a>
                             </li>
                         {% endif %}
@@ -61,7 +72,6 @@
                     {% endif %}
                     
                     <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                    
                         <a href="{% url 'help' %}"  id="i-Help">Help</a>
                     </li>
                 </ul>
@@ -161,37 +171,75 @@
     </body>
 </html>    
 
-<template>
-    <div class="dropDownContentWrapper">
-        <div class="functionG1">Navigation Links</div>
-        <div class="functionG1">ABC</div>
-        <div class="functionG1">Quick Action Button Placeholder</div>
+<template id="i-Help-dropdown">
+    {% if user_role == 'admin' %}
+    <div class="functionG1">
+        <span class="title">Knowledge Managemenet</span>
+        <span class="item"><a href="">Manage FAQ</a></span>
+        <span class="item"><a href="">Config Chatbot</a></span>
+    </div>
+
+    <div class="functionG2">
+        <span class="title">System Support</span>
+        <span class="item"><a href="">Support Tickets</a></span>
+        <span class="item"><a href="">System Logs</a></span>
+    </div>
+    {% elif user_role == 'student' or user_role == 'lecturer' %}
+    <div class="functionG1">
+        <span class="title">Self-Service Support</span>
+        <span class="item"><a href="">FAQ</a></span>
+    </div>
+
+    <div class="functionG2">
+        <span class="title">Interactive Support</span>
+        <span class="item"><a href="">Campus AI Assistant</a></span>
+        <span class="item"><a href="">Submit Ticket</a></span>
+    </div>
+    {% endif %}
+</template>
+
+<template id="i-Management-dropdown">
+    <div class="functionG1">
+        <span class="title"><a href="{% url 'user_management' %}">User Management</a></span>
+        <span class="item"><a href="">User CRUD</a></span>
+        <span class="item"><a href="">Bulk User Creation</a></span>
+        <span class="item"><a href="{% url 'create_user_manually' %}">Create User Manually</a></span>
+    </div>
+
+    <div class="functionG2">
+        <span class="title"><a href="{% url 'academic_management' %}">Academic Management</a></span>
+        <span class="item"><a href="{% url 'manage_academic_term' %}">Academic term</a></span>
+        <span class="item"><a href="">Departments</a></span>
+        <span class="item"><a href="">Course</a></span>
+        <span class="item"><a href="">Timetable Scheduling</a></span>
     </div>
 </template>
 
 <template id="i-Services-dropdown">
-    <div class="functionG1">
-        <span class="title">Quick Actions</span>
-        <span class="item"><a href="">View All Announcement</a></span>
-        <span class="item"><a href="">Manage Announcement</a></span>
-        <span class="item"><a href="">Publish Announcement</a></span>
-    </div>
-    <div class="functionG2">
-        <span class="title">Latest Announcements</span>
-        <div class="messageContainer">
-            {% if announcements %}
-                {% for a in announcements %}
-                    <div class="message">
-                        <p class="a_title">{{ a.title }}</p>
-                        <p class="announcement"> {{ a.content }} </p>
-                        <p class="time">{{ a.publish_time }}</p>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <span>No recent announcements.</span>
-            {% endif %}
+    {% if user_role == 'admin' %}
+        <div class="functionG1">
+            <span class="title">Management &amp; Operations</span>
+            <span class="item"><a href="">Review Booking Request</a></span>
+            <span class="item"><a href="">Manaage Points of Interest</a></span>
         </div>
-    </div>
+
+        <div class="functionG2">
+            <span class="title">Infrastructure &amp; Analytics</span>
+            <span class="item"><a href="">Facility Status</a></span>
+            <span class="item"><a href="">Campus Navigation Config</a></span>
+        </div>
+    {% elif user_role == 'student' or user_role == 'lecturer' %}
+        <div class="functionG1">
+            <span class="title">Campus Resources</span>
+            <span class="item"><a href="">Book Facility</a></span>
+            <span class="item"><a href="">Booking History</a></span>
+        </div>
+        <div class="functionG2">
+            <span class="title">Campus Guide</span>
+            <span class="item"><a href="">Campus Navigation</a></span>
+            <span class="item"><a href="">CPoints of Interest</a></span>
+        </div>
+    {% endif %}
 </template>
 
 <template id="i-Announcements-dropdown">
@@ -220,19 +268,22 @@
 </template>
 
 <template id="i-Dashboard-dropdown">
-    <div class="functionG1">
-        <span class="title">Quick Actions</span>
-        <span class="item"><a href="{% url 'create_user_manually' %}">Add New User</a></span>
-        <span class="item"><a href="">Sytem Logs</a></span>
-        <span class="item"><a href="">Academic Management</a></span>
-    </div>
-    <div class="functionG2">
-        <span class="title">Service Actions</span>
-        <span class="item"><a href="">Reply Feedback Ticket</a></span>
-        <span class="item"><a href="">Update Announcement</a></span>
-        <span class="item"><a href="">Manage FAQ Content</a></span>
-        <span class="item"><a href="">Timetable Scheduling</a></span>
-    </div>
+    {% if user_role == 'admin' %}
+        <div class="functionG1">
+            <span class="title">Quick Actions</span>
+            <span class="item"><a href="{% url 'create_user_manually' %}">Add New User</a></span>
+            <span class="item"><a href="">Sytem Logs</a></span>
+            <span class="item"><a href="">Academic Management</a></span>
+        </div>
+        <div class="functionG2">
+            <span class="title">Service Actions</span>
+            <span class="item"><a href="">Reply Feedback Ticket</a></span>
+            <span class="item"><a href="">Update Announcement</a></span>
+            <span class="item"><a href="">Manage FAQ Content</a></span>
+            <span class="item"><a href="">Timetable Scheduling</a></span>
+        </div>
+    {% elif user_role == 'student' or user_role == 'lecturer' %}
+    {% endif %}
 </template>
 
 <template id="i-Profile-dropdown">
