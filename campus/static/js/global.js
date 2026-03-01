@@ -25,15 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let isMouseHovering = false;
     let abortController = new AbortController();
     const templateMap = {};
+    let currentTemplateId = null;
 
     templates.forEach(template => {
-        templateMap[template.id] = template.content.cloneNode(true);
+        templateMap[template.id] = template.content;
     });
 
     navItems.forEach(item => {
         item.addEventListener('mouseenter', () => {
-            let template = templateMap[`${item.id}-dropdown`];
-            toggleDropdown.open(navDropdown, template ? template : null, true);
+            const link = item.querySelector('a');
+            const template = templateMap[`${link.id}-dropdown`];
+            const templateId = template? `${link.id}-dropdown`: null;
+            toggleDropdown.open(navDropdown, template ? template : null, templateId, true);
         });
         
         item.addEventListener('mouseleave', () => {
@@ -47,47 +50,118 @@ document.addEventListener('DOMContentLoaded', () => {
             element.style.setProperty('--dropdown-height', `${val}px`);
         },
 
-        open(e, template, switchDropdown = false) {
+        open(e, template, templateId, switchDropdown = false) {
+            let timeout = 200;
+            if(navOpened && currentTemplateId === templateId) return;
+            if(switchDropdown && navOpened){
+                timeout = 0;
+            }
             clearTimeout(transitionTimeout);
 
             hoverTimeout = setTimeout(() => {
                 abortController.abort();
                 abortController = new AbortController();
-                navOpened = true;
-                    
-                if(switchDropdown){
+                currentTemplateId = templateId; 
+                
+                if(switchDropdown && navOpened){
+                    if(template){
+                        let currentContents = Array.from(navContent.querySelectorAll('.functionG1, .functionG2, .profileG1, .cardContainer'));
+                        currentContents.filter(item => item !== null);
+                        if(currentContents.length > 0){
+                            
+                            requestAnimationFrame(async () => {
+                                navContent.setAttribute('data-switching', 'start');
+
+                                const transitionPromises = currentContents.map(item => {
+                                    return new Promise(resolve => {
+                                        const timer = setTimeout(resolve, 300);
+                                        item.addEventListener('transitionend', () => {
+                                            clearTimeout(timer);
+                                            resolve(); 
+                                        }, { once : true});
+                                    });
+                                });
+
+                                await Promise.all(transitionPromises);
+
+                                navContent.innerHTML = ``;
+                                const clone = template.cloneNode(true);
+
+                                navContent.appendChild(clone);
+                                navContent.setAttribute('data-switching', 'none');
+                                
+                                requestAnimationFrame(() => {
+                                    
+
+                                    this.setHeight(e);
+                                    e.setAttribute('data-open', 'true');
+                                    e.classList.add('animatingExtend'); 
+                                    document.body.classList.toggle('nav-open', true);
+                                    navContent.setAttribute('data-switching', 'end');
+                                    e.addEventListener('transitionend', () => {
+                                        e.classList.remove('animatingExtend');
+                                    }, { once: true, signal: abortController.signal });
+                                    navOpened = true;
+                                });
+                                
+                            });
+                        };
+                    }else{
+                        navContent.innerHTML = ``;
+                        console.log('no template');
+                        isMouseHovering = false;
+                        toggleDropdown.close(navDropdown);
+                        return;
+                    }
+                }
+
+                else if(switchDropdown && !navOpened){
                     if(template){
                         navContent.innerHTML = ``;
                         const clone = template.cloneNode(true);
+                        contents = [];
+                        contents.push(clone.querySelector('.functionG1'));
+                        contents.push(clone.querySelector('.functionG2'));
+                        contents.push(clone.querySelector('.cardContainer'));
+                        contents.push(clone.querySelector('.profileG1'));
+                        contents = contents.filter(item => item !== null);
+                        contents.forEach(item => item.classList.toggle('switching', true));
+
                         navContent.appendChild(clone);
+                        navContent.setAttribute('data-switching', 'end');
                     }else{
                         navContent.innerHTML = ``;
+                        console.log('no template');
+                        isMouseHovering = false;
+                        toggleDropdown.close(navDropdown);
+                        return;
                     }
                 }
 
                 const ItemR1 = navItems[0].getBoundingClientRect();
                 const leftInVw = (ItemR1.left / window.innerWidth) * 100;
-                if(leftInVw < 30) navContent.style.setProperty('--navItemLeft', `${ItemR1.left }px`);
+                if(leftInVw < 35) navContent.style.setProperty('--navItemLeft', `${ItemR1.left }px`);
 
                 requestAnimationFrame(() => {
                     this.setHeight(e);
                     e.setAttribute('data-open', 'true');
                     e.classList.add('animatingExtend'); 
-                    document.body.classList.add('nav-open');
+                    document.body.classList.toggle('nav-open', true);
 
                     // Listen for the exact moment the transition ends
                     e.addEventListener('transitionend', () => {
                         e.classList.remove('animatingExtend');
                     }, { once: true, signal: abortController.signal });
+                    navOpened = true;
                 });
                 
-            }, 200);
+            }, timeout );
         },
 
         close(e){
             clearTimeout(hoverTimeout);
             clearTimeout(transitionTimeout);
-
+            
             transitionTimeout = setTimeout(() => {
                 if(isMouseHovering) return;
                 abortController.abort();
@@ -115,9 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         insideX = e.clientX >= (rect.left + 20) && e.clientX <= (rect.right - 20);
         if(navOpened){
-            insideY = e.clientY >= (rect.top + 20) && e.clientY <= dropdownRect.bottom;
+            insideY = e.clientY >= (rect.top + 10) && e.clientY <= dropdownRect.bottom;
         }else{
-            insideY = e.clientY >= (rect.top + 20) && e.clientY <= rect.bottom;
+            insideY = e.clientY >= (rect.top + 10) && e.clientY <= rect.bottom;
         }
 
         isMouseHovering = insideX && insideY;
@@ -132,7 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     profileWrapper.addEventListener('mouseenter', () => {
         let template = templateMap[`${profileWrapper.id}-dropdown`];
-        toggleDropdown.open(navDropdown, template ? template : null, true);
+        const templateId = template? `${profileWrapper.id}-dropdown`: null;
+        toggleDropdown.open(navDropdown, template ? template : null, templateId, true);
     });
     profileWrapper.addEventListener('mouseleave', () => toggleDropdown.close(navDropdown));
 });

@@ -226,6 +226,7 @@ p{
     position: absolute;
     top: 100%;
     width: 100%;
+    min-height: 0;
     height: var(--dropdown-height);
     max-height: 30vh;
     background-color: white;
@@ -261,10 +262,12 @@ p{
 
     box-sizing: border-box;
     width: auto;
+    min-height: 0;
+
     height: max-content;
-    padding: 1vw 0;
+    padding: 0.5vw 0 1.5vw;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     gap: 5vw;
     background-color: transparent;
@@ -274,6 +277,7 @@ p{
 }
 
 .dropDownContentWrapper .functionG1,
+.dropDownContentWrapper .functionG2,
 .dropDownContentWrapper .profileG1{
     background-color: transparent;
     height: 100%;
@@ -289,9 +293,35 @@ p{
     gap: 0.2vw;
 }
 
-.profileG1{
+.dropDownContentWrapper .functionG1,
+.dropDownContentWrapper .functionG2,
+.dropDownContentWrapper .profileG1,
+.cardContainer {
+    opacity: 0;
+    transform: translateY(10%) scale(0.95);
+    transition: 
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, 
+        opacity 0.3s ease 0.1s;
+}
+
+.dropDownContentWrapper[data-switching='start'] .functionG1,
+.dropDownContentWrapper[data-switching='start'] .functionG2,
+.dropDownContentWrapper[data-switching='start'] .cardContainer,
+.dropDownContentWrapper[data-switching='start'] .profileG1{
+    transform: translateY(0) scale(0.95) ;
+    opacity: 0 ;
+}
+
+.dropDownContentWrapper[data-switching='end'] .functionG1,
+.dropDownContentWrapper[data-switching='end'] .functionG2,
+.dropDownContentWrapper[data-switching='end'] .cardContainer,
+.dropDownContentWrapper[data-switching='end'] .profileG1{
+    transform: translateY(0) scale(1) ;
+    opacity: 1;
+}
+
+.dropDownContentWrapper .profileG1{
     width: 15vw;
-    background-color: blue;
 }
 
 .dropDownContentWrapper .title{

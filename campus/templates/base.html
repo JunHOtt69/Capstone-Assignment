@@ -52,11 +52,14 @@
                         {% endif %}
 
                     {% endif %}
-
-                    <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                     
-                        <a href="{% url 'about' %}"  id="i-About">About</a>
-                    </li>
+                    {% if not user.is_authenticated %}
+                        <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
+                        
+                            <a href="{% url 'about' %}"  id="i-About">About</a>
+                        </li>
+                    {% endif %}
+                    
                     <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                     
                         <a href="{% url 'help' %}"  id="i-Help">Help</a>
@@ -163,6 +166,22 @@
         <div class="functionG1">Navigation Links</div>
         <div class="functionG1">ABC</div>
         <div class="functionG1">Quick Action Button Placeholder</div>
+    </div>
+</template>
+
+<template id="i-Dashboard-dropdown">
+    <div class="functionG1">
+        <span class="title">Quick Actions</span>
+        <span class="item"><a href="{% url 'create_user_manually' %}">Add New User</a></span>
+        <span class="item"><a href="">Sytem Logs</a></span>
+        <span class="item"><a href="">Academic Management</a></span>
+    </div>
+    <div class="functionG2">
+        <span class="title">Service Actions</span>
+        <span class="item"><a href="">Reply Feedback Ticket</a></span>
+        <span class="item"><a href="">Update Announcement</a></span>
+        <span class="item"><a href="">Manage FAQ Content</a></span>
+        <span class="item"><a href="">Timetable Scheduling</a></span>
     </div>
 </template>
 
