@@ -19,8 +19,14 @@
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_academic_term' %}active{% endif %}" href="{% url 'manage_academic_term'%}">
                 Academic Term Management
             </a>
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_academic_term' %}active{% endif %}" href="{% url 'manage_academic_term'%}">
+                Academic Term Management
+            </a>
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_courses' %}active{% endif %}" href="">
                 Courses management
+            </a>
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_departments' %}active{% endif %}" href="">
+                Departments management
             </a>
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_rules' %}active{% endif %}" href="">Academic Rules</a>
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_subjects' %}active{% endif %}" href="">Subjects</a>
