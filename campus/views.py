@@ -1,81 +1,126 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login as auth_login
-from django.contrib import messages
 from django.db import transaction
+from django.db.models import Q
+from django.core.mail import EmailMultiAlternatives
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.urls import reverse_lazy
+from django.urls import reverse
+#from django.utils.decorators import method_decorator
+from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
-import secrets
-import string
-
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.contrib.auth.views import LoginView, PasswordResetView
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
-from .forms import LoginForm, PasswordResetRequestForm, PasscordVerificationForm, SetNewPasswordForm, UserRowForm, AcademicTermForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment
+import datetime
+import random
+from .forms import UserRowForm, AcademicTermForm
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles
+from .decorators import role_required
 
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    success_url = "/accounts/password_reset/done/"
+    
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        User = get_user_model()
+        users = User.objects.filter(username=email, is_active=True)
+
+        for user in users:
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token=default_token_generator.make_token(user)
+            path = reverse("password_reset_confirm", kwargs={"uidb64": uidb64, "token": token})
+            link = self.request.build_absolute_uri(path)
+
+            from_email = None
+            group = user.groups.first()
+            role = group.name if group else "User"
+            subject = "Reset your Smart Campus password"
+            text_content = f"""Hi {user.first_name},
+We received a request to reset the password for your {role} account associated with Asia Pacific University.
+Note: This link is time-sensitive and will expire in 15 minutes.
+{link}
+If you did not request a password reset, please disregard this email or contact IT support if you have concerns about your account security.
+"""
+            html_content = render_to_string("emails/forget_password_email.html",{
+                "first_name": user.first_name,
+                "role": role,
+                "reset_link": link,
+            })
+
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            
+        return super().form_valid(form)
+
+# if applying role based view on class:
+#@method_decorator(role_required(allowed_roles=['admin']), name='dispatch')
+class RoleBasedLoginView(LoginView):
+    template_name = "registration/login.html"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        remember_me = form.cleaned_data.get('remember_me')
+
+        if remember_me: 
+            self.request.session.set_expiry(1 * 7 * 24 * 60 * 60)
+        else:
+            self.request.session.set_expiry(0)
+
+        return response
+    
+    def get_success_url(self):
+        user = self.request.user
+
+        # redirect based on group name
+        if user.groups.filter(name="admin").exists():
+            return reverse_lazy("admin_dashboard")
+        if user.groups.filter(name="lecturer").exists():
+            return reverse_lazy("lecturer_dashboard")
+        if user.groups.filter(name="student").exists():
+            return reverse_lazy("student_dashboard")
+
+        # fallback
+        else: 
+            logout(self.request)
+            return reverse_lazy("account_error")
 
 # Create your views here.
-
 def home(request): 
     return render(request, "home.html")
 
 def about(request): 
     return render(request, "about.html")
 
+@login_required
+def account_error(request):
+    return render(request, "account_error.html")
+
+@role_required(allowed_roles=['admin'])
+def admin_dashboard(request):
+    return render(request, "dashboards/admin_dashboard.html")
+
+@role_required(allowed_roles=['lecturer'])
+def lecturer_dashboard(request):
+    return render(request, "dashboards/lecturer_dashboard.html")
+
+@role_required(allowed_roles=['student'])
+def student_dashboard(request):
+    return render(request, "dashboards/student_dashboard.html")
+
 def help(request): 
     return render(request, "help.html")
 
-def login(request): 
-    if request.method == "POST":
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data.get('email')
-            password = form.cleaned_data.get('password')
-
-            user = authenticate(request, username=email, password=password)
-
-            if user is not None:
-                auth_login(request, user)
-
-                if not request.POST.get('remember_me'):
-                    request.session.set_expiry(0)
-                
-                if user.groups.filter(name = 'admin').exists():
-                    return redirect('admin_dashboard')
-                elif user.groups.filter(name = 'admin').exists():
-                    return redirect('lecturer_dashboard')
-                else:
-                    return redirect('student_dashboard')
-            else:
-                messages.error(request, "Invalid email or password.")
-    else: 
-        form = LoginForm()
-    return render(request, "partials/login.html", {"form": form})
-
-def password_reset_view(request, step=1):
-    if step == 1:
-        form = PasswordResetRequestForm()
-        template = "partials/step1_form.html"
-    elif step == 2:
-        form = PasscordVerificationForm()
-        template = "partials/step2_form.html"
-    elif step == 3:
-        form = SetNewPasswordForm()
-        template = "partials/step3_form.html"
-    
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        html = render_to_string(template, {'form': form}, request=request)
-        return JsonResponse({'html': html})
-    
-    # Fallback for direct page load
-    return render(request, template, {"form": form})
-
 def navigation(request): 
     return render(request, "navigation.html")
-
-def editmap(request): 
-    return render(request, "editmap.html")
 
 def attendance(request): 
     return render(request, "attendance.html")
@@ -83,10 +128,11 @@ def attendance(request):
 def user_management(request):
     return render(request, "user_management.html")
 
-def generate_random_password(length=15):
-    #generate a random password in a length of 15 characters
-    alphabet = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(secrets.choice(alphabet) for i in range(length))
+def build_set_password_link(request, user):
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    path = reverse("password_reset_confirm", kwargs = {"uidb64": uidb64, "token": token})
+    return request.build_absolute_uri(path)
 
 def check_email_exists(request):
     emails = request.GET.getlist('emails[]')
@@ -94,27 +140,70 @@ def check_email_exists(request):
         Q(username__in = emails) | Q (email__in = emails)
     )
     
-    taken = list(
-        existing.values_list('username', flat=True)
-    )
+    taken_set = set(existing.values_list('username', flat=True)) | \
+                set(existing.values_list('email', flat=True))
 
-    taken = [e for e in emails if e in taken] or list(existing.values_list('email', flat=True))
+    taken_details = []
+
+    for index, email in enumerate(emails):
+        if email in taken_set:
+            taken_details.append({
+                'email': email,
+                'index': index + 1 
+            })
     
     return JsonResponse({
-        'is_taken' : existing.exists(),
-        'taken_emails' : list(set(taken)),
+        'is_taken' : len(taken_details) > 0,
+        'taken_emails' : taken_details,
     })
 
+def generate_user_id(role):
+    prefixes = {
+        'admin' : 'AD',
+        'lecturer': 'LC',
+        'student': 'TP'
+    }
+
+    prefix = prefixes.get(role)
+    year = datetime.datetime.now().strftime("%y")
+    
+    model_map = {
+        'admin': admin_profiles,
+        'lecturer': lecturer_profiles,
+        'student': student_profiles,
+    }
+
+    targetModel = model_map.get(role)
+
+    field_map = {
+        'admin': 'ad_id',
+        'lecturer': 'lc_id',
+        'student': 'tp_id',
+    }
+
+    field_name = field_map.get(role)
+
+    while True:
+        random_digits = random.randint(1000, 9999)
+        new_id = f"{prefix}{year}{random_digits}"
+
+        exists = targetModel.objects.filter(**{field_name: new_id}).exists()
+
+        if not exists:
+            return new_id
+        
 def create_user_manually(request):
-    groups = {g.name: g.id for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
+    groups = {g.name: str(g.id) for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
     available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
+    id_to_name = {v: k for k, v in groups.items()}
     
     context = {
         "groups" : groups,
         "dept" : dept,
         "available_term" : available_term,
         "form":  None,
+        "selected_role": None
     }
 
     if request.method == 'POST':
@@ -123,7 +212,8 @@ def create_user_manually(request):
         last_names = request.POST.getlist('last_name')
         emails = request.POST.getlist('email')
         role_id = request.POST.get('user_role')
-        
+        request.session['selected_role_id'] = role_id
+
         try:
             with transaction.atomic():
                 for i in range(len(first_names)):
@@ -135,44 +225,108 @@ def create_user_manually(request):
                     new_user = User.objects.create_user(
                         username = email,
                         email = email,
-                        password = generate_random_password(),
+                        password = None,
                         first_name = first_names[i],
                         last_name = last_names[i],
                     )
 
+                    unique_id = generate_user_id(id_to_name.get(str(role_id)))
+                    new_user.set_unusable_password()
+                    new_user.save()
+
+                    #schedule email after transaction succeeds
+                    def send_invite(to_email = email, first_name = first_names[i], user_id = new_user.id):
+                        user = User.objects.get(id=user_id)
+                        link = build_set_password_link(request, user)
+
+                        subject = "Set your Smart Campus password"
+                        from_email=None
+                        to = [to_email]
+                        
+                        html_content = render_to_string(
+                            'emails/set_password_email.html',
+                            {
+                                "first_name" : first_name,
+                                "reset_link": link,
+                            },
+                        )
+                        text_content = f"""
+Hi{first_name},
+Your administrative account for the Smart Campus Management System has been successfully created.
+
+To get started, please click the button below to set your account password.
+{link}
+
+If you have any issues accessing your account, please contact the IT Helpdesk.
+"""
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+                        print(f"New User Created. Set Password: {link}")
+                    transaction.on_commit(send_invite)
+                    
+
                     if str(role_id) == str(groups.get('admin')):
                         new_user.is_staff = True
-
                         new_user.save()
+
+                        admin_profiles.objects.create(
+                            user = new_user,
+                            ad_id = unique_id
+                        )
                     
                     group = Group.objects.get(id=role_id)
                     new_user.groups.add(group)
 
                     if str(role_id) == str(groups.get('lecturer')):
+                        new_user.is_staff = True
+                        new_user.save()
                         dept_val = request.POST.get(f'department_{i+1}')
-                        lecturer_profiles.objects.create(
-                            # passing the user object, instead of the id, because the id is automatically incremented, django will handle the id extraction
-                            user = new_user,
-                            dept_id = dept_val if dept_val else None
-                        )
+                        dept_obj = None
+
+                        try: 
+                            if(dept_val and dept_val.strip()):
+                                dept_obj = departments.objects.filter(dept_id= dept_val).first()
+                            lecturer_profiles.objects.create(
+                                # passing the user object, instead of the id, because the id is automatically incremented, django will handle the id extraction
+                                user = new_user,
+                                lc_id = unique_id,
+                                dept = dept_obj
+                            )
+                        except departments.DoesNotExist:
+                            messages.error(request, f"The selected department for lecturer {i+1} does not exists. ")
 
                     elif str(role_id) == str(groups.get('student')):
                         term_val = request.POST.get(f'term_{i+1}')
-                        course_enrollment.objects.create(
-                            student = new_user,
-                            term_id = term_val,
-                            enrollment_status = 'Active'
+
+                        student_profiles.objects.create(
+                            user = new_user,
+                            tp_id = unique_id
                         )
 
+                        try: 
+                            term_obj = academic_term.objects.filter(term_id=term_val).first()
+                            course_enrollment.objects.create(
+                                student = new_user,
+                                term = term_obj,
+                                enrollment_status = 'Active'
+                            )
+                        except academic_term.DoesNotExist:
+                            raise Exception(f"The selected academic term for student {i+1} does not exists. ")
+
             messages.success(request, f'Successfully created {len(first_names)} user(s)!')
+
             return redirect('create_user_manually')
         
         except Exception as e:
             # If anything fails, print to console and show error to user
             print(f"Error during user creation: {e}")
             messages.error(request, f"An error occurred: {str(e)}")
+            context["selected_role"] = request.session.get('role_id')
 
-    else: context["form"] = UserRowForm()
+    else: 
+        context["form"] = UserRowForm()
+        context["selected_role"] = request.session.get('selected_role_id')
 
     return render(request, "partials/create_user_manually.html", context)
 
@@ -239,6 +393,9 @@ def get_courses_by_level(request):
     return JsonResponse(list(courses), safe=False)
 
 def map_data(request):
+    # Sample graph and POIs for client-side rendering and pathfinding
+    # Coordinates are pixel positions for the SVG map (800x600)
+
     nodes = [
         {"id": "A", "name": "Classroom 1", "type": "terminal", "x": 170, "y": 160},
         {"id": "B", "name": "Classroom 2", "type": "terminal", "x": 263, "y": 160},
