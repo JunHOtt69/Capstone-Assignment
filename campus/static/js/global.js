@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 abortController.abort();
                 abortController = new AbortController();
                 currentTemplateId = templateId; 
-                console.log('rendering: ', currentTemplateId);
+                
                 if(switchDropdown && navOpened){
                     if(template){
                         let currentContents = Array.from(navContent.querySelectorAll('.functionG1, .functionG2, .profileG1, .cardContainer'));
@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 
                                 requestAnimationFrame(() => {
                                     navOpened = true;
+                                    formatCardId(e);
                                     this.setHeight(e);
                                     e.setAttribute('data-open', 'true');
                                     e.classList.add('animatingExtend'); 
@@ -129,16 +130,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(template){
                         navContent.innerHTML = ``;
                         const clone = template.cloneNode(true);
-                        contents = [];
-                        contents.push(clone.querySelector('.functionG1'));
-                        contents.push(clone.querySelector('.functionG2'));
-                        contents.push(clone.querySelector('.cardContainer'));
-                        contents.push(clone.querySelector('.profileG1'));
-                        contents = contents.filter(item => item !== null);
-                        contents.forEach(item => item.classList.toggle('switching', true));
 
                         navContent.appendChild(clone);
-                        navContent.setAttribute('data-switching', 'end');
+                        navContent.setAttribute('data-switching', 'none');
+                        
+                        requestAnimationFrame(() => {
+                            navOpened = true;
+                            formatCardId(e);
+                            this.setHeight(e);
+                            e.setAttribute('data-open', 'true');
+                            e.classList.add('animatingExtend'); 
+                            document.body.classList.toggle('nav-open', true);
+                            navContent.setAttribute('data-switching', 'end');
+
+                            e.addEventListener('transitionend', () => {
+                                e.classList.remove('animatingExtend');
+                            }, { once: true, signal: abortController.signal });
+                        });
                     }else{
                         navContent.innerHTML = ``;
                         console.log('no template');
@@ -182,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         close(e){
             clearTimeout(hoverTimeout);
             clearTimeout(transitionTimeout);
-            console.log('closing: ', !isMouseHovering);
+            
             transitionTimeout = setTimeout(() => {
                 if(isMouseHovering) return;
                 abortController.abort();
@@ -244,14 +252,17 @@ function removeNotification(notif) {
     }, 5000);
 }
 
-const cardSpan = document.getElementById('card_id');
-
-if(cardSpan){
-    const idText = cardSpan.innerText.trim();
-
-    cardSpan.innerHTML = idText
-    .split('')
-    .map(char => `<span>${char}</span>`)
-    .join('')
+function formatCardId(container){
+    const cardSpan = container.querySelector('#card_id');
+    console.log(cardSpan);
+    if(cardSpan && !cardSpan.dataset.formatted){
+        const idText = cardSpan.innerText.trim();
+        
+        cardSpan.innerHTML = idText
+        .split('')
+        .map(char => `<span>${char}</span>`)
+        .join('');
+        cardSpan.dataset.formatted = 'true';
+    }
 }
 

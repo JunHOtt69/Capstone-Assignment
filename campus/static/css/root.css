@@ -743,6 +743,7 @@ header li a{
 .profilePlaceholder{
     background-color: transparent;
     overflow: hidden;
+    width: 140px;
     max-width: 140px;
     display: flex;
     justify-content: flex-start;
@@ -767,11 +768,11 @@ header li a{
     justify-content: space-between;
     align-items: center;
     overflow: hidden;
-    font-size: 10px;
+    font-size: 14px;
 }
 
 .profilePlaceholder .card_id span{
-    font-size: 10px;
+    font-size: 14px;
 }
 
 .cardFooter{
