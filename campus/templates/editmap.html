@@ -1,0 +1,34 @@
+{% extends "base.html" %} 
+
+{% load static %}  
+
+{% block title %} Edit Campus Map {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editmap.css' %}">
+{% endblock %}
+
+{% block content %}
+    <h2>Edit Campus Map</h2>
+
+    <div class="map-controls">
+        <button id="addNode">Add Node</button>
+        <button id="addEdge">Add Edge</button>
+        <button id="deleteElement">Delete Element</button>
+        <button id="saveMap">Save Map</button>
+    </div>
+
+    <div id="mapWrapper" style="position: relative; display: inline-block;">
+        <img src="{% static 'myapp/images/campus-map.svg' %}" />
+        <svg 
+            id="editMap" 
+            viewBox="0 0 800 600" 
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;">
+        </svg>
+    </div>
+
+    <script>window.MAP_DATA_URL = "{% url 'map_data' %}";</script>
+    <script src="{% static 'js/edit_map.js' %}"></script>
+
+{% endblock %}

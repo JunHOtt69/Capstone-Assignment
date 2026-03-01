@@ -122,6 +122,9 @@ def help(request):
 def navigation(request): 
     return render(request, "navigation.html")
 
+def editmap(request): 
+    return render(request, "editmap.html")
+
 def attendance(request): 
     return render(request, "attendance.html")
 
