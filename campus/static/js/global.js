@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleDropdown = {
         setHeight(element, heightVal) {
+            
             const val = heightVal !== undefined? heightVal : element.querySelector('.dropDownContentWrapper').scrollHeight;
             element.style.setProperty('--dropdown-height', `${val}px`);
         },
@@ -62,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 abortController.abort();
                 abortController = new AbortController();
                 currentTemplateId = templateId; 
-                
+                console.log('rendering: ', currentTemplateId);
                 if(switchDropdown && navOpened){
                     if(template){
                         let currentContents = Array.from(navContent.querySelectorAll('.functionG1, .functionG2, .profileG1, .cardContainer'));
@@ -91,17 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                 navContent.setAttribute('data-switching', 'none');
                                 
                                 requestAnimationFrame(() => {
-                                    
-
+                                    navOpened = true;
                                     this.setHeight(e);
                                     e.setAttribute('data-open', 'true');
                                     e.classList.add('animatingExtend'); 
                                     document.body.classList.toggle('nav-open', true);
                                     navContent.setAttribute('data-switching', 'end');
+
                                     e.addEventListener('transitionend', () => {
                                         e.classList.remove('animatingExtend');
                                     }, { once: true, signal: abortController.signal });
-                                    navOpened = true;
                                 });
                                 
                             });
@@ -109,8 +109,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }else{
                         navContent.innerHTML = ``;
                         console.log('no template');
-                        isMouseHovering = false;
-                        toggleDropdown.close(navDropdown);
+                        currentTemplateId = null;
+                        navOpened = false;
+                        requestAnimationFrame(() => {
+                            e.setAttribute('data-open', 'false');
+                            e.classList.add('animatingShrink');
+                            document.body.classList.remove('nav-open');
+                            
+                            this.setHeight(e, 0);
+                            e.addEventListener('transitionend', () => {
+                                e.classList.remove('animatingShrink');
+                            }, { once: true, signal: abortController.signal });
+                        })
                         return;
                     }
                 }
@@ -132,8 +142,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }else{
                         navContent.innerHTML = ``;
                         console.log('no template');
-                        isMouseHovering = false;
-                        toggleDropdown.close(navDropdown);
+                        currentTemplateId = null;
+                        navOpened = false;
+                        requestAnimationFrame(() => {
+                            e.setAttribute('data-open', 'false');
+                            e.classList.add('animatingShrink');
+                            document.body.classList.remove('nav-open');
+                            
+                            this.setHeight(e, 0);
+                            e.addEventListener('transitionend', () => {
+                                e.classList.remove('animatingShrink');
+                            }, { once: true, signal: abortController.signal });
+                        })
                         return;
                     }
                 }
@@ -143,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(leftInVw < 35) navContent.style.setProperty('--navItemLeft', `${ItemR1.left }px`);
 
                 requestAnimationFrame(() => {
+                    console.log('transitioning height');
                     this.setHeight(e);
                     e.setAttribute('data-open', 'true');
                     e.classList.add('animatingExtend'); 
@@ -161,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         close(e){
             clearTimeout(hoverTimeout);
             clearTimeout(transitionTimeout);
-            
+            console.log('closing: ', !isMouseHovering);
             transitionTimeout = setTimeout(() => {
                 if(isMouseHovering) return;
                 abortController.abort();
@@ -173,7 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.classList.remove('nav-open');
                     
                     this.setHeight(e, 0);
-
                     e.addEventListener('transitionend', () => {
                         e.classList.remove('animatingShrink');
                     }, { once: true, signal: abortController.signal });
