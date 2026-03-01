@@ -169,6 +169,31 @@
     </div>
 </template>
 
+<template id="i-Services-dropdown">
+    <div class="functionG1">
+        <span class="title">Quick Actions</span>
+        <span class="item"><a href="">View All Announcement</a></span>
+        <span class="item"><a href="">Manage Announcement</a></span>
+        <span class="item"><a href="">Publish Announcement</a></span>
+    </div>
+    <div class="functionG2">
+        <span class="title">Latest Announcements</span>
+        <div class="messageContainer">
+            {% if announcements %}
+                {% for a in announcements %}
+                    <div class="message">
+                        <p class="a_title">{{ a.title }}</p>
+                        <p class="announcement"> {{ a.content }} </p>
+                        <p class="time">{{ a.publish_time }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <span>No recent announcements.</span>
+            {% endif %}
+        </div>
+    </div>
+</template>
+
 <template id="i-Announcements-dropdown">
     <div class="functionG1">
         <span class="title">Quick Actions</span>
@@ -177,8 +202,20 @@
         <span class="item"><a href="">Publish Announcement</a></span>
     </div>
     <div class="functionG2">
-        <span class="item">Latest Announcements</span>
-        <p class="announcement">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Atque, libero?</p>
+        <span class="title">Latest Announcements</span>
+        <div class="messageContainer">
+            {% if announcements %}
+                {% for a in announcements %}
+                    <div class="message">
+                        <p class="a_title">{{ a.title }}</p>
+                        <p class="announcement"> {{ a.content }} </p>
+                        <p class="time">{{ a.publish_time }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <span>No recent announcements.</span>
+            {% endif %}
+        </div>
     </div>
 </template>
 
