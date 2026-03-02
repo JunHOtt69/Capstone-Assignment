@@ -16,7 +16,6 @@ def card_context(request):
     extra_info = None
 
     group_names = set(u.groups.values_list('name', flat=True))
-    print('hello1')
     try: 
         if any('admin' in g.lower() for g in group_names) and hasattr(u, 'admin_profile'):
             role = 'admin'
@@ -54,8 +53,6 @@ def card_context(request):
 
             base64_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
             barcode_base64 = f"data:image/png;base64,{base64_str}"
-            print('hello')
-            print('barcode = ', barcode_base64)
     except Exception as e:
         print(f"Barcode error: {e}")
     
