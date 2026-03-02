@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-6w5(#3de8ys3+oua)zv)cb(7p40+2m-cr$f_r@i#vnt4jz9kl6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
 # Application definition
@@ -55,13 +56,14 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'campus.context_processors.card_context',
             ],
         },
     },
@@ -72,14 +74,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+IS_DOCKER = os.environ.get('DOCKER_RUNNING') == 'True'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smart_campus', # Create this database in PHPMyAdmin first!
         'USER': 'root',               # Default XAMPP username
-        'PASSWORD': '',               # Default XAMPP password is empty
-        'HOST': 'localhost',          # Or 'localhost'
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),               # Default XAMPP password is empty
+        'HOST': os.getenv('DB_HOST', 'db' if IS_DOCKER else '127.0.0.1'),          # Or 'localhost'
         'PORT': '3306',               # Default MySQL port
     }
 }
@@ -124,5 +127,21 @@ STATIC_URL = 'static/'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', 
-    'smart_campus.backends.EmailBackend', 
 ]
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+
+DEFAULT_FROM_EMAIL = "Smart Campus <limjunhong1015@gmail.com>"
+
+DOMAIN = "127.0.0.1:8000"
+
+PASSWORD_RESET_TIMEOUT = 15 * 60
+
+LOGOUT_REDIRECT_URL = 'home'

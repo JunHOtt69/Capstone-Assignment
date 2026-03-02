@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql:8.4
+    healthcheck:
+      # We use 'mysqladmin ping' to check if the database is actually ready
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s   # How often to check
+      timeout: 5s    # How long to wait for a response
+      retries: 5     # Try 5 times before giving up
+      start_period: 30s
+    restart: always
+    environment:
+      MYSQL_DATABASE: smart_campus
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} #for docker manually check database tables.
+    volumes:
+      # This saves the DB data in your project folder!
+      - ./db_data:/var/lib/mysql
+      # This imports your XAMPP data on the first run
+      - ./db_init:/docker-entrypoint-initdb.d 
+    ports:
+      - "3306:3306"
+      
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # This tells Django to look for 'db' instead of 'localhost'
+      - DB_HOST=db
+      - DB_PASSWORD=${DB_PASSWORD}
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - DB_HOST=db

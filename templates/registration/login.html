@@ -1,0 +1,58 @@
+{% extends 'auth.html' %}
+
+{% block title %} Login {% endblock %}
+
+{% block form_content %}
+    <form method="post" id="login">
+        {% csrf_token %}
+        
+        <h3>Fill in your details.</h3>
+
+        <div class="input-field email">
+            <div class="placeholder">
+                Email Address
+            </div>
+            {{ form.username }}
+        </div>
+
+        <div class="input-field password">
+            <div class="placeholder">
+                Password
+            </div>
+            {{ form.password }}
+        </div>
+        
+        <div class="formOptions">
+            <label class="remember-me">
+                {{ form.remember_me }}
+                <span class="cbx"></span>
+                <span>Remember Me</span>
+            </label>
+            <a class="forget-password" href="{% url 'password_reset' %}">Forget Password?</a>
+        </div>
+        <div class="formFooter">
+            <div id="errorMessageContainer">
+                {% if form.errors %}
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                    
+                    {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if "error" in message.tags %}
+                            <p>{{ message }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <button id="loginButton" type="submit">Login</button>
+        </div>
+    </form>
+{% endblock %}

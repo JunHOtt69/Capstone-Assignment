@@ -17,6 +17,7 @@
     {{ groups|json_script:"groups-data" }}
     {{ dept|json_script:"dept-data" }}
     {{ available_term|json_script:"term-data" }}
+    {{ selected_role|json_script:"role-data" }}
 
     <form method="POST" action="">
         {% csrf_token %}
