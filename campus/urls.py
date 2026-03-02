@@ -22,5 +22,6 @@ urlpatterns = [
     path("check-email/", views.check_email_exists, name="check_email"),
     path("navigation/map-data/", views.map_data, name="map_data"),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('announcements/', views.announcements, name='announcements'),
 ]
 
