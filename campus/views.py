@@ -98,7 +98,7 @@ def home(request):
     return render(request, "home.html")
 
 def about(request): 
-    return render(request, "about.html")
+    return render(request, "about.html") 
 
 @login_required
 def account_error(request):
@@ -500,3 +500,5 @@ def map_data(request):
 
     data = {"nodes": nodes, "edges": edges, "pois": pois}
     return JsonResponse(data)
+def announcements(request): 
+    return render(request, "dashboards/announcements.html")
