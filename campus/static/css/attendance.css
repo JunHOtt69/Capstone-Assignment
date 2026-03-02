@@ -58,3 +58,42 @@
     box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
     margin: 20px auto;
 }
+
+.accordion{
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 12px;
+  border: 2px solid black;
+  background-color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.panel{
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease;
+  margin-top: 10px;
+}
+
+.bar{
+  height: 12px;
+  border: 2px solid black;
+  border-radius: 999px;
+  overflow: hidden;
+  background: white;
+  margin-top: 6px;
+}
+
+.bar-fill{
+  height: 100%;
+  transition: 0.3s ease;
+}
+.bar-fill.low{
+  background: red
+}
+.bar-fill.good{
+  background: green
+}
