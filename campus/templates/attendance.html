@@ -11,7 +11,7 @@
 {% block content %}
     <h2>Attendance Dashboard</h2>
 <div class="attendance-container">
-<div class="student-box"> 
+<div class="student-box">
     <hr>
     <h5><strong>Name:</strong> {{student.name}}</h5>
     <p><strong>Intake Code:</strong> {{student.intake_code}}</p>
@@ -22,9 +22,9 @@
     <h2>Overall Attendance</h2>
     <h3>{{overall_percentage}}%</h3>
 
-   <button class="signup-btn" type="button" onclick="alert('Sign up feature coming soon!')">
-        <h3>Sign up Attendance</h3>
-    </button>
+   <a class="signup-btn" href="{% url 'attendance_signup' %}">
+    <h3>Sign up Attendance</h3>
+   </a>
 </div>
 
 <div class="current-sem-box">
@@ -68,6 +68,7 @@
         <div class="semester-group">
             <button class="accordion" type="button">
                 Semester {{ sem_data.semester }}
+                <span class="acc-icon">+</span>
             </button>
 
             <div class="panel">
@@ -76,6 +77,10 @@
                     <div class="course-card">
                         <h4>{{ course.name }}</h4>
                         <p>{{ course.percentage }}%</p>
+
+                    <div class="bar">
+                        <div class="bar-fill {% if course.percentage < 80%}low{%else%}good{%endif%}"style="width: {{course.percentage}}%;"></div>
+                    </div>
                     </div>
                 {% endfor %}
 
@@ -97,24 +102,24 @@
 
 
 {% block background_scripts %}
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const acc = document.getElementsByClassName("accordion");
 
   for (let i = 0; i < acc.length; i++) {
     acc[i].addEventListener("click", function () {
-      this.classList.toggle("active");
       const panel = this.nextElementSibling;
+      const icon = this.querySelector(".acc-icon");
 
       if (panel.style.maxHeight) {
         panel.style.maxHeight = null;
+        if (icon) icon.textContent = "+";
       } else {
         panel.style.maxHeight = panel.scrollHeight + "px";
+        if (icon) icon.textContent = "–";
       }
     });
   }
 });
 </script>
-
 {% endblock %}

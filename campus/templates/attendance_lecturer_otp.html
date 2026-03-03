@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Lecturer OTP {% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/attendance.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="otp-card">
+  <h2>Lecturer: Generate OTP</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    <button class="signup-btn" type="submit">Generate OTP</button>
+  </form>
+
+  {% if otp %}
+    <div class="otp-box">
+      <p><strong>OTP:</strong> <span class="otp-code">{{ otp }}</span></p>
+    </div>
+  {% else %}
+    <p class="muted">No OTP generated yet.</p>
+  {% endif %}
+
+  <p class="muted">Student page: <code>/attendance/signup/</code></p>
+</div>
+{% endblock %}

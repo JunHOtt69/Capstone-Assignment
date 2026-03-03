@@ -134,6 +134,47 @@ def editmap(request):
 def attendance(request): 
     return render(request, "attendance.html")
 
+import random
+
+def attendance_signup(request):
+    if request.method == "POST":
+        input_otp = (request.POST.get("otp") or "").strip()
+        saved_otp = request.session.get("attendance_otp")
+
+        if not saved_otp:
+            return JsonResponse({
+                "ok": False,
+                "message": "OTP not available yet. Please ask lecturer to generate OTP."
+            })
+
+        if input_otp != saved_otp:
+            return JsonResponse({
+                "ok": False,
+                "message": "Invalid code. Please try again."
+            })
+
+        request.session.pop("attendance_otp", None)
+        return JsonResponse({
+            "ok": True,
+            "message": "Attendance successful!"
+        })
+
+    return render(request, "attendance_signup.html")
+
+
+def attendance_lecturer_otp(request):
+    otp = None
+
+    if request.method == "POST":
+        otp = f"{random.randint(0, 9999):04d}"
+        request.session["attendance_otp"] = otp
+    else:
+        otp = request.session.get("attendance_otp")
+
+    return render(request, "attendance_lecturer_otp.html", {
+        "otp": otp
+    })
+
 def user_management(request):
     return render(request, "user_management.html")
 
