@@ -22,6 +22,8 @@ urlpatterns = [
     path("navigation/", views.navigation, name="navigation"),
     path("editmap/", views.editmap, name="editmap"),
     path("navigation/map-data/", views.map_data, name="map_data"),
+    path("navigation/map-data/", views.map_data, name="map_data"),
+    path("save-map/", views.save_map, name="save_map"),
 
     #admin management
     path("user/", views.user_management, name="user_management"),

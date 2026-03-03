@@ -1,0 +1,169 @@
+/* Edit Map Page Styles */
+
+.instructions {
+  background: #f5f5f5;
+  border-left: 4px solid #2196F3;
+  padding: 15px 20px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.instructions p {
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+.instructions ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.map-controls {
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.map-controls button {
+  padding: 10px 20px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.map-controls button:hover {
+  background-color: #1976D2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.map-controls button.active {
+  background-color: #FF9800;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.3);
+}
+
+.map-controls button.save-btn {
+  background-color: #4CAF50;
+}
+
+.map-controls button.save-btn:hover {
+  background-color: #388E3C;
+}
+
+.cancel-link {
+  padding: 10px 20px;
+  color: #666;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  background: white;
+}
+
+.cancel-link:hover {
+  background: #f5f5f5;
+  border-color: #999;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#mapWrapper {
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 800px;
+}
+
+#mapWrapper img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#editMap {
+  cursor: default;
+}
+
+#editMap circle {
+  transition: all 0.2s ease;
+}
+
+#editMap circle:hover {
+  filter: brightness(1.1);
+}
+
+#editMap .edge {
+  stroke: #666;
+  stroke-width: 2;
+  pointer-events: stroke;
+}
+
+#editMap .edge:hover {
+  stroke: #ff6b6b;
+  stroke-width: 3;
+}
+
+#message-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 4px;
+  color: white;
+  background: #2196F3;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .instructions {
+    padding: 10px 15px;
+  }
+
+  .instructions li {
+    font-size: 13px;
+  }
+
+  .map-controls {
+    gap: 8px;
+  }
+
+  .map-controls button,
+  .cancel-link {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  #mapWrapper {
+    max-width: 100%;
+  }
+}
+
