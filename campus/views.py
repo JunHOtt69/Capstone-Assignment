@@ -502,6 +502,7 @@ def map_data(request):
 def navigation(request): 
     return render(request, "navigation.html")
 
+@role_required(allowed_roles=['admin'])
 def editmap(request): 
     return render(request, "editmap.html")
 

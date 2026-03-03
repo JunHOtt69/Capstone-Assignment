@@ -223,7 +223,7 @@
         <div class="functionG1">
             <span class="title">Self-Service Support</span>
             <span class="item"><a href="">FAQ</a></span>
-            <span class="item"><a href="">Campus Map/ Pathfinding</a></span>
+            <span class="item"><a href="{% url "navigation" %}">Campus Map/ Pathfinding</a></span>
         </div>
         <div class="functionG2">
             <span class="title">Contact &amp; Availability</span>
@@ -313,7 +313,7 @@
         <div class="functionG2">
             <span class="title">Infrastructure &amp; Analytics</span>
             <span class="item"><a href="">Facility Status</a></span>
-            <span class="item"><a href="">Campus Navigation Config</a></span>
+            <span class="item"><a href="{% url "editmap" %}">Campus Navigation Config</a></span>
         </div>
     {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
@@ -323,7 +323,7 @@
         </div>
         <div class="functionG2">
             <span class="title">Campus Guide</span>
-            <span class="item"><a href="">Campus Navigation</a></span>
+            <span class="item"><a href="{% url "navigation" %}">Campus Navigation</a></span>
             <span class="item"><a href="">Points of Interest</a></span>
         </div>
     {% endif %}
