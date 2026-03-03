@@ -544,7 +544,7 @@ def save_map(request):
                         to_node=to_node
                     )
         
-        return JsonResponse({"message": "Map saved successfully!"})
+        return messages.success(request, "Map saved successfully!")
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
