@@ -121,9 +121,6 @@ def lecturer_dashboard(request):
 def student_dashboard(request):
     return render(request, "dashboards/student_dashboard.html")
 
-def help(request): 
-    return render(request, "help.html")
-
 def navigation(request): 
     return render(request, "navigation.html")
 
@@ -242,7 +239,8 @@ def generate_user_id(role):
 
         if not exists:
             return new_id
-        
+
+@role_required(allowed_roles=['admin'])  
 def create_user_manually(request):
     groups = {g.name: str(g.id) for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
@@ -404,9 +402,11 @@ def create_user_manually(request):
     return render(request, "partials/create_user_manually.html", context)
 
 #manage academic function
+@role_required(allowed_roles=['admin'])  
 def academic_management(request):
     return render(request, "academic_management.html")
 
+@role_required(allowed_roles=['admin'])  
 @transaction.atomic
 def manage_academic_term(request):
     levels = [{'id': c[0], 'name': c[1]} for c in course.LEVEL_CHOICES]
@@ -467,6 +467,8 @@ def get_courses_by_level(request):
     courses = course.objects.filter(level=level).values('course_id', 'course_code',  'course_name', 'semester_week')
     return JsonResponse(list(courses), safe=False)
 
+
+#map function
 def map_data(request):
     # Sample graph and POIs for client-side rendering and pathfinding
     # Coordinates are pixel positions for the SVG map (800x600)
@@ -551,5 +553,17 @@ def map_data(request):
     data = {"nodes": nodes, "edges": edges, "pois": pois}
     return JsonResponse(data)
 
+#announcement function
 def announcements(request): 
     return render(request, "dashboards/announcements.html")
+
+
+#FAQ function
+def help(request): 
+    return render(request, "help/help.html")
+
+def viewFAQ(request):
+    return render(request, 'help/faq.html')
+
+def support_center(request):
+    return render(request, 'help/support_center.html')
