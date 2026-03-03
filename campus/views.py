@@ -79,22 +79,28 @@ class RoleBasedLoginView(LoginView):
     
     def get_success_url(self):
         user = self.request.user
-
-        # redirect based on group name
-        if user.groups.filter(name="admin").exists():
-            return reverse_lazy("admin_dashboard")
-        if user.groups.filter(name="lecturer").exists():
-            return reverse_lazy("lecturer_dashboard")
-        if user.groups.filter(name="student").exists():
-            return reverse_lazy("student_dashboard")
-
-        # fallback
-        else: 
+        target = redirect_user_by_role(user)
+        if(target == "account_error"):
             logout(self.request)
             return reverse_lazy("account_error")
+        return reverse_lazy(target)
+            
+            
+
+#redirect user to their dashboard:
+def redirect_user_by_role(user):
+    if user.groups.filter(name="admin").exists():
+        return "admin_dashboard"
+    if user.groups.filter(name="lecturer").exists():
+        return "lecturer_dashboard"
+    if user.groups.filter(name="student").exists():
+        return "student_dashboard"
+    return "account_error"
 
 # Create your views here.
 def home(request): 
+    if request.user.is_authenticated:
+        return redirect(redirect_user_by_role(request.user))
     return render(request, "home.html")
 
 def about(request): 

@@ -46,14 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleDropdown = {
         setHeight(element, heightVal) {
-            
             const val = heightVal !== undefined? heightVal : element.querySelector('.dropDownContentWrapper').scrollHeight;
             element.style.setProperty('--dropdown-height', `${val}px`);
         },
 
         open(e, template, templateId, switchDropdown = false) {
             let timeout = 200;
-            if(navOpened && currentTemplateId === templateId) return;
+            console.log('currentContent: ',currentTemplateId);
+            if(navOpened && currentTemplateId === templateId)return;
             if(switchDropdown && navOpened){
                 timeout = 0;
             }
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 abortController.abort();
                 abortController = new AbortController();
                 currentTemplateId = templateId; 
-                
+                console.log('rendering: ',currentTemplateId);
                 if(switchDropdown && navOpened){
                     if(template){
                         let currentContents = Array.from(navContent.querySelectorAll('.functionG1, .functionG2, .profileG1, .cardContainer'));
@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(leftInVw < 35) navContent.style.setProperty('--navItemLeft', `${ItemR1.left }px`);
 
                 requestAnimationFrame(() => {
-                    console.log('transitioning height');
                     this.setHeight(e);
                     e.setAttribute('data-open', 'true');
                     e.classList.add('animatingExtend'); 
@@ -229,7 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    navDropdown.addEventListener('mouseenter', () => toggleDropdown.open(navDropdown));
+    navDropdown.addEventListener('mouseenter', () => {
+        if(navOpened)return;
+    });
     navDropdown.addEventListener('mouseleave', () => toggleDropdown.close(navDropdown));
 
     profileWrapper.addEventListener('mouseenter', () => {
@@ -254,7 +255,6 @@ function removeNotification(notif) {
 
 function formatCardId(container){
     const cardSpan = container.querySelector('#card_id');
-    console.log(cardSpan);
     if(cardSpan && !cardSpan.dataset.formatted){
         const idText = cardSpan.innerText.trim();
         
