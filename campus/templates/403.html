@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %} Page Invalid {% endblock %}
+{% block extra_head %}
+    <style>
+        main{
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex-direction: column;
+            gap: 0.5vw;
+            padding-top: 1vw;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <h2>403 FORBIDDEN</h2>
+    <p>You do not have permission to access this page. If you believe this is an error, please contact the system administrator.</p>
+{% endblock %}

@@ -62,19 +62,23 @@
                     
                     {% if not user.is_authenticated %}
                         <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                        
                             <a href="{% url 'about' %}"  id="i-About">About</a>
                         </li>
                     {% endif %}
                     
-                    <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                        <a href="{% url 'help' %}"  id="i-Help">Help</a>
+                    <li class="{% if request.resolver_match.url_name in 'support_center, viewFAQ' %}active{% endif %}">
+                        <a href="
+                            {% if user.is_authenticated %}
+                                {% url 'support_center' %}
+                            {% else %}
+                                {% url "help" %}
+                            {% endif %}
+                        "  id="i-Help">Help</a>
                     </li>
                 </ul>
             </div>
             <div class="navbarDropdown">
                 <div class="dropDownContentWrapper">
-
                 </div>
             </div>
 
@@ -136,7 +140,6 @@
 
         <div class="mainScrollWrapper">
             <main>
-                {{ card_id }}
                 {% block content %}{% endblock %}
             </main>
 
@@ -207,12 +210,12 @@
         {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
             <span class="title">Self-Service Support</span>
-            <span class="item"><a href="">FAQ</a></span>
+            <span class="item"><a href="{% url 'viewFAQ' %}">FAQ</a></span>
         </div>
 
         <div class="functionG2">
             <span class="title">Interactive Support</span>
-            <span class="item"><a href="">Campus AI Assistant</a></span>
+            <span class="item"><a href="{% url 'ai_assistant' %}">Campus AI Assistant</a></span>
             <span class="item"><a href="">Submit Ticket</a></span>
         </div>
         {% endif %}
@@ -270,7 +273,7 @@
     {% if user_role == 'student' %}
         <div class="functionG1">
             <span class="title">Attendance</span>
-            <span class="item"><a href="">Enter Attendance Code</a></span>
+            <span class="item"><a href="{% url 'attendance_signup' %}">Enter Attendance Code</a></span>
             <span class="item"><a href="">My Attendance Rate</a></span>
         </div>
     {% elif user_role == 'lecturer'%}
@@ -473,5 +476,4 @@
             <span class="item"><a class="login-r" href="{% url 'login' %}">Sign In to Continue</a></span>
         </div>
     {% endif %}
-    
 </template>

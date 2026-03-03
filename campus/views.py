@@ -84,9 +84,7 @@ class RoleBasedLoginView(LoginView):
         if(target == "account_error"):
             logout(self.request)
             return reverse_lazy("account_error")
-        return reverse_lazy(target)
-            
-            
+        return reverse_lazy(target) 
 
 #redirect user to their dashboard:
 def redirect_user_by_role(user):
@@ -98,6 +96,7 @@ def redirect_user_by_role(user):
         return "student_dashboard"
     return "account_error"
 
+#unauthorize redirection
 # Create your views here.
 def home(request): 
     if request.user.is_authenticated:
@@ -123,19 +122,9 @@ def lecturer_dashboard(request):
 def student_dashboard(request):
     return render(request, "dashboards/student_dashboard.html")
 
-def help(request): 
-    return render(request, "help.html")
-
-def navigation(request): 
-    return render(request, "navigation.html")
-
-def editmap(request): 
-    return render(request, "editmap.html")
-
+#attendance function
 def attendance(request): 
     return render(request, "attendance.html")
-
-import random
 
 def attendance_signup(request):
     if request.method == "POST":
@@ -159,9 +148,7 @@ def attendance_signup(request):
             "ok": True,
             "message": "Attendance successful!"
         })
-
     return render(request, "attendance_signup.html")
-
 
 def attendance_lecturer_otp(request):
     otp = None
@@ -176,9 +163,12 @@ def attendance_lecturer_otp(request):
         "otp": otp
     })
 
+#management function
+@role_required(allowed_roles=['admin'])
 def user_management(request):
     return render(request, "user_management.html")
 
+#function for create_user_manually
 def build_set_password_link(request, user):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
@@ -242,7 +232,8 @@ def generate_user_id(role):
 
         if not exists:
             return new_id
-        
+
+@role_required(allowed_roles=['admin'])  
 def create_user_manually(request):
     groups = {g.name: str(g.id) for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
@@ -403,9 +394,12 @@ def create_user_manually(request):
 
     return render(request, "partials/create_user_manually.html", context)
 
+#manage academic function
+@role_required(allowed_roles=['admin'])  
 def academic_management(request):
     return render(request, "academic_management.html")
 
+@role_required(allowed_roles=['admin'])  
 @transaction.atomic
 def manage_academic_term(request):
     levels = [{'id': c[0], 'name': c[1]} for c in course.LEVEL_CHOICES]
@@ -465,6 +459,8 @@ def get_courses_by_level(request):
     courses = course.objects.filter(level=level).values('course_id', 'course_code',  'course_name', 'semester_week')
     return JsonResponse(list(courses), safe=False)
 
+
+#navigation, campus map
 def map_data(request):
     """Fetch map nodes and edges from database"""
     try:
@@ -503,6 +499,11 @@ def map_data(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+def navigation(request): 
+    return render(request, "navigation.html")
+
+def editmap(request): 
+    return render(request, "editmap.html")
 
 def save_map(request):
     """Save map nodes and edges to database"""
@@ -545,6 +546,24 @@ def save_map(request):
         return JsonResponse({"message": "Map saved successfully!"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+#announcement function
+def announcements(request): 
+    return render(request, "dashboards/announcements.html")
+
+
+#FAQ function
+def help(request): 
+    return render(request, "help/help.html")
+
+def viewFAQ(request):
+    return render(request, 'help/faq.html')
+
+def support_center(request):
+    return render(request, 'help/support_center.html')
+
+def smart_assistant(request):
+    return render(request, 'help/smart_assistant.html')
 
 def announcements(request): 
     return render(request, "dashboards/announcements.html")

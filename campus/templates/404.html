@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %} Page Invalid {% endblock %}
+{% block extra_head %}
+    <style>
+        main{
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex-direction: column;
+            gap: 0.5vw;
+            padding-top: 1vw;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <h2>:( 404 PAGE NOT FOUND</h2>
+    <p>The page you are trying to access does not exist or may have been moved. Please check the URL or return to your dashboard.</p>
+{% endblock %}
