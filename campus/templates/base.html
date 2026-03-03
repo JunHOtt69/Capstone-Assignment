@@ -136,6 +136,7 @@
 
         <div class="mainScrollWrapper">
             <main>
+                {{ card_id }}
                 {% block content %}{% endblock %}
             </main>
 
@@ -251,6 +252,36 @@
     {% endif %}
 </template>
 
+<template id="i-Timetable-dropdown">
+    <div class="functionG1">
+        <span class="title"><a href="">View Timetable</a></span>
+        <span class="item"><a href="">Today's Class</a></span>
+        <span class="item"><a href="">Weekly View</a></span>
+    </div>
+    
+    <div class="functionG2">
+        <span class="title">Quick Actions</span>
+        <span class="item"><a href="">Navigate to Classroom</a></span>
+        <span class="item"><a href="">View Class Details</a></span>
+    </div>
+</template>
+
+<template id="i-Attendance-dropdown">
+    {% if user_role == 'student' %}
+        <div class="functionG1">
+            <span class="title">Attendance</span>
+            <span class="item"><a href="">Enter Attendance Code</a></span>
+            <span class="item"><a href="">My Attendance Rate</a></span>
+        </div>
+    {% elif user_role == 'lecturer'%}
+        <div class="functionG1">
+            <span class="title">Attendance Management</span>
+            <span class="item"><a href="">Open Attendance Session</a></span>
+            <span class="item"><a href="">Class Attendance Rate</a></span>
+        </div>
+    {% endif %}
+</template>
+
 <template id="i-Management-dropdown">
     <div class="functionG1">
         <span class="title"><a href="{% url 'user_management' %}">User Management</a></span>
@@ -290,7 +321,7 @@
         <div class="functionG2">
             <span class="title">Campus Guide</span>
             <span class="item"><a href="">Campus Navigation</a></span>
-            <span class="item"><a href="">CPoints of Interest</a></span>
+            <span class="item"><a href="">Points of Interest</a></span>
         </div>
     {% endif %}
 </template>
@@ -314,7 +345,7 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <span>No recent announcements.</span>
+                <span class="empty-state">No recent announcements.</span>
             {% endif %}
         </div>
     </div>
@@ -336,6 +367,38 @@
             <span class="item"><a href="">Timetable Scheduling</a></span>
         </div>
     {% elif user_role == 'student' or user_role == 'lecturer' %}
+        <div class="functionG1">
+            <span class="title">Quick Actions</span>
+            <span class="item"><a href="">View Timetable</a></span>
+            {% if user_role == 'student' %}
+                <span class="item"><a href="">Enter Attendance Code</a></span>
+            {% elif user_role == 'lecturer'%}
+                <span class="item"><a href="">Open Attendance Session</a></span>
+            {% endif %}
+            <span class="item"><a href="">Campus Map</a></span>
+            <span class="item"><a href="">Facility Availability</a></span>
+            <span class="item"><a href="">My Profile</a></span>
+            <span class="item"><a href="">IT Support</a></span>
+        </div>
+        <div class="functionG2">
+            <span class="title">Today's Class</span>
+            {% if classList %}
+                <div class="classWrapper">
+                    {% for class in classList %}
+                        <div class="class">
+                            <span>{{ class.class_time }} - {{ class.class_code }} ({{ class.classroom }})</span>
+                            {% if user_role == 'student' %}
+                                <span>Attendance: {{ class.attendance_rate }}%</span>
+                            {% elif user_role == 'lecturer'%}
+                                <span>Student attendance: {{ class.attendance_rate }}%</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <span class="empty-state">No scheduled classes for today.</span>
+            {% endif %}
+        </div>
     {% endif %}
 </template>
 

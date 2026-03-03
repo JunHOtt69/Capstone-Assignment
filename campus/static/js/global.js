@@ -255,9 +255,10 @@ function removeNotification(notif) {
 
 function formatCardId(container){
     const cardSpan = container.querySelector('#card_id');
+    
     if(cardSpan && !cardSpan.dataset.formatted){
         const idText = cardSpan.innerText.trim();
-        
+        console.log(idText);
         cardSpan.innerHTML = idText
         .split('')
         .map(char => `<span>${char}</span>`)
