@@ -136,7 +136,6 @@
 
         <div class="mainScrollWrapper">
             <main>
-                {{ card_id }}
                 {% block content %}{% endblock %}
             </main>
 
@@ -270,7 +269,7 @@
     {% if user_role == 'student' %}
         <div class="functionG1">
             <span class="title">Attendance</span>
-            <span class="item"><a href="">Enter Attendance Code</a></span>
+            <span class="item"><a href="{% url 'attendance_signup' %}">Enter Attendance Code</a></span>
             <span class="item"><a href="">My Attendance Rate</a></span>
         </div>
     {% elif user_role == 'lecturer'%}

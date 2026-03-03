@@ -83,9 +83,7 @@ class RoleBasedLoginView(LoginView):
         if(target == "account_error"):
             logout(self.request)
             return reverse_lazy("account_error")
-        return reverse_lazy(target)
-            
-            
+        return reverse_lazy(target) 
 
 #redirect user to their dashboard:
 def redirect_user_by_role(user):
@@ -97,6 +95,7 @@ def redirect_user_by_role(user):
         return "student_dashboard"
     return "account_error"
 
+#unauthorize redirection
 # Create your views here.
 def home(request): 
     if request.user.is_authenticated:
@@ -131,10 +130,10 @@ def navigation(request):
 def editmap(request): 
     return render(request, "editmap.html")
 
+#attendance function
+
 def attendance(request): 
     return render(request, "attendance.html")
-
-import random
 
 def attendance_signup(request):
     if request.method == "POST":
@@ -158,7 +157,6 @@ def attendance_signup(request):
             "ok": True,
             "message": "Attendance successful!"
         })
-
     return render(request, "attendance_signup.html")
 
 
@@ -175,9 +173,12 @@ def attendance_lecturer_otp(request):
         "otp": otp
     })
 
+#management function
+@role_required(allowed_roles=['admin'])
 def user_management(request):
     return render(request, "user_management.html")
 
+#function for create_user_manually
 def build_set_password_link(request, user):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
@@ -402,6 +403,7 @@ def create_user_manually(request):
 
     return render(request, "partials/create_user_manually.html", context)
 
+#manage academic function
 def academic_management(request):
     return render(request, "academic_management.html")
 
@@ -438,6 +440,7 @@ def manage_academic_term(request):
     }
         
     return render(request, "partials/manage_academic_term.html", context)
+
 
 def get_terms(request):
     terms = list(academic_term.objects.select_related('course').values(
@@ -547,5 +550,6 @@ def map_data(request):
 
     data = {"nodes": nodes, "edges": edges, "pois": pois}
     return JsonResponse(data)
+
 def announcements(request): 
     return render(request, "dashboards/announcements.html")
