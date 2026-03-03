@@ -11,16 +11,30 @@
 
 {% block content %}
     <h2>Edit Campus Map</h2>
+    
+    <div class="instructions">
+        <p><strong>Instructions:</strong></p>
+        <ul>
+            <li><strong>Add Terminal:</strong> Click "Add Terminal" then click on the map to place a green terminal node. Double-click a terminal to rename it.</li>
+            <li><strong>Add Pathway:</strong> Click "Add Pathway" then click on the map to place a yellow pathway junction node.</li>
+            <li><strong>Add Edge:</strong> Click "Add Edge" then click two nodes to connect them (creates a pathway)</li>
+            <li><strong>Drag Nodes:</strong> Click and drag any node to reposition it on the map</li>
+            <li><strong>Delete:</strong> Click "Delete Element" then click a node or edge to remove it</li>
+            <li><strong>Save:</strong> Click "Save Map" to save all changes and update the navigation map</li>
+        </ul>
+    </div>
 
     <div class="map-controls">
-        <button id="addNode">Add Node</button>
+        <button id="addTerminal">Add Terminal</button>
+        <button id="addPath">Add Pathway</button>
         <button id="addEdge">Add Edge</button>
         <button id="deleteElement">Delete Element</button>
-        <button id="saveMap">Save Map</button>
+        <button id="saveMap" class="save-btn">Save Map</button>
+        <a href="{% url 'navigation' %}" class="cancel-link">Cancel</a>
     </div>
 
     <div id="mapWrapper" style="position: relative; display: inline-block;">
-        <img src="{% static 'myapp/images/campus-map.svg' %}" />
+        <img src="{% static 'myapp/images/campus-map.svg' %}" alt="Campus Map" />
         <svg 
             id="editMap" 
             viewBox="0 0 800 600" 
@@ -32,3 +46,4 @@
     <script src="{% static 'js/edit_map.js' %}"></script>
 
 {% endblock %}
+

@@ -20,8 +20,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 import datetime
 import random
+import json
 from .forms import UserRowForm, AcademicTermForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge
 from .decorators import role_required
 
 class CustomPasswordResetView(PasswordResetView):
@@ -396,85 +397,82 @@ def get_courses_by_level(request):
     return JsonResponse(list(courses), safe=False)
 
 def map_data(request):
-    # Sample graph and POIs for client-side rendering and pathfinding
-    # Coordinates are pixel positions for the SVG map (800x600)
-
-    nodes = [
-        {"id": "A", "name": "Classroom 1", "type": "terminal", "x": 170, "y": 160},
-        {"id": "B", "name": "Classroom 2", "type": "terminal", "x": 263, "y": 160},
-        {"id": "C", "name": "Classroom 3", "type": "terminal", "x": 567, "y": 106},
-        {"id": "D", "name": "Classroom 4", "type": "terminal", "x": 730, "y": 106},
-        {"id": "E", "name": "Classroom 5", "type": "terminal", "x": 567, "y": 220},
-        {"id": "F", "name": "Classroom 6", "type": "terminal", "x": 730, "y": 220},
-        {"id": "G", "name": "Auditorium 1", "type": "terminal", "x": 471, "y": 288},
-        {"id": "H", "name": "Auditorium 2", "type": "terminal", "x": 471, "y": 465},
-        {"id": "I", "name": "Lab 1", "type": "terminal", "x": 170, "y": 502},
-        {"id": "J", "name": "Lab 2", "type": "terminal", "x": 263, "y": 502},
-        {"id": "K", "name": "Cafeteria", "type": "terminal", "x": 395, "y": 288},
-        {"id": "Entrance", "name": "Entrance", "type": "terminal", "x": 152, "y": 576},
-
-        {"id": "C1", "name": "C1 Junction", "type": "pathway", "x": 170, "y": 177},
-        {"id": "C2", "name": "C2 Junction", "type": "pathway", "x": 263, "y": 177},
-        {"id": "U", "name": "Upper Junction", "type": "pathway", "x": 433, "y": 121},
-        {"id": "C3", "name": "C3 Junction", "type": "pathway", "x": 567, "y": 121},
-        {"id": "C4", "name": "C4 Junction", "type": "pathway", "x": 730, "y": 121},
-        {"id": "M", "name": "Mid Junction", "type": "pathway", "x": 433, "y": 235},
-        {"id": "LM", "name": "Lower-Mid Junction", "type": "pathway", "x": 433, "y": 288},
-        {"id": "A2", "name": "A2 Junction", "type": "pathway", "x": 433, "y": 465},
-        {"id": "L", "name": "Lower Junction", "type": "pathway", "x": 433, "y": 526},
-        {"id": "LAB2", "name": "Lab 2 Junction", "type": "pathway", "x": 263, "y": 526},
-        {"id": "LAB1", "name": "Lab 1 Junction", "type": "pathway", "x": 170, "y": 526},
-        {"id": "C5", "name": "C5 Junction", "type": "pathway", "x": 567, "y": 235},
-        {"id": "C6", "name": "C6 Junction", "type": "pathway", "x": 730, "y": 235},
-        {"id": "C2 Out", "name": "C2 Out Junction", "type": "pathway", "x": 433, "y": 177},
-        {"id": "Entrance Junction", "name": "Entrance Junction", "type": "pathway", "x": 152, "y": 526},
-    ]
-
-    # Connection edges - create routes through pathway junctions
-    edges = [
-        # Top row connections
-        {"from": "A", "to": "C1"},
-        {"from": "C1", "to": "C2"},
-        {"from": "C2", "to": "B"},
-        {"from": "C2", "to": "C2 Out"},
-        {"from": "C2 Out", "to": "U"},
-        {"from": "U", "to": "C3"},
-        {"from": "C3", "to": "C"},
-        {"from": "C3", "to": "C4"},
-        {"from": "C4", "to": "D"},
-        {"from": "C2 Out", "to": "M"},
+    """Fetch map nodes and edges from database"""
+    try:
+        nodes = MapNode.objects.all()
+        edges = MapEdge.objects.all()
         
-        # Middle row connections
-        {"from": "C5", "to": "E"},
-        {"from": "C6", "to": "F"},
-        {"from": "M", "to": "U"},
-        {"from": "M", "to": "LM"},
-        {"from": "C5", "to": "M"},
-        {"from": "C6", "to": "M"},
+        if not nodes.exists():
+            # Return empty data structure if no data in DB
+            return JsonResponse({"nodes": [], "edges": []})
         
-        # Cafeteria and Auditorium connections
-        {"from": "LM", "to": "K"},
-        {"from": "LM", "to": "G"},
-        {"from": "A2", "to": "H"},
+        # Return with 'id' and 'type' for backward compatibility with campus_map.js
+        nodes_list = [
+            {
+                "id": node.node_id,           # Use 'id' for campus_map.js
+                "name": node.name,
+                "type": node.node_type,       # Use 'type' for campus_map.js
+                "x": node.x,
+                "y": node.y,
+                # Also include node_id and node_type for edit_map.js
+                "node_id": node.node_id,
+                "node_type": node.node_type,
+            }
+            for node in nodes
+        ]
         
-        # Bottom row connections
-        {"from": "A2", "to": "LM"},
-        {"from": "A2", "to": "L"},
-        {"from": "L", "to": "LAB2"},
-        {"from": "LAB2", "to": "LAB1"},
-        {"from": "LAB1", "to": "L"},
-        {"from": "LAB1", "to": "I"},
-        {"from": "LAB2", "to": "J"},
-        {"from": "Entrance", "to": "Entrance Junction"},
-        {"from": "Entrance Junction", "to": "LAB1"},
-    ]
+        edges_list = [
+            {
+                "from": edge.from_node.node_id,
+                "to": edge.to_node.node_id
+            }
+            for edge in edges
+        ]
+        
+        data = {"nodes": nodes_list, "edges": edges_list}
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
-    pois = [
-        {"id": "lib", "name": "Library", "node": "A", "description": "Main library facility"},
-        {"id": "admin", "name": "Administration", "node": "B", "description": "Admin offices"},
-        {"id": "caf", "name": "Cafeteria", "node": "K", "description": "Food and beverage"},
-        {"id": "gym", "name": "Gym", "node": "I", "description": "Sports center"},
-    ]
 
-    data = {"nodes": nodes, "edges": edges, "pois": pois}
-    return JsonResponse(data)
+def save_map(request):
+    """Save map nodes and edges to database"""
+    if request.method != 'POST':
+        return JsonResponse({"error": "POST required"}, status=400)
+    
+    try:
+        data = json.loads(request.body)
+        nodes_data = data.get('nodes', [])
+        edges_data = data.get('edges', [])
+        
+        with transaction.atomic():
+            # Clear existing data
+            MapNode.objects.all().delete()
+            MapEdge.objects.all().delete()
+            
+            # Create new nodes
+            nodes_map = {}
+            for node in nodes_data:
+                map_node = MapNode.objects.create(
+                    node_id=node['node_id'],
+                    name=node.get('name', ''),
+                    node_type=node.get('node_type', 'terminal'),
+                    x=node['x'],
+                    y=node['y']
+                )
+                nodes_map[node['node_id']] = map_node
+            
+            # Create edges
+            for edge in edges_data:
+                from_node = nodes_map.get(edge['from'])
+                to_node = nodes_map.get(edge['to'])
+                
+                if from_node and to_node:
+                    MapEdge.objects.create(
+                        from_node=from_node,
+                        to_node=to_node
+                    )
+        
+        return JsonResponse({"message": "Map saved successfully!"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
