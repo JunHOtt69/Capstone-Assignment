@@ -567,3 +567,6 @@ def viewFAQ(request):
 
 def support_center(request):
     return render(request, 'help/support_center.html')
+
+def smart_assistant(request):
+    return render(request, 'help/smart_assistant.html')

@@ -38,6 +38,7 @@ urlpatterns = [
     # Help center
     path("help/", views.help, name="help"),
     path('FAQ/', views.viewFAQ, name='viewFAQ'),
-    path('support-center/', views.support_center, name='support_center'),
+    path('support-center/', views.support_center,name='support_center'),
+    path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
 ]
 
