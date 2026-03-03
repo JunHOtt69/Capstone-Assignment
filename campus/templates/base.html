@@ -23,53 +23,62 @@
                     {% if user.is_authenticated %}
                         <li class="{% if request.resolver_match.url_name in 'admin_dashboard lecturer_dashboard student_dashboard' %}active{% endif %}">
                         
-                            <a>Dashboard</a>
+                            <a 
+                            {% if user_role == 'admin' %}
+                                href="{% url 'admin_dashboard' %}"
+                            {% elif user_role == 'lecturer' %}
+                                href="{% url 'lecturer_dashboard' %}"
+                            {% elif user_role == 'student' %}
+                                href="{% url 'student_dashboard' %}"
+                            {% endif %}
+                            id="i-Dashboard">Dashboard</a>
                         </li>
                         <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                        
-                            <a>Announcements</a>
+                            <a id="i-Announcements">Announcements</a>
                         </li>
                         
-                        {% if "lecturer" in user.groups.all.0.name or "lecturer" in request.resolver_match.url_name or "student" in user.groups.all.0.name or "student" in request.resolver_match.url_name %}
+                        {% if user_role == 'student' or user_role == 'lecturer' %}
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                            
-                                <a>TimeTable</a>
+                                <a id="i-Timetable">TimeTable</a>
                             </li>
                             <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                            
-                                <a>Attendance</a>
+                                <a id="i-Attendance">Attendance</a>
                             </li>
                         {% endif %}
                         <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                        
-                            <a>Services</a>
+                            <a id="i-Services">Services</a>
                         </li>
-                        {% if "admin" in user.groups.all.0.name or "admin" in request.resolver_match.url_name %}
-                            <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                            
-                                <a>Management</a>
+                        {% if user_role == 'admin' %}
+                            <li class="
+                            {% if request.resolver_match.url_name in 'user_management create_user_manually academic_management manage_academic_term' %}
+                                active
+                            {% endif %}
+                            ">
+                                <a id="i-Management">Management</a>
                             </li>
                         {% endif %}
 
                     {% endif %}
-
-                    <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
                     
-                        <a href="{% url 'about' %}">About</a>
-                    </li>
-                    <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
+                    {% if not user.is_authenticated %}
+                        <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
+                        
+                            <a href="{% url 'about' %}"  id="i-About">About</a>
+                        </li>
+                    {% endif %}
                     
-                        <a href="{% url 'help' %}">Help</a>
+                    <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
+                        <a href="{% url 'help' %}"  id="i-Help">Help</a>
                     </li>
                 </ul>
             </div>
             <div class="navbarDropdown">
                 <div class="dropDownContentWrapper">
-                    
+
                 </div>
             </div>
 
-            <div class="profileWrapper">
+            <div class="profileWrapper" id="i-Profile">
                 {% if user.is_authenticated %}
                     <p class="username">{{ user.first_name }} {{ user.last_name }}</p>
                 {% else %}
@@ -127,6 +136,7 @@
 
         <div class="mainScrollWrapper">
             <main>
+                {{ card_id }}
                 {% block content %}{% endblock %}
             </main>
 
@@ -145,6 +155,14 @@
                             <li><a href="#">Contact Us</a></li>
                         </ul>
                     </div>
+                    <div class="recentVisits">
+                        <h3>Recent Visits</h3>
+                        <ul>
+                            <li><a href="#">Lorem, ipsum.</a></li>
+                            <li><a href="#">Lorem, ipsum.</a></li>
+                            <li><a href="#">Lorem, ipsum.</a></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="bottomFooter">
                     <p>&copy; 2026 Capstone Project Group 17</p>
@@ -158,76 +176,302 @@
     </body>
 </html>    
 
-<template>
-    <div class="dropDownContentWrapper">
-        <div class="functionG1">Navigation Links</div>
-        <div class="functionG1">ABC</div>
-        <div class="functionG1">Quick Action Button Placeholder</div>
+<template id="i-About-dropdown">
+    <div class="functionG1" style="width: 25vw;">
+        <span class="title">About Capstone Project</span>
+        <p>
+            Our capstone project is a Smart Campus Management System, designed to digitalize campus operations such as scheduling, attendance, and facility booking.We use Django to develop the web application, GitHub for version control and teamwork, and Docker to manage a consistent development environment.
+        </p>
+    </div>
+
+    <div class="functionG2" style="width: 25vw;">
+        <span class="title">About Our Team</span>
+        <p>Workload Matrix</p>
     </div>
 </template>
 
-<template id="profileDropdown">
-    <div class="cardContainer">
-        <div class="studentCard">
-            <div class="watermark">
-                <svg viewBox="0 0 232 193" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M195.5 96.3955C195.5 140.026 160.13 175.396 116.5 175.396C72.8695 175.396 37.5 140.026 37.5 96.3955C37.5 52.765 72.8695 17.3955 116.5 17.3955C160.13 17.3955 195.5 52.765 195.5 96.3955Z" fill="#D9D9D9"/>
-                <path d="M116 121.396C120.372 121.396 124.687 121.342 128.932 121.238C139.935 120.968 150.465 120.357 160.298 119.456C156.05 112.027 151.323 104.294 146.173 96.3956C143.089 91.665 139.853 86.8752 136.479 82.0561C133.971 78.4745 131.452 74.9706 128.932 71.5532C124.609 65.6902 120.281 60.0821 116 54.7743C111.719 60.0821 107.391 65.6902 103.068 71.5532C100.548 74.9706 98.029 78.4746 95.5212 82.0562C92.1468 86.8752 88.9113 91.665 85.827 96.3956C80.6775 104.294 75.9497 112.027 71.7017 119.456C81.5345 120.357 92.0653 120.968 103.068 121.238C107.313 121.342 111.628 121.396 116 121.396Z" fill="#D9D9D9"/>
-                <path d="M71.7017 119.456C81.5345 120.357 92.0653 120.968 103.068 121.238C107.313 121.342 111.628 121.396 116 121.396C120.372 121.396 124.687 121.342 128.932 121.238C139.935 120.968 150.465 120.357 160.298 119.456M71.7017 119.456C75.9497 112.027 80.6775 104.294 85.827 96.3956C88.9113 91.665 92.1468 86.8752 95.5212 82.0562C98.029 78.4746 100.548 74.9706 103.068 71.5532C107.391 65.6902 111.719 60.0821 116 54.7743M71.7017 119.456C59.9036 118.374 49.1103 116.873 39.7125 115.039C16.2611 110.461 1.5 103.805 1.5 96.3955C1.5 88.9865 16.2611 82.3303 39.7125 77.7523M71.7017 119.456C65.7999 129.777 60.8241 139.512 56.9304 148.286C47.262 170.075 44.265 185.945 50.3255 190.188C56.3661 194.418 70.1832 186.242 87.2729 169.813M160.298 119.456C156.05 112.027 151.323 104.294 146.173 96.3956C143.089 91.665 139.853 86.8752 136.479 82.0561C133.971 78.4745 131.452 74.9706 128.932 71.5532C124.609 65.6902 120.281 60.0821 116 54.7743M160.298 119.456C166.37 130.074 171.461 140.071 175.403 149.041C184.806 170.441 187.665 185.994 181.674 190.188C175.668 194.394 161.973 186.334 145.018 170.092M160.298 119.456C172.538 118.334 183.697 116.76 193.337 114.831C216.179 110.261 230.5 103.693 230.5 96.3955C230.5 89.0977 216.179 82.5302 193.337 77.9598M116 54.7743C105.961 42.3285 96.173 31.5342 87.2729 22.9782C70.1832 6.54935 56.3661 -1.62706 50.3255 2.60262C44.265 6.84621 47.262 22.7166 56.9304 44.5048M116 54.7743C126.149 42.1929 136.04 31.2993 145.018 22.6995C161.973 6.45704 175.668 -1.60303 181.674 2.60266C187.665 6.79708 184.806 22.3504 175.403 43.7499M195.5 96.3955C195.5 140.026 160.13 175.396 116.5 175.396C72.8695 175.396 37.5 140.026 37.5 96.3955C37.5 52.765 72.8695 17.3955 116.5 17.3955C160.13 17.3955 195.5 52.765 195.5 96.3955Z" stroke="#D9D9D9" stroke-width="3"/>
-                </svg>
-            </div>
-            <div class="cardHeader">
-                <div class="imageWrappeer">
-                    <img src="https://www.apu.edu.my/themes/custom/apu/images/icons/footer/footer-logo.png" alt="University Logo">
-                </div>
-                <span class="userRole">
-                    {{ user_role }}
-                </span>
-            </div>
-            <div class="cardContent">
-                <div class="infoWrapper">
-                    <span class="fullname">
-                        {% if user.first_name and user.last_name %}
-                            {{ user.first_name }} {{ user.last_name }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </span>
-                    <span class="exInfo">
-                        {% if user_role == 'lecturer' %}
-                            <p>{{ extra_info }}</p>
-                        {% else %}
-                            <p>{{ extra_info.term }}</p>
-                            <p>{{ extra_info.course }}</p>
-                        {% endif %}
-                    </span>
-                </div>
-                <span class="profilePlaceholder">
-                    <svg viewBox="0 0 118 139" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M30 85.5H88C104.292 85.5 117.5 98.7076 117.5 115V138.5H0.5V115C0.5 98.7076 13.7076 85.5 30 85.5ZM59 0.5C80.263 0.5 97.5 17.737 97.5 39C97.5 60.263 80.263 77.5 59 77.5C37.737 77.5 20.5 60.263 20.5 39C20.5 17.737 37.737 0.5 59 0.5Z" />
+<template id="i-Help-dropdown">
+    {% if user.is_authenticated %}
+        {% if user_role == 'admin' %}
+        <div class="functionG1">
+            <span class="title">Knowledge Managemenet</span>
+            <span class="item"><a href="">Manage FAQ</a></span>
+            <span class="item"><a href="">Config Chatbot</a></span>
+        </div>
+
+        <div class="functionG2">
+            <span class="title">System Support</span>
+            <span class="item"><a href="">Support Tickets</a></span>
+            <span class="item"><a href="">System Logs</a></span>
+        </div>
+        {% elif user_role == 'student' or user_role == 'lecturer' %}
+        <div class="functionG1">
+            <span class="title">Self-Service Support</span>
+            <span class="item"><a href="">FAQ</a></span>
+        </div>
+
+        <div class="functionG2">
+            <span class="title">Interactive Support</span>
+            <span class="item"><a href="">Campus AI Assistant</a></span>
+            <span class="item"><a href="">Submit Ticket</a></span>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="functionG1">
+            <span class="title">Self-Service Support</span>
+            <span class="item"><a href="">FAQ</a></span>
+            <span class="item"><a href="">Campus Map/ Pathfinding</a></span>
+        </div>
+        <div class="functionG2">
+            <span class="title">Contact &amp; Availability</span>
+            <div class="itemWrapper">
+                <span class="icon">
+                    <svg viewBox="0 0 121 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.5 20L60.5 50.5L120.5 20M0.5 0.5H120.5V75.5H0.5V0.5Z"/>
                     </svg>
-                    <span class="card_id" id="card_id">{{ card_id }}</span>
                 </span>
+                <span class="item"><a href="mailto:info@apu.edu.my">info@apu.edu.my</a></span>
             </div>
-            <div class="cardFooter">
-                <div class="barcode_container">
-                    {% if user_barcode %}
-                        <img src="{{ user_barcode }}" alt="User Barcode" srcset="">
-                    {% else %}
-                        <p>No barcode available.</p>
-                    {% endif %}
+            <div class="itemWrapper">
+                <span class="icon">
+                    <svg viewBox="0 0 82 105" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.00916 8.28439C13.7716 -0.543399 25.9254 -0.612221 30.5327 1.98863C35.2657 3.75719 34.4971 18.3025 34.8388 25.4973C35.1122 31.2531 32.4926 31.5717 29.488 32.5464C24.9812 34.0086 22.1877 33.5865 22.3586 37.1839C25.2026 56.1858 37.0109 67.0739 42.3199 72.3829C47.3199 77.3829 50.8199 75.3829 52.3199 73.8829C53.8993 72.3035 55.8199 69.3829 58.3682 68.3392C60.329 67.536 76.9733 77.5786 79.8321 82.2964C82.4146 84.1151 79.6598 91.3183 78.1441 93.4704C72.9558 101.02 57.6382 111.945 37.8744 95.2445C18.1106 78.544 6.16212 51.4046 2.65836 39.9224C0.243268 33.8431 -1.75327 17.1122 6.00916 8.28439Z" />
+                    </svg>
+                </span>
+                <span class="item">(Toll-free) 1 300 888 278</span>
+            </div>
+            <div class="itemWrapper">
+                <span class="icon">
+                    <svg viewBox="0 0 82 105" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.00916 8.28439C13.7716 -0.543399 25.9254 -0.612221 30.5327 1.98863C35.2657 3.75719 34.4971 18.3025 34.8388 25.4973C35.1122 31.2531 32.4926 31.5717 29.488 32.5464C24.9812 34.0086 22.1877 33.5865 22.3586 37.1839C25.2026 56.1858 37.0109 67.0739 42.3199 72.3829C47.3199 77.3829 50.8199 75.3829 52.3199 73.8829C53.8993 72.3035 55.8199 69.3829 58.3682 68.3392C60.329 67.536 76.9733 77.5786 79.8321 82.2964C82.4146 84.1151 79.6598 91.3183 78.1441 93.4704C72.9558 101.02 57.6382 111.945 37.8744 95.2445C18.1106 78.544 6.16212 51.4046 2.65836 39.9224C0.243268 33.8431 -1.75327 17.1122 6.00916 8.28439Z" />
+                    </svg>
+                </span>
+                <span class="item">(Office) +603 8996 1000</span>
+            </div>
+        </div>
+    {% endif %}
+</template>
+
+<template id="i-Timetable-dropdown">
+    <div class="functionG1">
+        <span class="title"><a href="">View Timetable</a></span>
+        <span class="item"><a href="">Today's Class</a></span>
+        <span class="item"><a href="">Weekly View</a></span>
+    </div>
+    
+    <div class="functionG2">
+        <span class="title">Quick Actions</span>
+        <span class="item"><a href="">Navigate to Classroom</a></span>
+        <span class="item"><a href="">View Class Details</a></span>
+    </div>
+</template>
+
+<template id="i-Attendance-dropdown">
+    {% if user_role == 'student' %}
+        <div class="functionG1">
+            <span class="title">Attendance</span>
+            <span class="item"><a href="">Enter Attendance Code</a></span>
+            <span class="item"><a href="">My Attendance Rate</a></span>
+        </div>
+    {% elif user_role == 'lecturer'%}
+        <div class="functionG1">
+            <span class="title">Attendance Management</span>
+            <span class="item"><a href="">Open Attendance Session</a></span>
+            <span class="item"><a href="">Class Attendance Rate</a></span>
+        </div>
+    {% endif %}
+</template>
+
+<template id="i-Management-dropdown">
+    <div class="functionG1">
+        <span class="title"><a href="{% url 'user_management' %}">User Management</a></span>
+        <span class="item"><a href="">User CRUD</a></span>
+        <span class="item"><a href="">Bulk User Creation</a></span>
+        <span class="item"><a href="{% url 'create_user_manually' %}">Create User Manually</a></span>
+    </div>
+
+    <div class="functionG2">
+        <span class="title"><a href="{% url 'academic_management' %}">Academic Management</a></span>
+        <span class="item"><a href="{% url 'manage_academic_term' %}">Academic term</a></span>
+        <span class="item"><a href="">Departments</a></span>
+        <span class="item"><a href="">Course</a></span>
+        <span class="item"><a href="">Timetable Scheduling</a></span>
+    </div>
+</template>
+
+<template id="i-Services-dropdown">
+    {% if user_role == 'admin' %}
+        <div class="functionG1">
+            <span class="title">Management &amp; Operations</span>
+            <span class="item"><a href="">Review Booking Request</a></span>
+            <span class="item"><a href="">Manaage Points of Interest</a></span>
+        </div>
+
+        <div class="functionG2">
+            <span class="title">Infrastructure &amp; Analytics</span>
+            <span class="item"><a href="">Facility Status</a></span>
+            <span class="item"><a href="">Campus Navigation Config</a></span>
+        </div>
+    {% elif user_role == 'student' or user_role == 'lecturer' %}
+        <div class="functionG1">
+            <span class="title">Campus Resources</span>
+            <span class="item"><a href="">Book Facility</a></span>
+            <span class="item"><a href="">Booking History</a></span>
+        </div>
+        <div class="functionG2">
+            <span class="title">Campus Guide</span>
+            <span class="item"><a href="">Campus Navigation</a></span>
+            <span class="item"><a href="">Points of Interest</a></span>
+        </div>
+    {% endif %}
+</template>
+
+<template id="i-Announcements-dropdown">
+    <div class="functionG1">
+        <span class="title">Quick Actions</span>
+        <span class="item"><a href="">View All Announcement</a></span>
+        <span class="item"><a href="">Manage Announcement</a></span>
+        <span class="item"><a href="">Publish Announcement</a></span>
+    </div>
+    <div class="functionG2">
+        <span class="title">Latest Announcements</span>
+        <div class="messageContainer">
+            {% if announcements %}
+                {% for a in announcements %}
+                    <div class="message">
+                        <p class="a_title">{{ a.title }}</p>
+                        <p class="announcement"> {{ a.content }} </p>
+                        <p class="time">{{ a.publish_time }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <span class="empty-state">No recent announcements.</span>
+            {% endif %}
+        </div>
+    </div>
+</template>
+
+<template id="i-Dashboard-dropdown">
+    {% if user_role == 'admin' %}
+        <div class="functionG1">
+            <span class="title">Quick Actions</span>
+            <span class="item"><a href="{% url 'create_user_manually' %}">Add New User</a></span>
+            <span class="item"><a href="">Sytem Logs</a></span>
+            <span class="item"><a href="">Academic Management</a></span>
+        </div>
+        <div class="functionG2">
+            <span class="title">Service Actions</span>
+            <span class="item"><a href="">Reply Feedback Ticket</a></span>
+            <span class="item"><a href="">Update Announcement</a></span>
+            <span class="item"><a href="">Manage FAQ Content</a></span>
+            <span class="item"><a href="">Timetable Scheduling</a></span>
+        </div>
+    {% elif user_role == 'student' or user_role == 'lecturer' %}
+        <div class="functionG1">
+            <span class="title">Quick Actions</span>
+            <span class="item"><a href="">View Timetable</a></span>
+            {% if user_role == 'student' %}
+                <span class="item"><a href="">Enter Attendance Code</a></span>
+            {% elif user_role == 'lecturer'%}
+                <span class="item"><a href="">Open Attendance Session</a></span>
+            {% endif %}
+            <span class="item"><a href="">Campus Map</a></span>
+            <span class="item"><a href="">Facility Availability</a></span>
+            <span class="item"><a href="">My Profile</a></span>
+            <span class="item"><a href="">IT Support</a></span>
+        </div>
+        <div class="functionG2">
+            <span class="title">Today's Class</span>
+            {% if classList %}
+                <div class="classWrapper">
+                    {% for class in classList %}
+                        <div class="class">
+                            <span>{{ class.class_time }} - {{ class.class_code }} ({{ class.classroom }})</span>
+                            {% if user_role == 'student' %}
+                                <span>Attendance: {{ class.attendance_rate }}%</span>
+                            {% elif user_role == 'lecturer'%}
+                                <span>Student attendance: {{ class.attendance_rate }}%</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <span class="empty-state">No scheduled classes for today.</span>
+            {% endif %}
+        </div>
+    {% endif %}
+</template>
+
+<template id="i-Profile-dropdown">
+    {% if user.is_authenticated %}
+        <div class="cardContainer">
+            <div class="studentCard">
+                <div class="watermark">
+                    <svg viewBox="0 0 232 193" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M195.5 96.3955C195.5 140.026 160.13 175.396 116.5 175.396C72.8695 175.396 37.5 140.026 37.5 96.3955C37.5 52.765 72.8695 17.3955 116.5 17.3955C160.13 17.3955 195.5 52.765 195.5 96.3955Z" fill="#D9D9D9"/>
+                    <path d="M116 121.396C120.372 121.396 124.687 121.342 128.932 121.238C139.935 120.968 150.465 120.357 160.298 119.456C156.05 112.027 151.323 104.294 146.173 96.3956C143.089 91.665 139.853 86.8752 136.479 82.0561C133.971 78.4745 131.452 74.9706 128.932 71.5532C124.609 65.6902 120.281 60.0821 116 54.7743C111.719 60.0821 107.391 65.6902 103.068 71.5532C100.548 74.9706 98.029 78.4746 95.5212 82.0562C92.1468 86.8752 88.9113 91.665 85.827 96.3956C80.6775 104.294 75.9497 112.027 71.7017 119.456C81.5345 120.357 92.0653 120.968 103.068 121.238C107.313 121.342 111.628 121.396 116 121.396Z" fill="#D9D9D9"/>
+                    <path d="M71.7017 119.456C81.5345 120.357 92.0653 120.968 103.068 121.238C107.313 121.342 111.628 121.396 116 121.396C120.372 121.396 124.687 121.342 128.932 121.238C139.935 120.968 150.465 120.357 160.298 119.456M71.7017 119.456C75.9497 112.027 80.6775 104.294 85.827 96.3956C88.9113 91.665 92.1468 86.8752 95.5212 82.0562C98.029 78.4746 100.548 74.9706 103.068 71.5532C107.391 65.6902 111.719 60.0821 116 54.7743M71.7017 119.456C59.9036 118.374 49.1103 116.873 39.7125 115.039C16.2611 110.461 1.5 103.805 1.5 96.3955C1.5 88.9865 16.2611 82.3303 39.7125 77.7523M71.7017 119.456C65.7999 129.777 60.8241 139.512 56.9304 148.286C47.262 170.075 44.265 185.945 50.3255 190.188C56.3661 194.418 70.1832 186.242 87.2729 169.813M160.298 119.456C156.05 112.027 151.323 104.294 146.173 96.3956C143.089 91.665 139.853 86.8752 136.479 82.0561C133.971 78.4745 131.452 74.9706 128.932 71.5532C124.609 65.6902 120.281 60.0821 116 54.7743M160.298 119.456C166.37 130.074 171.461 140.071 175.403 149.041C184.806 170.441 187.665 185.994 181.674 190.188C175.668 194.394 161.973 186.334 145.018 170.092M160.298 119.456C172.538 118.334 183.697 116.76 193.337 114.831C216.179 110.261 230.5 103.693 230.5 96.3955C230.5 89.0977 216.179 82.5302 193.337 77.9598M116 54.7743C105.961 42.3285 96.173 31.5342 87.2729 22.9782C70.1832 6.54935 56.3661 -1.62706 50.3255 2.60262C44.265 6.84621 47.262 22.7166 56.9304 44.5048M116 54.7743C126.149 42.1929 136.04 31.2993 145.018 22.6995C161.973 6.45704 175.668 -1.60303 181.674 2.60266C187.665 6.79708 184.806 22.3504 175.403 43.7499M195.5 96.3955C195.5 140.026 160.13 175.396 116.5 175.396C72.8695 175.396 37.5 140.026 37.5 96.3955C37.5 52.765 72.8695 17.3955 116.5 17.3955C160.13 17.3955 195.5 52.765 195.5 96.3955Z" stroke="#D9D9D9" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="cardHeader">
+                    <div class="imageWrappeer">
+                        <img src="https://www.apu.edu.my/themes/custom/apu/images/icons/footer/footer-logo.png" alt="University Logo">
+                    </div>
+                    <span class="userRole">
+                        {{ user_role }}
+                    </span>
+                </div>
+                <div class="cardContent">
+                    <div class="infoWrapper">
+                        <span class="fullname">
+                            {% if user.first_name and user.last_name %}
+                                {{ user.first_name }} {{ user.last_name }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                        <span class="exInfo">
+                            {% if user_role == 'lecturer' %}
+                                <p>{{ extra_info }}</p>
+                            {% else %}
+                                <p>{{ extra_info.term }}</p>
+                                <p>{{ extra_info.course }}</p>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <span class="profilePlaceholder">
+                        <svg viewBox="0 0 118 139" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M30 85.5H88C104.292 85.5 117.5 98.7076 117.5 115V138.5H0.5V115C0.5 98.7076 13.7076 85.5 30 85.5ZM59 0.5C80.263 0.5 97.5 17.737 97.5 39C97.5 60.263 80.263 77.5 59 77.5C37.737 77.5 20.5 60.263 20.5 39C20.5 17.737 37.737 0.5 59 0.5Z" />
+                        </svg>
+                        <span class="card_id" id="card_id">{{ card_id }}</span>
+                    </span>
+                </div>
+                <div class="cardFooter">
+                    <div class="barcode_container">
+                        {% if user_barcode %}
+                            <img src="{{ user_barcode }}" alt="User Barcode" srcset="">
+                        {% else %}
+                            <p>No barcode available.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="profileG1">
-        <span class="title">Quick Actions</span>
-        <span class="item"><a href="">My Profile</a></span>
-        <div class="logoutWrapper">
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="logout-btn">Log Out</button>
-            </form>
+        <div class="profileG1">
+            <span class="title">Quick Actions</span>
+            <span class="item"><a href="">My Profile</a></span>
+            <div class="logoutWrapper">
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">Log Out</button>
+                </form>
+            </div>
         </div>
-    </div>
+    {% else %}
+        <div class="profileG1" style="width: max-content;">
+            <span class="title" style="white-space: nowrap; width: max-content;">Welcome, to Smart Campus Management System.</span>
+            <span class="item"><a class="login-r" href="{% url 'login' %}">Sign In to Continue</a></span>
+        </div>
+    {% endif %}
+    
 </template>

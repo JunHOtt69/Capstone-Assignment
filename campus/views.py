@@ -80,26 +80,32 @@ class RoleBasedLoginView(LoginView):
     
     def get_success_url(self):
         user = self.request.user
-
-        # redirect based on group name
-        if user.groups.filter(name="admin").exists():
-            return reverse_lazy("admin_dashboard")
-        if user.groups.filter(name="lecturer").exists():
-            return reverse_lazy("lecturer_dashboard")
-        if user.groups.filter(name="student").exists():
-            return reverse_lazy("student_dashboard")
-
-        # fallback
-        else: 
+        target = redirect_user_by_role(user)
+        if(target == "account_error"):
             logout(self.request)
             return reverse_lazy("account_error")
+        return reverse_lazy(target)
+            
+            
+
+#redirect user to their dashboard:
+def redirect_user_by_role(user):
+    if user.groups.filter(name="admin").exists():
+        return "admin_dashboard"
+    if user.groups.filter(name="lecturer").exists():
+        return "lecturer_dashboard"
+    if user.groups.filter(name="student").exists():
+        return "student_dashboard"
+    return "account_error"
 
 # Create your views here.
 def home(request): 
+    if request.user.is_authenticated:
+        return redirect(redirect_user_by_role(request.user))
     return render(request, "home.html")
 
 def about(request): 
-    return render(request, "about.html")
+    return render(request, "about.html") 
 
 @login_required
 def account_error(request):
@@ -128,6 +134,47 @@ def editmap(request):
 
 def attendance(request): 
     return render(request, "attendance.html")
+
+import random
+
+def attendance_signup(request):
+    if request.method == "POST":
+        input_otp = (request.POST.get("otp") or "").strip()
+        saved_otp = request.session.get("attendance_otp")
+
+        if not saved_otp:
+            return JsonResponse({
+                "ok": False,
+                "message": "OTP not available yet. Please ask lecturer to generate OTP."
+            })
+
+        if input_otp != saved_otp:
+            return JsonResponse({
+                "ok": False,
+                "message": "Invalid code. Please try again."
+            })
+
+        request.session.pop("attendance_otp", None)
+        return JsonResponse({
+            "ok": True,
+            "message": "Attendance successful!"
+        })
+
+    return render(request, "attendance_signup.html")
+
+
+def attendance_lecturer_otp(request):
+    otp = None
+
+    if request.method == "POST":
+        otp = f"{random.randint(0, 9999):04d}"
+        request.session["attendance_otp"] = otp
+    else:
+        otp = request.session.get("attendance_otp")
+
+    return render(request, "attendance_lecturer_otp.html", {
+        "otp": otp
+    })
 
 def user_management(request):
     return render(request, "user_management.html")
@@ -207,7 +254,8 @@ def create_user_manually(request):
         "dept" : dept,
         "available_term" : available_term,
         "form":  None,
-        "selected_role": None
+        "selected_role": None,
+        "error" : None,
     }
 
     if request.method == 'POST':
@@ -219,6 +267,8 @@ def create_user_manually(request):
         request.session['selected_role_id'] = role_id
 
         try:
+            users_to_invite = []
+
             with transaction.atomic():
                 for i in range(len(first_names)):
                     email = emails[i]
@@ -234,42 +284,18 @@ def create_user_manually(request):
                         last_name = last_names[i],
                     )
 
+                    users_to_invite.append({
+                        'email': emails[i],
+                        'first_name': first_names[i],
+                        'user': new_user
+                    })
+
                     unique_id = generate_user_id(id_to_name.get(str(role_id)))
                     new_user.set_unusable_password()
                     new_user.save()
 
                     #schedule email after transaction succeeds
-                    def send_invite(to_email = email, first_name = first_names[i], user_id = new_user.id):
-                        user = User.objects.get(id=user_id)
-                        link = build_set_password_link(request, user)
-
-                        subject = "Set your Smart Campus password"
-                        from_email=None
-                        to = [to_email]
-                        
-                        html_content = render_to_string(
-                            'emails/set_password_email.html',
-                            {
-                                "first_name" : first_name,
-                                "reset_link": link,
-                            },
-                        )
-                        text_content = f"""
-Hi{first_name},
-Your administrative account for the Smart Campus Management System has been successfully created.
-
-To get started, please click the button below to set your account password.
-{link}
-
-If you have any issues accessing your account, please contact the IT Helpdesk.
-"""
-                        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
-                        msg.attach_alternative(html_content, "text/html")
-                        msg.send()
-                        print(f"New User Created. Set Password: {link}")
-                    transaction.on_commit(send_invite)
                     
-
                     if str(role_id) == str(groups.get('admin')):
                         new_user.is_staff = True
                         new_user.save()
@@ -318,7 +344,48 @@ If you have any issues accessing your account, please contact the IT Helpdesk.
                         except academic_term.DoesNotExist:
                             raise Exception(f"The selected academic term for student {i+1} does not exists. ")
 
-            messages.success(request, f'Successfully created {len(first_names)} user(s)!')
+            email_errors = []
+            for invite in users_to_invite:
+                try: 
+                    user = invite['user']
+                    link = build_set_password_link(request, user)
+
+                    subject = "Set your Smart Campus password"
+                    from_email=None
+                    to = [invite['email']]
+                    
+                    html_content = render_to_string(
+                        'emails/set_password_email.html',
+                        {
+                            "first_name" : invite['first_name'],
+                            "reset_link": link,
+                        },
+                    )
+                    text_content = f"""
+    Hi{invite['first_name']},
+    Your administrative account for the Smart Campus Management System has been successfully created.
+
+    To get started, please click the button below to set your account password.
+    {link}
+
+    If you have any issues accessing your account, please contact the IT Helpdesk.
+    """
+                    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send()
+                    print(f"New User Created. Set Password: {link}")
+                    
+                except Exception as e: 
+                    email_errors.append(f"{invite['email']}: {e}")
+                    
+            if email_errors:
+                messages.warning(
+                    request,
+                    "Users were created, but email could not be sent. Please check email settings / resend."
+                )
+                print("Email sending errors:", email_errors)
+            else:
+                messages.success(request, f'Successfully created {len(first_names)} user(s)!')
 
             return redirect('create_user_manually')
         
@@ -327,6 +394,8 @@ If you have any issues accessing your account, please contact the IT Helpdesk.
             print(f"Error during user creation: {e}")
             messages.error(request, f"An error occurred: {str(e)}")
             context["selected_role"] = request.session.get('role_id')
+            context['error'] = f"An error occurred: {str(e)}"
+            return render(request, "partials/create_user_manually.html", context)
 
     else: 
         context["form"] = UserRowForm()
@@ -476,3 +545,6 @@ def save_map(request):
         return JsonResponse({"message": "Map saved successfully!"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+def announcements(request): 
+    return render(request, "dashboards/announcements.html")

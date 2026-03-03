@@ -16,7 +16,6 @@ def card_context(request):
     extra_info = None
 
     group_names = set(u.groups.values_list('name', flat=True))
-    print('hello1')
     try: 
         if any('admin' in g.lower() for g in group_names) and hasattr(u, 'admin_profile'):
             role = 'admin'
@@ -29,8 +28,8 @@ def card_context(request):
         elif any('student' in g.lower() for g in group_names) and hasattr(u, 'student_profile'):
             role = 'student'
             card_id = u.student_profile.tp_id
-            term = u.course_enrollment.term_id.intake_code
-            course = u.course_enrollment.term_id.course_id.course_name
+            term = u.course_enrollment.term.intake_code
+            course = u.course_enrollment.term.course.course_name
             extra_info = {
                 'term' : term if term else 'N/A',
                 'course' : course if course else 'N/A',
@@ -54,8 +53,6 @@ def card_context(request):
 
             base64_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
             barcode_base64 = f"data:image/png;base64,{base64_str}"
-            print('hello')
-            print('barcode = ', barcode_base64)
     except Exception as e:
         print(f"Barcode error: {e}")
     

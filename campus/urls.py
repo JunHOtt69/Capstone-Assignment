@@ -11,6 +11,8 @@ urlpatterns = [
     path("dashboard/lecturer/", views.lecturer_dashboard, name="lecturer_dashboard"),
     path("dashboard/student/", views.student_dashboard, name="student_dashboard"),
     path("attendance/", views.attendance, name="attendance"),
+    path("attendance/signup/",views.attendance_signup, name="attendance_signup"),
+    path("attendance/lecturer-otp/", views.attendance_lecturer_otp, name="attendance_lecturer_otp"),
     path("navigation/", views.navigation, name="navigation"),
     path("editmap/", views.editmap, name="editmap"),
     path("user/", views.user_management, name="user_management"),
@@ -22,4 +24,7 @@ urlpatterns = [
     path("check-email/", views.check_email_exists, name="check_email"),
     path("navigation/map-data/", views.map_data, name="map_data"),
     path("save-map/", views.save_map, name="save_map"),    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('announcements/', views.announcements, name='announcements'),
 ]
+

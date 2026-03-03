@@ -34,10 +34,14 @@
             <div class="errorMessage" id="errorMessageContainer">
                 {% if messages %}
                     {% for message in messages %}
-                        {% if "error" in message.tags %}
+                        <p>[{{ message.tags }}] {{ message }}</p>
+                        {% comment %} {% if "error" in message.tags %}
                             <p>{{ message }}</p>
-                        {% endif %}
+                        {% endif %} {% endcomment %}
                     {% endfor %}
+                {% endif %}
+                {% if error %}
+                    <p>{{ error }}</p>
                 {% endif %}
             </div>
             <div class="controlWrapper">
