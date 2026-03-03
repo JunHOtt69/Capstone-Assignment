@@ -222,20 +222,30 @@
             <span class="item"><a href="">Campus Map/ Pathfinding</a></span>
         </div>
         <div class="functionG2">
-            <div class="category2">
-                <span class="title">Contact &amp; Availability</span>
-                <div class="itemWrapper">
-                    <span class="icon"></span>
-                    <span class="item"><a href="mailto:info@apu.edu.my">info@apu.edu.my</a></span>
-                </div>
-                <div class="itemWrapper">
-                    <span class="icon"></span>
-                    <span class="item">(Toll-free) 1 300 888 278</span>
-                </div>
-                <div class="itemWrapper">
-                    <span class="icon"></span>
-                    <span class="item">(Office) +603 8996 1000</span>
-                </div>
+            <span class="title">Contact &amp; Availability</span>
+            <div class="itemWrapper">
+                <span class="icon">
+                    <svg viewBox="0 0 121 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.5 20L60.5 50.5L120.5 20M0.5 0.5H120.5V75.5H0.5V0.5Z"/>
+                    </svg>
+                </span>
+                <span class="item"><a href="mailto:info@apu.edu.my">info@apu.edu.my</a></span>
+            </div>
+            <div class="itemWrapper">
+                <span class="icon">
+                    <svg viewBox="0 0 82 105" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.00916 8.28439C13.7716 -0.543399 25.9254 -0.612221 30.5327 1.98863C35.2657 3.75719 34.4971 18.3025 34.8388 25.4973C35.1122 31.2531 32.4926 31.5717 29.488 32.5464C24.9812 34.0086 22.1877 33.5865 22.3586 37.1839C25.2026 56.1858 37.0109 67.0739 42.3199 72.3829C47.3199 77.3829 50.8199 75.3829 52.3199 73.8829C53.8993 72.3035 55.8199 69.3829 58.3682 68.3392C60.329 67.536 76.9733 77.5786 79.8321 82.2964C82.4146 84.1151 79.6598 91.3183 78.1441 93.4704C72.9558 101.02 57.6382 111.945 37.8744 95.2445C18.1106 78.544 6.16212 51.4046 2.65836 39.9224C0.243268 33.8431 -1.75327 17.1122 6.00916 8.28439Z" />
+                    </svg>
+                </span>
+                <span class="item">(Toll-free) 1 300 888 278</span>
+            </div>
+            <div class="itemWrapper">
+                <span class="icon">
+                    <svg viewBox="0 0 82 105" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.00916 8.28439C13.7716 -0.543399 25.9254 -0.612221 30.5327 1.98863C35.2657 3.75719 34.4971 18.3025 34.8388 25.4973C35.1122 31.2531 32.4926 31.5717 29.488 32.5464C24.9812 34.0086 22.1877 33.5865 22.3586 37.1839C25.2026 56.1858 37.0109 67.0739 42.3199 72.3829C47.3199 77.3829 50.8199 75.3829 52.3199 73.8829C53.8993 72.3035 55.8199 69.3829 58.3682 68.3392C60.329 67.536 76.9733 77.5786 79.8321 82.2964C82.4146 84.1151 79.6598 91.3183 78.1441 93.4704C72.9558 101.02 57.6382 111.945 37.8744 95.2445C18.1106 78.544 6.16212 51.4046 2.65836 39.9224C0.243268 33.8431 -1.75327 17.1122 6.00916 8.28439Z" />
+                    </svg>
+                </span>
+                <span class="item">(Office) +603 8996 1000</span>
             </div>
         </div>
     {% endif %}
@@ -397,7 +407,7 @@
     {% else %}
         <div class="profileG1" style="width: max-content;">
             <span class="title" style="white-space: nowrap; width: max-content;">Welcome, to Smart Campus Management System.</span>
-            <span class="item"><a href="{% url 'login' %}">Sign In to Continue</a></span>
+            <span class="item"><a class="login-r" href="{% url 'login' %}">Sign In to Continue</a></span>
         </div>
     {% endif %}
     

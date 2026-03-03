@@ -299,6 +299,16 @@ p{
     flex-shrink: 0;
 }
 
+.dropDownContentWrapper .profileG1 .login-r{
+    text-decoration: underline;
+    transition: color 0.2s font-size 0.2s;
+    color: rgba(var(--black), 1);
+}
+
+.dropDownContentWrapper .profileG1 .login-r:hover{
+    color: rgba(var(--dark-green), 1);
+}
+
 .dropDownContentWrapper .functionG2{
     width: max-content;
     padding: 0 0.6vw;
@@ -313,6 +323,11 @@ p{
     transition: 
         transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, 
         opacity 0.3s ease 0.1s;
+}
+
+.dropDownContentWrapper .functionG1 p,
+.dropDownContentWrapper .functionG2 p{
+    font-size: var(--xs-fontsize);
 }
 
 .dropDownContentWrapper[data-switching='start'] .functionG1,
@@ -359,8 +374,46 @@ p{
 
 .dropDownContentWrapper a:hover,
 .dropDownContentWrapper .item:hover,
-.dropDownContentWrapper button:hover{
+.dropDownContentWrapper button:hover,
+.itemWrapper:has(.icon:hover) .item,
+.itemWrapper:has(.icon:hover) a{
     font-size: calc(var(--xs-fontsize) + 0.05vw);
+}
+
+.functionG1 .itemWrapper,
+.functionG2 .itemWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    height: auto;
+}
+
+.itemWrapper .icon{
+    overflow: hidden;
+    object-fit: contain;
+    width: 1vw;
+    height: 1vw;
+    transform-origin: left center;
+    transform: scale(1);
+    transition: transform 0.2s;
+}
+
+.itemWrapper .icon svg{
+    stroke-width: 0.5vw;
+    stroke: rgba(var(--black), 0.5);
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.itemWrapper .icon svg path{
+    stroke: rgba(var(--black), 0.5);
+}
+
+.itemWrapper:has(.item:hover) .icon,
+.itemWrapper .icon:hover{
+    transform: scale(1.05);
 }
 
 .dropDownContentWrapper .messageContainer{
