@@ -69,6 +69,14 @@
   font-weight: bold;
   border-radius: 10px;
   margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.acc-icon{
+  font-weight: 900;
+  font-size: 1.2rem;
 }
 
 .panel{
@@ -96,4 +104,20 @@
 }
 .bar-fill.good{
   background: green
+}
+
+.otp-grid{
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.otp-box-input{
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 800;
+  border: 3px solid black;
+  border-radius: 12px;
 }
