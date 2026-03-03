@@ -28,8 +28,8 @@ def card_context(request):
         elif any('student' in g.lower() for g in group_names) and hasattr(u, 'student_profile'):
             role = 'student'
             card_id = u.student_profile.tp_id
-            term = u.course_enrollment.term_id.intake_code
-            course = u.course_enrollment.term_id.course_id.course_name
+            term = u.course_enrollment.term.intake_code
+            course = u.course_enrollment.term.course.course_name
             extra_info = {
                 'term' : term if term else 'N/A',
                 'course' : course if course else 'N/A',

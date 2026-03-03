@@ -299,6 +299,16 @@ p{
     flex-shrink: 0;
 }
 
+.dropDownContentWrapper .profileG1 .login-r{
+    text-decoration: underline;
+    transition: color 0.2s font-size 0.2s;
+    color: rgba(var(--black), 1);
+}
+
+.dropDownContentWrapper .profileG1 .login-r:hover{
+    color: rgba(var(--dark-green), 1);
+}
+
 .dropDownContentWrapper .functionG2{
     width: max-content;
     padding: 0 0.6vw;
@@ -313,6 +323,11 @@ p{
     transition: 
         transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, 
         opacity 0.3s ease 0.1s;
+}
+
+.dropDownContentWrapper .functionG1 p,
+.dropDownContentWrapper .functionG2 p{
+    font-size: var(--xs-fontsize);
 }
 
 .dropDownContentWrapper[data-switching='start'] .functionG1,
@@ -359,8 +374,129 @@ p{
 
 .dropDownContentWrapper a:hover,
 .dropDownContentWrapper .item:hover,
-.dropDownContentWrapper button:hover{
+.dropDownContentWrapper button:hover,
+.itemWrapper:has(.icon:hover) .item,
+.itemWrapper:has(.icon:hover) a{
     font-size: calc(var(--xs-fontsize) + 0.05vw);
+}
+
+.functionG1 .itemWrapper,
+.functionG2 .itemWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    height: auto;
+}
+
+.itemWrapper .icon{
+    overflow: hidden;
+    object-fit: contain;
+    width: 1vw;
+    height: 1vw;
+    transform-origin: left center;
+    transform: scale(1);
+    transition: transform 0.2s;
+}
+
+.itemWrapper .icon svg{
+    stroke-width: 0.5vw;
+    stroke: rgba(var(--black), 0.5);
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.itemWrapper .icon svg path{
+    stroke: rgba(var(--black), 0.5);
+}
+
+.functionG2:has(.classWrapper){
+    flex-grow: 1;
+    min-width: 0;
+    width: auto;
+    padding-right: 0;
+}
+
+.functionG1 .classWrapper,
+.functionG2 .classWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.7vw;
+    overflow: hidden;
+    overflow-y: auto;
+    padding-right: 1vw;
+}
+
+.classWrapper::-webkit-scrollbar {
+    width: 0.2vw;
+    z-index: 9999;
+}
+
+.classWrapper::-webkit-scrollbar-track {
+    background: rgba(var(--black), 0.05);
+}
+
+.classWrapper::-webkit-scrollbar-thumb {
+    background: rgba(var(--black), 0.3); 
+}
+
+.classWrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 1); 
+}
+
+.functionG2 .classWrapper .class{
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.3vw;
+    padding-left: 1vw;
+}
+
+.functionG2 .classWrapper .class::before{
+    content: '○';
+    position: absolute;
+    left: 0;
+    color: rgba(var(--black), 1);
+    font-size: var(--xs-fontsize);
+}
+
+.functionG2 .classWrapper .class::after{
+    content: '';
+    position: absolute;
+    top: 0.65vw;
+    left: 0.19vw;
+    border-left: 0.05vw solid rgba(var(--black), 0.5);
+    width: 1%;
+    height: calc(100% + 0.45vw);
+}
+
+.functionG2 .classWrapper .class:last-child::after{
+    display: none;
+}
+
+.functionG1 .empty-state,
+.functionG2 .empty-state{
+    color: rgba(var(--black), 0.6);
+    font-size: var(--xs-fontsize);
+    cursor: default;
+}
+
+.functionG1 .empty-state:hover,
+.functionG2 .empty-state:hover{
+    color: rgba(var(--black), 0.6);
+    font-size: var(--xs-fontsize);
+    cursor: default;
+}
+
+
+.itemWrapper:has(.item:hover) .icon,
+.itemWrapper .icon:hover{
+    transform: scale(1.05);
 }
 
 .dropDownContentWrapper .messageContainer{
@@ -369,11 +505,6 @@ p{
     align-items: flex-start;
     flex-direction: column;
     gap: 1vw;
-}
-
-.dropDownContentWrapper .messageContainer span{
-    color: rgba(var(--black), 0.6);
-    font-size: var(--xs-fontsize);
 }
 
 .dropDownContentWrapper .messageContainer .message{
@@ -809,8 +940,8 @@ header li a{
     gap: 5px;
     font-weight: 600;
     z-index: 2;
-    width: 290px; 
-    max-width: 290px; 
+    width: 300px; 
+    max-width: 300px; 
     flex-shrink: 0;
 }
 
@@ -857,6 +988,8 @@ header li a{
     align-items: center;
     overflow: hidden;
     font-size: 14px;
+    opacity: 1;
+    visibility: visible;
 }
 
 .profilePlaceholder .card_id span{
@@ -986,8 +1119,8 @@ header li a{
 
     .cardContent .infoWrapper{
         gap: 4px;
-        width: 232px; 
-        max-width: 232px; 
+        width: 245px; 
+        max-width: 245px; 
     }
 
     .infoWrapper .fullname{
@@ -1006,5 +1139,9 @@ header li a{
 
     .cardFooter .barcode_container{
         padding: 4px 16px 8px;
+    }
+
+    .profilePlaceholder .card_id span{
+        font-size: 11.2px;
     }
 }
