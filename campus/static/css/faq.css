@@ -1,0 +1,66 @@
+main{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+.faqPage{
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    margin: 0;
+    flex: 1;
+}
+
+span:has(svg){
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    object-fit: contain;
+    overflow: hidden;
+    width: 2vw;
+    height: 2vw;
+    padding: 0.2vw;
+}
+
+span svg{
+    max-width: 100%;
+    max-height: 100%;
+    fill: none;
+    margin-right: 0.1vw;
+    cursor: pointer;
+}
+
+span svg path{
+    fill: none;
+    stroke: rgba(var(--black), 1);
+    stroke-linecap: square;
+    stroke-linejoin: square;
+    stroke-width: 8;
+}
+
+.visibleIcon .eye-closed path,
+.visibleIcon .eye-open .fill{
+    fill: rgba(var(--black), 1);
+    stroke: rgba(var(--black), 1);
+    stroke-width: 1;
+}
+
+.visibleIcon .eye-open path{
+    stroke: none;
+}
+
+.visibleIcon[data-visible=true] .eye-closed,
+.visibleIcon[data-visible=false] .eye-open{
+    display: none;
+}
+
+.visibleIcon[data-visible=true] .eye-open,
+.visibleIcon[data-visible=false] .eye-closed{
+    display: block;
+}
+
+.ql-hidden{
+    display: none;
+}

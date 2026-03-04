@@ -1,5 +1,5 @@
 from django import forms
-from .models import course, academic_term
+from .models import course, academic_term, faq
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, PasswordResetForm
 
 class CustomLoginForm(AuthenticationForm):
@@ -93,3 +93,17 @@ class AcademicTermForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         return cleaned_data
+
+class newFAQForm(forms.ModelForm):
+    class Meta:
+        model = faq
+        fields = ['title', 'content', 'category', 'is_published']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class' : 'form-control',
+                'placeholder': ''
+                }),
+            'content': forms.HiddenInput(),
+            'category' : forms.HiddenInput(),
+            'is_published': forms.HiddenInput(),
+        }
