@@ -203,7 +203,7 @@ p{
 }
 
 /* openedDropdown */
-.navbarDropdown{
+/* .navbarDropdown{
     --dropdown-height: 0px;
     position: absolute;
     top: 100%;
@@ -219,9 +219,9 @@ p{
     opacity: 1;
     box-shadow: 0 1vw 1vw -0.8vw rgba(var(--black), 0.2);
     margin: 0;
-}
+} */
 
-/* .navbarDropdown{
+.navbarDropdown{
     --dropdown-height: 0px;
     position: absolute;
     top: 100%;
@@ -238,7 +238,7 @@ p{
     opacity: 1;
     box-shadow: 0 1vw 1vw -0.8vw rgba(var(--black), 0.2);
     margin: 0;
-} */
+}
 
 .navbarDropdown.animatingExtend{
     transition: 

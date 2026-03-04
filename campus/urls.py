@@ -42,5 +42,10 @@ urlpatterns = [
     path('FAQ/', views.viewFAQ, name='viewFAQ'),
     path('support-center/', views.support_center,name='support_center'),
     path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
+    path('review-feedback/', views.review_feedback,name='review_feedback'),
+    path('submit-feedback/', views.submit_feedback,name='submit_feedback'),
+    path('manage-faq/', views.manage_faq,name='manage_faq'),
+    path('config-bot/', views.config_bot,name='config_bot'),
+    path('system-log/', views.system_log,name='system_log'),
 ]
 
