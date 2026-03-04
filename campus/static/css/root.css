@@ -203,7 +203,7 @@ p{
 }
 
 /* openedDropdown */
-/* .navbarDropdown{
+.navbarDropdown{
     --dropdown-height: 0px;
     position: absolute;
     top: 100%;
@@ -219,9 +219,9 @@ p{
     opacity: 1;
     box-shadow: 0 1vw 1vw -0.8vw rgba(var(--black), 0.2);
     margin: 0;
-} */
+}
 
-.navbarDropdown{
+/* .navbarDropdown{
     --dropdown-height: 0px;
     position: absolute;
     top: 100%;
@@ -238,7 +238,7 @@ p{
     opacity: 1;
     box-shadow: 0 1vw 1vw -0.8vw rgba(var(--black), 0.2);
     margin: 0;
-}
+} */
 
 .navbarDropdown.animatingExtend{
     transition: 
@@ -827,9 +827,9 @@ header li a{
 }
 
 .cardContainer{
-    width: max-content;
-    max-width: 20vw;
-    height: max-content;
+    width: 22vw;
+    max-width: 22vw;
+    height: 13vw;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -837,24 +837,25 @@ header li a{
     background-color: transparent;
     margin: 0;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .studentCard{
     background-color: rgba(var(--dark-blue), 1);
-    width: 450px;
-    height: 270px;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     display: flex;
     justify-content: flex-start;
     align-items: center;
     flex-direction: column;
-    border-radius: 15px;
+    border-radius: 0.6vw;
     color: white;
     font-family: "Nunito Sans", sans-serif;
-    font-size: 12px;
+    font-size: var(--xs-fontsize);
     font-weight: 400;
-    letter-spacing: 1px;
-    border: 1px solid rgba(var(--black), 0.2);
+    letter-spacing: 0.1vw;
+    border: 0.01vw solid rgba(var(--black), 0.2);
     position: relative;
     /* transform: scale(0.8); */
     margin: 0;
@@ -863,8 +864,8 @@ header li a{
 .studentCard span,
 .studentCard p{
     font-family: "Nunito Sans", sans-serif;
-    font-size: 14px;
-    letter-spacing: 1px;
+    font-size: var(--xs-fontsize);
+    letter-spacing: 0;
     text-align: justify;
 }
 
@@ -884,8 +885,8 @@ header li a{
 }
 
 .studentCard .watermark svg{
-    width: 100px;
-    height: 100px;
+    width: 5vw;
+    height: 5vw;
     aspect-ratio: 1/1;
 }
 
@@ -897,7 +898,7 @@ header li a{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px 5px;
+    padding: 0.5vw 1vw 0.3vw;
     user-select: none;
 }
 
@@ -916,6 +917,7 @@ header li a{
 .cardHeader .userRole,
 .cardContent .fullname{
     text-transform: uppercase;
+    letter-spacing: 0.1vw;
 }
 
 .cardContent{
@@ -926,8 +928,8 @@ header li a{
     flex: 1;
     min-height: 0;
     width: 100%;
-    padding: 0px 20px;
-    gap: 20px;
+    padding: 0.5vw 1vw;
+    gap: 1vw;
     color: rgba(var(--black), 1);
 }
 
@@ -937,18 +939,19 @@ header li a{
     justify-content: flex-start;
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
+    gap: 0;
     font-weight: 600;
-    z-index: 2;
-    width: 300px; 
-    max-width: 300px; 
+    z-index: 2; 
     flex-shrink: 0;
+    flex-grow: 1;
+    min-width: 0;
+    max-width: 14vw;
 }
 
 .infoWrapper .fullname{
-    font-size: 24px;
+    font-size: var(--h4-fontsize);
     font-weight: 800;
-    margin-bottom: 10px;
+    margin-bottom: 0.5vw;
 }
 
 .infoWrapper .exInfo{
@@ -956,19 +959,28 @@ header li a{
     justify-content: flex-start;
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
+    gap: 0.2vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    text-align: justify;
+    width: 100%;
 }
 
 .profilePlaceholder{
     background-color: transparent;
     overflow: hidden;
-    width: 140px;
-    max-width: 140px;
+    width: 4.8vw;
+    max-height: 100%;
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
+    flex-shrink: 0;
+    gap: 0.5vw;
 }
 
 .profilePlaceholder svg{
@@ -987,13 +999,13 @@ header li a{
     justify-content: space-between;
     align-items: center;
     overflow: hidden;
-    font-size: 14px;
+    font-size: var(--xs-fontsize);
     opacity: 1;
     visibility: visible;
 }
 
 .profilePlaceholder .card_id span{
-    font-size: 14px;
+    font-size: var(--xs-fontsize);
 }
 
 .cardFooter{
@@ -1009,7 +1021,7 @@ header li a{
 .cardFooter .barcode_container{
     height: 100%;
     width: auto;
-    padding: 5px 20px 10px;
+    padding: 0.3vw 1vw 0.3vw;
 }
 
 .barcode_container img{
@@ -1083,7 +1095,7 @@ header li a{
     }
 }
 
-@media screen and (max-width: 1920px) {
+/* @media screen and (max-width: 1920px) {
     .studentCard{
         width: 360px;
         height: 200px;
@@ -1144,4 +1156,4 @@ header li a{
     .profilePlaceholder .card_id span{
         font-size: 11.2px;
     }
-}
+} */

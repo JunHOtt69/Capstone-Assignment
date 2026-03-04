@@ -25,6 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6w5(#3de8ys3+oua)zv)cb(7p40+2m-cr$f_r@i#vnt4jz9kl6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+#ENABLE 1
 DEBUG = True
 # DEBUG = False
 
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'campus'
 ]
+
+#ENABLE 2
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -126,6 +129,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
+#ENABLE 3
 # STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
