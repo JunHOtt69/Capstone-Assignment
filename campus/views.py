@@ -566,5 +566,17 @@ def support_center(request):
 def smart_assistant(request):
     return render(request, 'help/smart_assistant.html')
 
-def announcements(request): 
-    return render(request, "dashboards/announcements.html")
+def review_feedback(request): 
+    return render(request, "help/review_feedback.html")
+
+def submit_feedback(request): 
+    return render(request, "help/submit_feedback.html")
+
+def manage_faq(request): 
+    return render(request, "help/manage_faq.html")
+
+def config_bot(request): 
+    return render(request, "help/config_bot.html")
+
+def system_log(request): 
+    return render(request, "help/system_log.html")

@@ -198,14 +198,14 @@
         {% if user_role == 'admin' %}
         <div class="functionG1">
             <span class="title">Knowledge Managemenet</span>
-            <span class="item"><a href="">Manage FAQ</a></span>
-            <span class="item"><a href="">Config Chatbot</a></span>
+            <span class="item"><a href="{% url "manage_faq" %}">Manage FAQ</a></span>
+            <span class="item"><a href="{% url "config_bot" %}">Config Chatbot</a></span>
         </div>
 
         <div class="functionG2">
             <span class="title">System Support</span>
-            <span class="item"><a href="">Support Tickets</a></span>
-            <span class="item"><a href="">System Logs</a></span>
+            <span class="item"><a href="{% url "review_feedback" %}">Support Tickets</a></span>
+            <span class="item"><a href="{% url "system_log" %}">System Logs</a></span>
         </div>
         {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
@@ -216,7 +216,7 @@
         <div class="functionG2">
             <span class="title">Interactive Support</span>
             <span class="item"><a href="{% url 'smart_assistant' %}">Campus AI Assistant</a></span>
-            <span class="item"><a href="">Submit Ticket</a></span>
+            <span class="item"><a href="{% url "submit_feedback" %}">Submit Ticket</a></span>
         </div>
         {% endif %}
     {% else %}
