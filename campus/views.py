@@ -502,6 +502,7 @@ def map_data(request):
 def navigation(request): 
     return render(request, "navigation.html")
 
+@role_required(allowed_roles=['admin'])
 def editmap(request): 
     return render(request, "editmap.html")
 
@@ -543,7 +544,7 @@ def save_map(request):
                         to_node=to_node
                     )
         
-        return JsonResponse({"message": "Map saved successfully!"})
+        return messages.success(request, "Map saved successfully!")
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
