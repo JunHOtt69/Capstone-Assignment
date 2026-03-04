@@ -5,7 +5,7 @@
 
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/faq.css' %}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
+    <link rel="stylesheet" href="{% static 'css/quill.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -92,7 +92,6 @@
             </div>
             <div class="fileCardList hide"></div>
             <div class="textAreaWrapper">
-                <span class="placeHolder">Enter FAQ Content</span>
                 <div class="editor" id="editor" contenteditable="true" placeholder="Type some skibidi..."></div>
                 {{ form.content }}
             </div>
