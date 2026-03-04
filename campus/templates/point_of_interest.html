@@ -1,0 +1,40 @@
+{% extends "base.html" %} 
+
+{% load static %}  
+
+{% block title %} Navigation {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/point_of_interest.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="poi-hero">
+    <div class="poi-hero-inner">
+        <div class="poi-eyebrow">VIEW OUR CAMPUS</div>
+        <h1 class="poi-title">Campus</h1>
+        <p class="poi-subtitle">Select teaching &amp; learning facilities to view gallery</p>
+    </div>
+</section>
+
+<section class="poi-controls">
+    <div class="poi-categories" role="tablist" aria-label="Gallery categories">
+        <button class="poi-cat-btn active" data-cat="centrepoint">CENTREPOINT &amp; ATRIUM</button>
+        <button class="poi-cat-btn" data-cat="auditoriums">AUDITORIUMS</button>
+        <button class="poi-cat-btn" data-cat="classrooms">CLASSROOMS</button>
+        <button class="poi-cat-btn" data-cat="itlabs">IT LABS</button>
+        <button class="poi-cat-btn" data-cat="library">LIBRARY</button>
+        <button class="poi-cat-btn" data-cat="cafeteria">CAFETERIA</button>
+    </div>
+</section>
+
+<main class="poi-gallery-wrap">
+    <div id="poi-gallery" class="poi-gallery" aria-live="polite"></div>
+</main>
+
+<script src="{% static 'js/point_of_interest.js' %}"></script>
+
+{% endblock %}
+

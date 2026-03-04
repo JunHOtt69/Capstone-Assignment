@@ -547,6 +547,9 @@ def save_map(request):
         return messages.success(request, "Map saved successfully!")
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+    
+def point_of_interest(request):
+    return render(request, "point_of_interest.html")
 
 #announcement function
 def announcements(request): 
