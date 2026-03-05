@@ -1,0 +1,57 @@
+{% extends "base.html" %} 
+
+{% load static %}  
+
+{% block title %} Navigation {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/point_of_interest.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="poi-hero">
+    <div class="poi-hero-inner">
+        <div class="poi-eyebrow">VIEW OUR CAMPUS</div>
+        <h1 class="poi-title">Campus</h1>
+        <p class="poi-subtitle">Select teaching &amp; learning facilities to view gallery</p>
+    </div>
+</section>
+
+<section class="poi-controls">
+    <div id="poi-categories" class="poi-categories" role="tablist" aria-label="Gallery categories"></div>
+    {% if user.is_staff %}
+    <div class="poi-admin-actions">
+        <button id="poi-edit-toggle" class="poi-edit-toggle">Edit Categories & Images</button>
+    </div>
+    {% endif %}
+</section>
+
+<main class="poi-gallery-wrap">
+    <div id="poi-gallery" class="poi-gallery" aria-live="polite"></div>
+</main>
+
+{% if user.is_staff %}
+<!-- Simple admin editor panel -->
+<div id="poi-editor" class="poi-editor" aria-hidden="true">
+    <div class="poi-editor-inner">
+        <h3>Edit Categories & Images</h3>
+        <div id="poi-editor-list" class="poi-editor-list"></div>
+        <div class="poi-editor-add">
+            <input id="new-cat-label" placeholder="e.g. Auditoriums" />
+            <button id="add-category">Add Category</button>
+        </div>
+        <div class="poi-editor-actions">
+            <button id="poi-save">Save changes</button>
+            <button id="poi-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script src="{% static 'js/point_of_interest.js' %}"></script>
+
+{% endblock %}
+
