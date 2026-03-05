@@ -101,7 +101,7 @@ class newFAQForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={
                 'class' : 'form-control',
-                'placeholder': ''
+                'placeholder': ' '
                 }),
             'content': forms.HiddenInput(),
             'category' : forms.HiddenInput(),

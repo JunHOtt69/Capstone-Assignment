@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
+</head>
+<body>
+    <div class="editor" id="editor" contenteditable="true" placeholder="Type some skibidi..."></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                ]
+            },
+            placeholder: ' ',
+            formats: [
+                'size', 
+                'bold', 'italic', 'underline', 
+                'list', 
+                'link', 'image'
+            ]
+        });
+    });
+    </script>
+</body>
+</html>

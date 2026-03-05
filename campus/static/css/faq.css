@@ -13,19 +13,21 @@ main{
     flex: 1;
 }
 
-span:has(svg){
+.faqInfo span:has(svg),
+.buttonWrapper span:has(svg){
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: transparent;
     object-fit: contain;
     overflow: hidden;
-    width: 2vw;
-    height: 2vw;
-    padding: 0.2vw;
+    width: 1.5vw;
+    height: 1.5vw;
+    padding: 0.1vw;
 }
 
-span svg{
+.faqInfo span svg,
+.buttonWrapper span svg{
     max-width: 100%;
     max-height: 100%;
     fill: none;
@@ -33,7 +35,8 @@ span svg{
     cursor: pointer;
 }
 
-span svg path{
+.faqInfo span svg path,
+.buttonWrapper span svg path{
     fill: none;
     stroke: rgba(var(--black), 1);
     stroke-linecap: square;
@@ -71,13 +74,360 @@ form{
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: row;
+    gap: 3vw;
 }
 
 form .faqInfo{
     width: 30vw;
     flex-shrink: 0;
     height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
 }
+
+.faqInfo .basicInfoWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    gap: 0.5vw;
+    font-size: var(--xs-fontsize);
+    border: 0.01vw solid rgba(var(--black), 0.2);
+    padding: 0.5vw;
+}
+
+.titleInputWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    border: 0.01vw solid rgba(var(--black), 0.2);
+    border-top: none;
+}
+
+.titleInputWrapper input{
+    border: none;
+    font-size: var(--p-fontsize);
+    padding: 0.5vw;
+    padding-right: 1vw;
+    width: 100%;
+    background-color: transparent;
+    outline: none;
+    position: relative;
+}
+
+.titleInputWrapper::before, 
+.titleInputWrapper::after{
+    position: absolute;
+    content: '';
+    top: 0;
+    height: 100%;
+    border: none;
+    border-top: 0.01vw solid rgba(var(--black), 0.2);
+    transition: width 0.2s;
+    background-color: transparent;
+    pointer-events: none;
+    user-select: none;
+}
+
+.titleInputWrapper::before{
+    left: 0;
+    width: 5%;
+}
+
+.titleInputWrapper::after{
+    right: 0;
+    width: 95%;
+}
+
+.titleInputWrapper:has(input:focus)::before, 
+.titleInputWrapper:has(input:not(:placeholder-shown))::before{
+    width: 2%;
+}
+
+.titleInputWrapper:has(input:focus)::after, 
+.titleInputWrapper:has(input:not(:placeholder-shown))::after{
+    width: 92%
+}
+
+.titleInputWrapper .placeholder{
+    position: absolute;
+    left: 0.5vw;
+    font-size: var(--p-fontsize);
+    color: rgba(var(--black), 0.5);
+    transition: transform 0.2s;
+    transform: translateY(0) scale(1);
+}
+
+.titleInputWrapper:has(input:focus) .placeholder,
+.titleInputWrapper:has(input:not(:placeholder-shown)) .placeholder{
+    transform: translate(-10%, -80%) scale(0.7);
+}
+
+.faqCategory{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    width: 100%;
+    font-size: var(--xs-fontsize);
+}
+
+.faqCategory .arrow{
+    width: 1vw;
+    height: 1vw;
+    aspect-ratio: 1/1;
+}
+
+.faqCategory .selectedLabel{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    cursor: pointer;
+    height: auto;
+}
+
+.faqCategory .selectedLabel label{
+    cursor: pointer;
+}
+
+.selectInput{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+    width: auto;
+    max-width: 15vw;
+    height: auto;
+    background-color: transparent;
+    cursor: pointer;
+    border: 0.01vw solid rgba(var(--black), 0.2);
+    padding: 0.3vw 0.5vw;
+}
+
+.selectInput .selectedLabel{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    font-size: var(--xs-fontsize);
+}
+
+.selectInput .selectedLabel label{
+    max-width: 12vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.selectInput .selectedLabel span{
+    width: 1vw;
+    height: 1vw;
+    transform: rotate(0);
+    transition: transform 0.2s;
+}
+
+.selectInput .selectedLabel span svg{
+    width: 1vw;
+    height: 1vw;
+    fill: none;
+}
+
+.selectInput.active .selectedLabel span{
+    transform: rotate(180deg);
+}
+
+.selectInput .selectedLabel span svg path{
+    stroke: rgba(var(--black), 1);
+    stroke-width: 10;
+}
+
+.selectInput .optionContainer{
+    position: absolute;
+    top: 2vw;
+    left: 50%;
+    width: 0;
+    max-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: white;
+    z-index: 99;
+    border: 0.1vw solid rgba(var(--black), 1);
+    opacity: 0;
+    pointer-events: none;
+    font-size: var(--p-fontsize);
+}
+
+.selectInput.active .optionContainer{
+    opacity: 1;
+    pointer-events: auto;
+    animation: revealBorder 0.3s ease-in-out forwards;
+}
+
+.selectInput .optionContainer .option{
+    padding: 0.3vw 0.5vw;
+    cursor: pointer;
+    background-color: rgba(var(--black), 0);
+    transition: background-color 0.2s;
+    width: 100%;
+}
+
+.selectInput .option:has(input:checked) {
+    background-color: greenyellow; 
+}
+
+.selectInput .option:has(input:checked):hover {
+    background-color: rgba(var(--dark-green), 1); 
+}
+
+.selectInput .option input:checked + label {
+    font-weight: bold;
+}
+
+.selectInput .optionContainer .option label{
+    cursor: pointer;
+    width: 100%;
+    display: block;
+}
+
+.selectInput .optionContainer .option input[type="radio"]{
+    display: none;
+}
+
+.selectInput .optionContainer .option:hover{
+    background-color: rgba(var(--black), 0.1);
+}
+
+.likesWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1vw;
+}
+
+.faqInfo .likesWrapper span:has(svg){
+    width: 1.2vw;
+    height: 1.2vw;
+    aspect-ratio: 1/1;
+    padding: 0.1vw;
+    cursor: default;
+}
+
+.likesWrapper .likes,
+.likesWrapper .dislikes{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: var(--xs-fontsize);
+}
+
+.value{
+    max-width: 5vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.faqInfo .extraConfig ul{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1vw;
+    flex-direction: row;
+    list-style-type: none;
+    margin: 0;
+    border: 0.1vw solid rgba(var(--black), 0.2);
+    padding: 0.2vw 0.3vw;
+    position: relative;
+}
+
+.faqInfo .extraConfig ul::before{
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 1.5vw;
+    background-color: greenyellow;
+    z-index: -1;
+    transition: width 0.2s, left 0.2s;
+}
+
+.faqInfo .extraConfig ul[data-config = "comments"]::before{
+    width: calc(1.5vw + 0.3vw + 0.3vw);
+    left: 0;
+}
+
+.faqInfo .extraConfig ul[data-config = "visibility"]::before{
+    width: calc(1.5vw + 0.5vw);
+    left: calc(1.5vw + 1vw);
+}
+
+.faqInfo .extraConfig ul[data-config = "attachments"]::before{
+    width: calc(1.5vw + 0.3vw + 0.3vw);
+    left: calc(1.5vw + 1vw + 1.5vw + 1vw);
+}
+
+.faqInfo .extraConfig ul li{
+    text-decoration: none;
+    font-size: var(--xs-fontsize);
+}
+
+.configContent{
+    width: 100%;
+    height: auto;
+    max-height: 49vh;
+    font-size: var(--xs-fontsize);
+    background-color: transparent;
+    overflow: hidden;
+    padding: 0.2vw 0.5vw 0.3vw 0.2vw;
+    border: 0.01 solid rgba(var(--black), 0.2);
+    overflow: hidden;
+}
+
+.configContent .commentContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.5vw;
+    height: 100%;
+    width: 100%;
+}
+
+.configContent .commentContainer .comment{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 0.5vw;
+}
+
+.configContent .commentContainer .comment .profileIcon{
+    flex-shrink: 0;
+    width: 1.5vw;
+    height: 1.5vw;
+    aspect-ratio: 1/1;
+}
+
+
 
 form .contentInput{
     min-width: 0;
@@ -85,9 +435,42 @@ form .contentInput{
     height: 100%;
 }
 
-form .ql-toolbar{
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 1vw;
+.ql-editor{
+    outline: none;
+    max-height: 76vh;
 }
+
+.ql-editor::-webkit-scrollbar {
+    width: 0.3vw;
+    z-index: 9999;
+}
+
+.ql-editor::-webkit-scrollbar-track {
+    background: rgba(var(--black), 0.1);
+}
+
+.ql-editor::-webkit-scrollbar-thumb {
+    background: rgba(var(--black), 0.3);
+}
+
+.ql-editor::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--black), 0.5);
+}
+
+.editor{
+    outline: none;
+    background-color: rgba(var(--black), 0);;
+    transition: background-color 0.2s;
+    max-height: 76vh;
+}
+
+.editor:focus{
+    background-color: rgba(var(--black), 0.05);
+}
+
+.editor ol,
+.editor ol li,
+.editor ol li span{
+    font-size: var(--p-fontsize);
+}
+

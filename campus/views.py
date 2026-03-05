@@ -28,6 +28,10 @@ from .forms import UserRowForm, AcademicTermForm, newFAQForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq
 from .decorators import role_required
 
+#playground
+def testing(request):
+    return render(request, 'testing.html')
+
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
     success_url = "/accounts/password_reset/done/"
