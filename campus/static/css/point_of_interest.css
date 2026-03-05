@@ -42,3 +42,18 @@
 	.poi-cat-btn{padding:8px 10px;font-size:13px}
 	.poi-title{font-size:36px}
 }
+
+/* Admin editor styles */
+.poi-edit-toggle{margin-left:12px;padding:8px 12px;border-radius:6px;border:1px solid #d1d5db;background:#fff;cursor:pointer}
+.poi-editor{position:fixed;right:16px;top:80px;width:420px;max-width:calc(100% - 40px);background:#fff;border:1px solid #e5e7eb;box-shadow:0 12px 40px rgba(0,0,0,0.08);z-index:1200;display:none}
+.poi-editor-inner{padding:16px}
+.poi-editor h3{margin:0 0 12px}
+.poi-editor-list{max-height:60vh;overflow:auto;padding:6px}
+.poi-editor-item{border:1px solid #eef2f7;padding:8px;border-radius:6px;margin-bottom:8px}
+.poi-editor-item input{display:block;width:100%;margin-bottom:6px;padding:8px}
+.poi-editor-images{margin-bottom:6px}
+.poi-editor-image-row{display:flex;gap:8px;margin-bottom:6px}
+.poi-editor-image-input{flex:1}
+.poi-editor-add{display:flex;gap:8px;padding:8px}
+.poi-editor-actions{display:flex;gap:8px;justify-content:flex-end;padding:8px}
+.poi-editor button{padding:6px 8px;border-radius:6px}

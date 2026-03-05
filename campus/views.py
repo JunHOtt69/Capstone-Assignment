@@ -18,6 +18,9 @@ from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
+from django.conf import settings
+import os
+import uuid
 import datetime
 import random
 import json
@@ -550,6 +553,91 @@ def save_map(request):
     
 def point_of_interest(request):
     return render(request, "point_of_interest.html")
+
+
+def point_of_interest_data(request):
+    """Return JSON structure of categories and images."""
+    data_path = os.path.join(settings.BASE_DIR, 'campus', 'poi_data.json')
+    if not os.path.exists(data_path):
+        # try to create a default structure
+        default = {
+            "centrepoint": {"label": "CENTREPOINT & ATRIUM", "images": [f"centrepoint-{i+1}" for i in range(8)]},
+            "auditoriums": {"label": "AUDITORIUMS", "images": [f"auditoriums-{i+1}" for i in range(8)]},
+            "classrooms": {"label": "CLASSROOMS", "images": [f"classrooms-{i+1}" for i in range(8)]},
+            "itlabs": {"label": "IT LABS", "images": [f"itlabs-{i+1}" for i in range(8)]},
+            "library": {"label": "LIBRARY", "images": [f"library-{i+1}" for i in range(8)]},
+            "cafeteria": {"label": "CAFETERIA", "images": [f"cafeteria-{i+1}" for i in range(8)]}
+        }
+        try:
+            with open(data_path, 'w') as f:
+                json.dump(default, f, indent=2)
+        except Exception:
+            pass
+        return JsonResponse(default)
+
+    try:
+        with open(data_path, 'r') as f:
+            data = json.load(f)
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@login_required
+def point_of_interest_save(request):
+    """Save modified poi_data.json (admin-only)."""
+    if not request.user.is_staff:
+        return JsonResponse({"error": "forbidden"}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    data_path = os.path.join(settings.BASE_DIR, 'campus', 'poi_data.json')
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        # basic validation: must be a dict of category-> {label, images}
+        if not isinstance(payload, dict):
+            return JsonResponse({"error": "invalid payload"}, status=400)
+        # write file
+        with open(data_path, 'w') as f:
+            json.dump(payload, f, indent=2)
+        return JsonResponse({"status": "ok"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+@login_required
+def point_of_interest_upload(request):
+    """Receive an uploaded image file (multipart/form-data) and store it under media/poi/. Returns JSON with `url`."""
+    if not request.user.is_staff:
+        return JsonResponse({"error": "forbidden"}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    upload = request.FILES.get('file')
+    if not upload:
+        return JsonResponse({"error": "no file"}, status=400)
+
+    media_root = getattr(settings, 'MEDIA_ROOT', os.path.join(settings.BASE_DIR, 'media'))
+    media_url = getattr(settings, 'MEDIA_URL', '/media/')
+    save_dir = os.path.join(media_root, 'poi')
+    os.makedirs(save_dir, exist_ok=True)
+
+    # create unique filename
+    orig = upload.name
+    ext = os.path.splitext(orig)[1] or '.jpg'
+    filename = f"{uuid.uuid4().hex}{ext}"
+    path = os.path.join(save_dir, filename)
+
+    try:
+        with open(path, 'wb') as f:
+            for chunk in upload.chunks():
+                f.write(chunk)
+        url = os.path.join(media_url, 'poi', filename).replace('\\', '/')
+        return JsonResponse({"url": url})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 #announcement function
 def announcements(request): 
