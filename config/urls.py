@@ -46,4 +46,5 @@ urlpatterns = [
         name="password_reset_done",
     ),
     path("accounts/", include("django.contrib.auth.urls")),
+    path('booking/', include('FacilityBooking.urls')),
 ]
