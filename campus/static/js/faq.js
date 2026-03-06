@@ -33,28 +33,123 @@ document.addEventListener("DOMContentLoaded", async function() {
     const configContent = document.querySelector('.configContent');
 
     const template = document.getElementById('commentSection').content.cloneNode(true);
-    const commentContainer = template.querySelector('.commentContainer');
-    configContent.appendChild(commentContainer);
+    configContent.innerHTML = ``;
+    configContent.appendChild(template);
 
     commentIcon.onclick = () => {
         extraConfig.dataset.config = 'comments';
         const template = document.getElementById('commentSection').content.cloneNode(true);
 
         if(template){
-            const commentContainer = template.querySelector('.commentContainer');
             configContent.innerHTML = ``;
-            configContent.appendChild(commentContainer);
+            configContent.appendChild(template);
         }
     }
 
     visibleIcon.onclick = () => {
         extraConfig.dataset.config = 'visibility';
         const template = document.getElementById('visiblitySection').content.cloneNode(true);
+        const container = template.querySelector('.visiblitySection');
+        const buttons = template.querySelectorAll('button');
 
-        if(template){
-            configContent.innerHTML = ``;
-            configContent.appendChild(template);
+        buttons.forEach(btn => {
+            btn.onclick = (e) => {
+                e.preventDefault();
+                container.dataset.controls = btn.innerText.toLowerCase();
+            }
+        });
+
+        const publicToggle = template.querySelector('#public');
+        const adminToggle = template.querySelector('#adminToggle');
+        const lecturerToggle = template.querySelector('#lecturerToggle');
+        const studentToggle = template.querySelector('#studentToggle');
+
+        
+        const roles = {
+            'ad' : ['is_ad_visible', '#adminToggle'],
+            'lc' : ['is_lc_visible', '#lecturerToggle'],
+            'tp' : ['is_tp_visible','#studentToggle'],
         }
+        
+        let allChecked = true;
+
+        Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
+            const djangoInput = document.querySelector(`#id_${djangoId}`);
+            const toggle = document.getElementById(toggleId);
+
+            if (input && toggle){
+                toggle.dataset.value = input.checked;
+                if(!djangoInput.checked) allChecked = false;
+            }
+        });
+
+        function passBooleanValue(newChanges={}){
+            const currentState = {
+                'ad': newChanges.hasOwnProperty('ad') ? newChanges.ad : (document.getElementById('adminToggle').dataset.value === 'true'),
+                'lc': newChanges.hasOwnProperty('lc') ? newChanges.lc : (document.getElementById('lecturerToggle').dataset.value === 'true'),
+                'tp': newChanges.hasOwnProperty('tp') ? newChanges.tp : (document.getElementById('studentToggle').dataset.value === 'true'),
+            };
+
+            Object.entries(roles).forEach(([role, item]) => {
+                if(newChanges.hasOwnProperty(role)){
+                    const input = document.querySelector(`#id_${item[0]}`);
+                    if (input) input.checked = newChanges[role];
+
+                    const toggle = document.getElementById(`${item[1]}`);
+                    if(toggle) toggle.dataset.value = newChanges[role];
+                }
+            });
+
+            const allChecked = Object.values(currentState).every(val => val === true);
+            publicToggle.dataset.value = allChecked;
+        }
+
+        publicToggle.onclick = (e) => {
+            e.preventDefault();
+            const isNowTrue = publicToggle.dataset.value !== 'true';
+            publicToggle.dataset.value = isNowTrue;
+
+            const fields = {
+                'ad': isNowTrue,
+                'lc': isNowTrue,
+                'tp': isNowTrue,
+            };
+
+            passBooleanValue(fields);
+        }
+        
+        adminToggle.onclick = (e) => {
+            e.preventDefault();
+            const isNowTrue = adminToggle.dataset.value !== 'true';
+            const fields = {
+                'ad': isNowTrue,
+            };
+
+            passBooleanValue(fields);
+        }
+
+        lecturerToggle.onclick = (e) => {
+            e.preventDefault();
+            const isNowTrue = lecturerToggle.dataset.value !== 'true';
+            const fields = {
+                'lc': isNowTrue,
+            };
+
+            passBooleanValue(fields);
+        }
+        
+        studentToggle.onclick = (e) => {
+            e.preventDefault();
+            const isNowTrue = studentToggle.dataset.value !== 'true';
+            const fields = {
+                'tp': isNowTrue,
+            };
+
+            passBooleanValue(fields);
+        }
+
+        configContent.innerHTML = ``;
+        configContent.appendChild(template);
     }
 
     attachmentIcon.onclick = () => {

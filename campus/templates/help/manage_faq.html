@@ -106,6 +106,9 @@
                     <button class="save">Save</button>
                 </div>
             </div>
+            {{ form.is_ad_visible }}
+            {{ form.is_lc_visible }}
+            {{ form.is_tp_visible }}
             <div class="configContent">
             </div>
         </section>
@@ -135,12 +138,55 @@
     </template>
 
     <template id="visiblitySection">
-        <p class="visibilityTitle">Visibility Toggle:</p>
-        <p class="toggleDescription">Allows administrators to control whether the FAQ post is visible to the public. Turn it on to make the post accessible to users, or off to keep it hidden.</p>
-        {{ form.is_published }}
+        <div class="visiblitySection" data-controls = 'simple'>
+            <div class="visiblityHeader">
+                <p class="configTitle">Visibility Toggle</p>
+                <div class="c_toggleBtn">
+                    <button>Simple</button>
+                    <button>Advanced</button>
+                </div>
+            </div>
+
+            <div class="visibiltyWrapper public">
+                <div class="descWrapper">
+                    <p class="toggleTitle">Public Visibility</p>
+                    <p class="toggleDescription">Toggle this to make the FAQ visible to all users. Turn it off to hide the post from everyone.</p>
+                </div>
+
+                <div class="toggleBtn" id="public" data-value = 'false'></div>
+            </div>
+            
+            <div class="individualControl">
+                <div class="visibiltyWrapper">
+                    <div class="descWrapper">
+                        <p class="toggleTitle">Admin Access</p>
+                        <p class="toggleDescription">Toggle this to allow admin to view this FAQ. Turn it off to hide the post from admin users.</p>
+                    </div>
+                
+                    <div class="toggleBtn" id="adminToggle"  data-value = 'false'></div>
+                </div>
+                <div class="visibiltyWrapper">
+                    <div class="descWrapper">
+                        <p class="toggleTitle">Lecturer Access</p>
+                        <p class="toggleDescription">Toggle this to allow lecturers to view this FAQ. Turn it off to hide it from lecturer users.</p>
+                    </div>
+
+                    <div class="toggleBtn" id="lecturerToggle"  data-value = 'false'></div>
+                </div>
+                <div class="visibiltyWrapper">
+                    <div class="descWrapper">
+                        <p class="toggleTitle">Student Access</p>
+                        <p class="toggleDescription">Toggle this to allow students to view this FAQ. Turn it off to hide it from student users.</p>
+                    </div>
+
+                    <div class="toggleBtn" id="studentToggle"  data-value = 'false'></div>
+                </div>
+            </div>
+        </div>
     </template>
 
     <template id="commentSection">
+        <p class="configTitle">Comment Section</p>
         <div class="commentContainer">
             {% if comments %}
                 {% for comment in comments %}
