@@ -357,6 +357,21 @@ form .faqInfo{
     text-overflow: ellipsis;
 }
 
+.faqInfo .extraConfig{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: auto;
+}
+
+.faqInfo .extraConfig .formBtnWrapper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5vw;
+}
+
 .faqInfo .extraConfig ul{
     display: flex;
     justify-content: flex-start;
@@ -751,7 +766,8 @@ form .faqInfo{
     gap: 0.5vw;
 }
 
-.replyBtnWrapper button{
+.replyBtnWrapper button,
+.formBtnWrapper button{
     outline: none;
     border: 0.1vw solid rgba(var(--black), 0);
     transition: border 0.2s, background-color 0.2s, color 0.2s;
@@ -760,14 +776,31 @@ form .faqInfo{
     font-size: var(--xs-fontsize);
 }
 
-.replyBtnWrapper .cancel{
+.replyBtnWrapper .cancel,
+.formBtnWrapper .cancel{
     background-color: white;
-    color: rgba(var(--black), 1);;
+    color: rgba(var(--black), 1);
+}
+
+.replyBtnWrapper .cancel:hover,
+.formBtnWrapper .cancel:hover{
+    background-color: rgba(var(--black), 0.2);
 }
 
 .replyBtnWrapper .reply{
     background-color: rgba(var(--black), 1);
     color: white;
+}
+
+.formBtnWrapper .save{
+    background-color: rgba(var(--black), 1);
+    color: white;
+}
+
+.formBtnWrapper .save:hover{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    border: 0.1vw solid rgba(var(--black), 1);
 }
 
 form .contentInput{
@@ -817,5 +850,13 @@ form .contentInput{
 .editor ol li,
 .editor ol li span{
     font-size: var(--p-fontsize);
+}
+
+.configContent .visiblitySection{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1vw;
 }
 

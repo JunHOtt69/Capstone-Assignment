@@ -26,8 +26,46 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 
 
-    const extraConfig = document.querySelector('.extraConfig');
+    const extraConfig = document.querySelector('.extraConfig ul');
+    const commentIcon = extraConfig.querySelector('.commentIcon');
+    const visibleIcon = extraConfig.querySelector('.visibleIcon');
+    const attachmentIcon = extraConfig.querySelector('.attachmentIcon');
     const configContent = document.querySelector('.configContent');
+
+    const template = document.getElementById('commentSection').content.cloneNode(true);
+    const commentContainer = template.querySelector('.commentContainer');
+    configContent.appendChild(commentContainer);
+
+    commentIcon.onclick = () => {
+        extraConfig.dataset.config = 'comments';
+        const template = document.getElementById('commentSection').content.cloneNode(true);
+
+        if(template){
+            const commentContainer = template.querySelector('.commentContainer');
+            configContent.innerHTML = ``;
+            configContent.appendChild(commentContainer);
+        }
+    }
+
+    visibleIcon.onclick = () => {
+        extraConfig.dataset.config = 'visibility';
+        const template = document.getElementById('visiblitySection').content.cloneNode(true);
+
+        if(template){
+            configContent.innerHTML = ``;
+            configContent.appendChild(template);
+        }
+    }
+
+    attachmentIcon.onclick = () => {
+        extraConfig.dataset.config = 'attachments';
+        const template = document.getElementById('attachmentSection').content.cloneNode(true);
+
+        if(template){
+            configContent.innerHTML = ``;
+            configContent.appendChild(template);
+        }
+    }
 
     let idCounter = 1;
 

@@ -36,7 +36,9 @@
             <div class="basicInfoWrapper">
                 <div class="views">
                     <span>Views: </span>
-                    <span class="value"></span>
+                    <span class="value"> 
+                        
+                    </span>
                 </div>
                 <div class="Author">
                     <span>Author: </span>
@@ -91,15 +93,18 @@
                         </span>
                     </li>
                     <li>
-                        <div class="buttonWrapper">
-                            <span class="attachmentIcon" id="attachmentIcon">
-                                <svg viewBox="0 0 168 175" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M43.5175 170.512L148.559 69.5704C187 26.5124 141.457 -20.1315 100.922 18.2553L21.2155 88.8194C-15.0699 121.523 15.3656 160.488 55.3533 125.072L124.296 60.1278C140.572 43.6313 121.5 28.0125 105.656 41.8608L39.375 102.646"/>
-                                </svg>
-                            </span>
-                        </div>
+                        <span class="attachmentIcon" id="attachmentIcon">
+                            <svg viewBox="0 0 168 175" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M43.5175 170.512L148.559 69.5704C187 26.5124 141.457 -20.1315 100.922 18.2553L21.2155 88.8194C-15.0699 121.523 15.3656 160.488 55.3533 125.072L124.296 60.1278C140.572 43.6313 121.5 28.0125 105.656 41.8608L39.375 102.646"/>
+                            </svg>
+                        </span>
                     </li>
                 </ul>
+
+                <div class="formBtnWrapper">
+                    <button class="cancel">Discard Changes</button>
+                    <button class="save">Save</button>
+                </div>
             </div>
             <div class="configContent">
             </div>
@@ -111,7 +116,6 @@
             </div>
         </section>
     </form>
-    
 </div>
 {% endblock %}
 
@@ -121,13 +125,19 @@
 {% endblock %} 
 
 {% block extra_template %}
-    <template>
+    <template id="attachmentSection">
         <input type="file" name="fileInput" id="commentFileInput" hidden multiple>
-        <div class="fileCardList hide"></div>
+        <div class="fileCardList">FileCard</div>
     </template>
 
     <template id="commentInput">
         <div class="commentEditor"></div>
+    </template>
+
+    <template id="visiblitySection">
+        <p class="visibilityTitle">Visibility Toggle:</p>
+        <p class="toggleDescription">Allows administrators to control whether the FAQ post is visible to the public. Turn it on to make the post accessible to users, or off to keep it hidden.</p>
+        {{ form.is_published }}
     </template>
 
     <template id="commentSection">

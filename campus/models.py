@@ -229,7 +229,9 @@ class faq(models.Model):
     category = models.CharField(max_length=3, choices= CATEGORY_CHOICES, default='GEN')
     published_time = models.DateTimeField(auto_now_add=True)
     last_edit = models.DateTimeField(auto_now=True)
-    is_published = models.BooleanField(default= False)
+    is_ad_visible = models.BooleanField(default= False)
+    is_lc_visible = models.BooleanField(default= False)
+    is_tp_visible = models.BooleanField(default= False)
     author = models.OneToOneField(
         'admin_profiles',
         on_delete= models.SET_NULL,

@@ -97,7 +97,7 @@ class AcademicTermForm(forms.ModelForm):
 class newFAQForm(forms.ModelForm):
     class Meta:
         model = faq
-        fields = ['title', 'content', 'category', 'is_published']
+        fields = ['title', 'content', 'category', 'is_ad_visible', 'is_lc_visible', 'is_tp_visible']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class' : 'form-control',
@@ -105,5 +105,7 @@ class newFAQForm(forms.ModelForm):
                 }),
             'content': forms.HiddenInput(),
             'category' : forms.HiddenInput(),
-            'is_published': forms.HiddenInput(),
+            'is_ad_visible': forms.HiddenInput(),
+            'is_lc_visible': forms.HiddenInput(),
+            'is_tp_visible': forms.HiddenInput(),
         }
