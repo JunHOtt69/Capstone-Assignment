@@ -8,22 +8,46 @@
 {% endblock %}
 
 {% block content %}
-<div class="otp-card">
+  <div class="otp-card">
   <h2>Lecturer: Generate OTP</h2>
 
   <form method="post">
     {% csrf_token %}
-    <button class="signup-btn" type="submit">Generate OTP</button>
+    <button class="signup-btn" type="submit">Generate New OTP</button>
   </form>
 
-  {% if otp %}
+  {% if session %}
     <div class="otp-box">
-      <p><strong>OTP:</strong> <span class="otp-code">{{ otp }}</span></p>
+      <p><strong>OTP:</strong> <span class="otp-code">{{ session.otp }}</span></p>
+      <p class="muted">Expires at: {{ session.expires_at }}</p>
     </div>
   {% else %}
-    <p class="muted">No OTP generated yet.</p>
+    <p class="muted">No active OTP session.</p>
   {% endif %}
+  </div>
 
-  <p class="muted">Student page: <code>/attendance/signup/</code></p>
+  <div style="max-width:420px;margin-top:20px;">
+  <canvas id="attendancePie"></canvas>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('attendancePie');
+
+new Chart(ctx, {
+  type: 'pie',
+  data: {
+    labels: ['Present', 'Late', 'Absent'],
+    datasets: [{
+      data: [{{ present }}, {{ late }}, {{ absent }}],
+      backgroundColor: [
+        '#4CAF50',
+        '#FFC107',
+        '#f52314'
+      ]
+    }]
+  }
+});
+</script>
 {% endblock %}
