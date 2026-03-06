@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.bubble.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="editor" style="margin: 50px 0;">
+        <p>Hello, <strong>World</strong></p>
+    </div>
+
+    <div id="editor2" style="margin: 50px 0;">
+        <p>Hello, <strong>World</strong></p>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+  const quill2 = new Quill('#editor2', {
+    placeholder: 'Compose an epic...',
+    theme: 'bubble',
+  });
+
+  const quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'image'],
+            ]
+        },
+        placeholder: ' ',
+        formats: [
+            'size', 
+            'bold', 'italic', 'underline', 
+            'list', 
+            'link', 'image'
+        ]
+    });
+</script>
+</body>
+</html>

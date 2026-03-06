@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.utils.dateparse import parse_date
+from django.utils.text import slugify
 from datetime import date
 from django.conf import settings
 from django.utils import timezone
@@ -211,6 +214,43 @@ class MapEdge(models.Model):
     def __str__(self):
         return f"{self.from_node.node_id} to {self.to_node.node_id}"
     
+class faq(models.Model):
+    CATEGORY_CHOICES = [
+        ('GEN', 'General'),
+        ('ANN', 'Announcements'),
+        ('ATT', 'Attendance'),
+        ('MAP', 'Campus Navigation'),
+        ('BOK', 'Facility Booking'),
+    ]
+
+    id = models.AutoField(primary_key = True)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    category = models.CharField(max_length=3, choices= CATEGORY_CHOICES, default='GEN')
+    published_time = models.DateTimeField(auto_now_add=True)
+    last_edit = models.DateTimeField(auto_now=True)
+    is_ad_visible = models.BooleanField(default= False)
+    is_lc_visible = models.BooleanField(default= False)
+    is_tp_visible = models.BooleanField(default= False)
+    author = models.OneToOneField(
+        'admin_profiles',
+        on_delete= models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='admin_author'
+    )
+    view_count =models.PositiveIntegerField(default=0)
+    n_likes = models.PositiveIntegerField(default=0)
+    n_dislikes = models.PositiveIntegerField(default=0)
+    slug = models.SlugField(unique=True, blank=True)
+
+class attachments(models.Model):
+    id = models.AutoField(primary_key = True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    file = models.FileField(upload_to='attachments/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
 class AttendanceSession(models.Model):
     otp = models.CharField(max_length=4)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_attendance_sessions")
@@ -220,7 +260,6 @@ class AttendanceSession(models.Model):
 
     def __str__(self):
         return f"OTP {self.otp} (active={self.is_active})"
-
 
 class AttendanceMark(models.Model):
     STATUS_CHOICES = (

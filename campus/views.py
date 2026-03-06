@@ -29,9 +29,13 @@ import uuid
 import datetime
 import random
 import json
-from .forms import UserRowForm, AcademicTermForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge
+from .forms import UserRowForm, AcademicTermForm, newFAQForm
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq
 from .decorators import role_required
+
+#playground
+def testing(request):
+    return render(request, 'testing.html')
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -479,6 +483,7 @@ def manage_academic_term(request):
         
     return render(request, "partials/manage_academic_term.html", context)
 
+@role_required(allowed_roles=['admin'])
 def get_terms(request):
     terms = list(academic_term.objects.select_related('course').values(
         'intake_code', 
@@ -499,6 +504,7 @@ def get_terms(request):
 
     return JsonResponse(data)
 
+@role_required(allowed_roles=['admin'])
 def get_courses_by_level(request):
     level = request.GET.get('level')
     courses = course.objects.filter(level=level).values('course_id', 'course_code',  'course_name', 'semester_week')
@@ -693,23 +699,33 @@ def help(request):
 def viewFAQ(request):
     return render(request, 'help/faq.html')
 
+@role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def support_center(request):
     return render(request, 'help/support_center.html')
 
+@role_required(allowed_roles=['lecturer', 'student'])
 def smart_assistant(request):
     return render(request, 'help/smart_assistant.html')
 
+@role_required(allowed_roles=['admin'])
 def review_feedback(request): 
     return render(request, "help/review_feedback.html")
 
+@role_required(allowed_roles=['lecturer', 'student'])
 def submit_feedback(request): 
     return render(request, "help/submit_feedback.html")
 
+@role_required(allowed_roles=['admin'])
 def manage_faq(request): 
-    return render(request, "help/manage_faq.html")
+    context = {
+        'form': newFAQForm()
+    }
+    return render(request, "help/manage_faq.html", context)
 
+@role_required(allowed_roles=['admin'])
 def config_bot(request): 
     return render(request, "help/config_bot.html")
 
+@role_required(allowed_roles=['admin'])
 def system_log(request): 
     return render(request, "help/system_log.html")

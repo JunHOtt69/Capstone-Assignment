@@ -22,7 +22,6 @@
                 <ul>
                     {% if user.is_authenticated %}
                         <li class="{% if request.resolver_match.url_name in 'admin_dashboard lecturer_dashboard student_dashboard' %}active{% endif %}">
-                        
                             <a 
                             {% if user_role == 'admin' %}
                                 href="{% url 'admin_dashboard' %}"
@@ -477,3 +476,5 @@
         </div>
     {% endif %}
 </template>
+
+{% block extra_template %}{% endblock %}

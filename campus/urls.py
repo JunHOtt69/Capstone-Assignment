@@ -3,6 +3,9 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    #playground
+    path('testing/', views.testing, name='testing'),
+    
     path("", views.home, name="home"),
     path("about/", views.about, name="about"),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
