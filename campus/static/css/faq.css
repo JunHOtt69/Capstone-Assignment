@@ -398,7 +398,7 @@ form .faqInfo{
     background-color: transparent;
     overflow: hidden;
     padding: 0.5vw;
-    border: 0.01vw solid rgba(var(--black), 0.2);
+    /* border: 0.01vw solid rgba(var(--black), 0.2); */
     overflow: hidden;
     overflow-y: auto;
 }
@@ -571,6 +571,10 @@ form .faqInfo{
 
 .commentActions .remove:hover svg .lid{
     transform: translate(-5%, -20%) rotate(-10deg);
+}
+
+.commentActions .reply{
+    cursor: pointer;
 }
 
 .comment .showMoreReplies{

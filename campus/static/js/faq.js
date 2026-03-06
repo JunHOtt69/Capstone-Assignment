@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
     const quill = new Quill('#editor', {
         theme: 'snow',
         modules: {
