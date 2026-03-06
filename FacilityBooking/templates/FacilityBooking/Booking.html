@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniBooking | Facility Management</title>
+    <link rel="stylesheet" href="{% static 'FacilityBooking/style.css' %}">
+</head>
+<body>
+
+<div class="booking-card">
+    <h1>FACILITY BOOKING</h1>
+
+    <span class="label">01. Select Category</span>
+    <div class="grid grid-3">
+        <button class="btn cat-btn" onclick="selectCategory(this, 'Classroom')">Classrooms</button>
+        <button class="btn cat-btn" onclick="selectCategory(this, 'Meeting Room')">Meeting Rooms</button>
+        <button class="btn cat-btn" onclick="selectCategory(this, 'Lecture Hall')">Lecture Halls</button>
+    </div>
+
+    <div id="roomSection" class="hidden">
+        <span class="label">02. Select Specific Room</span>
+        <div class="grid grid-4" id="roomGrid"></div>
+    </div>
+
+    <div id="timeSection" class="hidden">
+        <span class="label">03. Available Blocks (10:00 - 17:00)</span>
+        <div class="time-container" id="timeGrid"></div>
+    </div>
+
+    <div class="footer">
+        <div id="summary">Select options to continue...</div>
+        <button class="confirm-btn" id="confirmBtn" disabled onclick="bookNow()">Confirm Reservation</button>
+    </div>
+
+    <div class="history-section">
+        <span class="label">Your Booking History</span>
+        <div id="historyPlaceholder" class="empty-history">No bookings found in this session.</div>
+        <table class="history-table hidden" id="historyTable">
+            <thead>
+                <tr>
+                    <th>Room</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="{% static 'FacilityBooking/script.js' %}"></script>
+</body>
+</html>
