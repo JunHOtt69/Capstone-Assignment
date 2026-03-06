@@ -4,10 +4,15 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Q
 from django.core.mail import EmailMultiAlternatives
+from django.contrib.auth.models import User
 from django.utils.encoding import force_bytes
+from django.utils import timezone
+from datetime import timedelta
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse_lazy
 from django.urls import reverse
+from .models import AttendanceSession
+from .models import AttendanceMark
 #from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION
@@ -126,44 +131,81 @@ def student_dashboard(request):
     return render(request, "dashboards/student_dashboard.html")
 
 #attendance function
+@login_required
+@role_required(['student'])
 def attendance(request): 
     return render(request, "attendance.html")
 
+@login_required
+@role_required(['student'])
 def attendance_signup(request):
     if request.method == "POST":
         input_otp = (request.POST.get("otp") or "").strip()
-        saved_otp = request.session.get("attendance_otp")
 
-        if not saved_otp:
-            return JsonResponse({
-                "ok": False,
-                "message": "OTP not available yet. Please ask lecturer to generate OTP."
-            })
+        session = AttendanceSession.objects.filter(is_active=True).order_by("-created_at").first()
 
-        if input_otp != saved_otp:
-            return JsonResponse({
-                "ok": False,
-                "message": "Invalid code. Please try again."
-            })
+        if not session:
+            return JsonResponse({"ok": False, "message": "OTP not available yet. Please ask lecturer to generate OTP."})
 
-        request.session.pop("attendance_otp", None)
-        return JsonResponse({
-            "ok": True,
-            "message": "Attendance successful!"
-        })
+        if timezone.now() > session.expires_at:
+            session.is_active = False
+            session.save()
+            return JsonResponse({"ok": False, "message": "OTP expired. Please ask lecturer to generate a new OTP."})
+
+        if input_otp != session.otp:
+            return JsonResponse({"ok": False, "message": "Invalid code. Please try again."})
+
+        if AttendanceMark.objects.filter(session=session, student=request.user).exists():
+            return JsonResponse({"ok": False, "message": "Attendance already recorded for this class."})
+
+        late_after = session.created_at + timedelta(minutes=10)
+        status = "LATE" if timezone.now() > late_after else "PRESENT"
+
+        AttendanceMark.objects.create(session=session, student=request.user, status=status)
+
+        return JsonResponse({"ok": True, "message": f"Attendance successful! Status: {status}."})
+
     return render(request, "attendance_signup.html")
 
+@login_required
+@role_required(['lecturer'])
 def attendance_lecturer_otp(request):
-    otp = None
+    OTP_TTL_MIN = 5
+
+    session = AttendanceSession.objects.filter(is_active=True).order_by("-created_at").first()
+
+    if session and timezone.now() > session.expires_at:
+        session.is_active = False
+        session.save()
+        session = None
 
     if request.method == "POST":
+        AttendanceSession.objects.filter(is_active=True).update(is_active=False)
+
         otp = f"{random.randint(0, 9999):04d}"
-        request.session["attendance_otp"] = otp
-    else:
-        otp = request.session.get("attendance_otp")
+        now = timezone.now()
+        session = AttendanceSession.objects.create(
+            otp=otp,
+            created_by=request.user,
+            created_at=now,
+            expires_at=now + timedelta(minutes=OTP_TTL_MIN),
+            is_active=True
+        )
+
+    present = late = absent = 0
+    total_students = User.objects.filter(group__name="student").distinct().count()
+
+    if session:
+        present = AttendanceMark.objects.filter(session=session,status="PRESENT").count()
+        late = AttendanceMark.objects.filter(session=session, status="LATE").count()
+        absent = max(total_students - present - late, 0)
 
     return render(request, "attendance_lecturer_otp.html", {
-        "otp": otp
+        "session": session,
+        "OTP_TTL_MIN": OTP_TTL_MIN,
+        "present": present,
+        "late": late,
+        "absent": absent,
     })
 
 #management function

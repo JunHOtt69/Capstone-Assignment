@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
 from datetime import date
+from django.conf import settings
+from django.utils import timezone
 # Create your models here.
 
 class academic_rules(models.Model):
@@ -208,3 +210,30 @@ class MapEdge(models.Model):
     
     def __str__(self):
         return f"{self.from_node.node_id} to {self.to_node.node_id}"
+    
+class AttendanceSession(models.Model):
+    otp = models.CharField(max_length=4)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_attendance_sessions")
+    created_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"OTP {self.otp} (active={self.is_active})"
+
+
+class AttendanceMark(models.Model):
+    STATUS_CHOICES = (
+        ("PRESENT", "Present"),
+        ("LATE", "Late"),
+    )
+    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE, related_name="marks")
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="attendance_marks")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    marked_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ("session", "student")
+
+    def __str__(self):
+        return f"{self.student} - {self.status}"
