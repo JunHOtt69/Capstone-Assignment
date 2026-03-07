@@ -20,6 +20,7 @@ urlpatterns = [
     path("attendance/", views.attendance, name="attendance"),
     path("attendance/signup/",views.attendance_signup, name="attendance_signup"),
     path("attendance/lecturer-otp/", views.attendance_lecturer_otp, name="attendance_lecturer_otp"),
+    path("attendance/chart-data/", views.attendance_chart_data, name="attendance_chart_data"),
 
     #campus map
     path("navigation/", views.navigation, name="navigation"),
