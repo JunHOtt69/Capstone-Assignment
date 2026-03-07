@@ -29,134 +29,128 @@ document.addEventListener("DOMContentLoaded", async function() {
     const extraConfig = document.querySelector('.extraConfig ul');
     const commentIcon = extraConfig.querySelector('.commentIcon');
     const visibleIcon = extraConfig.querySelector('.visibleIcon');
-    const attachmentIcon = extraConfig.querySelector('.attachmentIcon');
     const configContent = document.querySelector('.configContent');
 
     const template = document.getElementById('commentSection').content.cloneNode(true);
     configContent.innerHTML = ``;
     configContent.appendChild(template);
 
-    commentIcon.onclick = () => {
-        extraConfig.dataset.config = 'comments';
-        const template = document.getElementById('commentSection').content.cloneNode(true);
+    if(commentIcon){
+        commentIcon.onclick = () => {
+            extraConfig.dataset.config = 'comments';
+            const template = document.getElementById('commentSection').content.cloneNode(true);
 
-        if(template){
-            configContent.innerHTML = ``;
-            configContent.appendChild(template);
+            if(template){
+                configContent.innerHTML = ``;
+                renderComment(template);
+                configContent.appendChild(template);
+            }
         }
     }
 
-    visibleIcon.onclick = () => {
-        extraConfig.dataset.config = 'visibility';
-        const template = document.getElementById('visiblitySection').content.cloneNode(true);
-        const container = template.querySelector('.visiblitySection');
-        const buttons = template.querySelectorAll('button');
+    if(visibleIcon){
+        visibleIcon.onclick = () => {
+            extraConfig.dataset.config = 'visibility';
+            const template = document.getElementById('visiblitySection').content.cloneNode(true);
+            const container = template.querySelector('.visiblitySection');
+            const buttons = template.querySelectorAll('button');
 
-        buttons.forEach(btn => {
-            btn.onclick = (e) => {
-                e.preventDefault();
-                container.dataset.controls = btn.innerText.toLowerCase();
-            }
-        });
-
-        const publicToggle = template.querySelector('#public');
-        const adminToggle = template.querySelector('#adminToggle');
-        const lecturerToggle = template.querySelector('#lecturerToggle');
-        const studentToggle = template.querySelector('#studentToggle');
-
-        
-        const roles = {
-            'ad' : ['is_ad_visible', '#adminToggle'],
-            'lc' : ['is_lc_visible', '#lecturerToggle'],
-            'tp' : ['is_tp_visible','#studentToggle'],
-        }
-        
-        let allChecked = true;
-
-        Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
-            const djangoInput = document.querySelector(`#id_${djangoId}`);
-            const toggle = document.getElementById(toggleId);
-
-            if (input && toggle){
-                toggle.dataset.value = input.checked;
-                if(!djangoInput.checked) allChecked = false;
-            }
-        });
-
-        function passBooleanValue(newChanges={}){
-            const currentState = {
-                'ad': newChanges.hasOwnProperty('ad') ? newChanges.ad : (document.getElementById('adminToggle').dataset.value === 'true'),
-                'lc': newChanges.hasOwnProperty('lc') ? newChanges.lc : (document.getElementById('lecturerToggle').dataset.value === 'true'),
-                'tp': newChanges.hasOwnProperty('tp') ? newChanges.tp : (document.getElementById('studentToggle').dataset.value === 'true'),
-            };
-
-            Object.entries(roles).forEach(([role, item]) => {
-                if(newChanges.hasOwnProperty(role)){
-                    const input = document.querySelector(`#id_${item[0]}`);
-                    if (input) input.checked = newChanges[role];
-
-                    const toggle = document.getElementById(`${item[1]}`);
-                    if(toggle) toggle.dataset.value = newChanges[role];
+            buttons.forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    container.dataset.controls = btn.innerText.toLowerCase();
                 }
             });
 
-            const allChecked = Object.values(currentState).every(val => val === true);
+            const publicToggle = template.querySelector('#public');
+            const adminToggle = template.querySelector('#adminToggle');
+            const lecturerToggle = template.querySelector('#lecturerToggle');
+            const studentToggle = template.querySelector('#studentToggle');
+
+            
+            const roles = {
+                'ad' : ['is_ad_visible', '#adminToggle'],
+                'lc' : ['is_lc_visible', '#lecturerToggle'],
+                'tp' : ['is_tp_visible','#studentToggle'],
+            }
+            
+            let allChecked = true;
+
+            Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
+                const djangoInput = document.querySelector(`#id_${djangoId}`);
+                console.log(djangoInput.checked);
+                const toggle = template.querySelector(toggleId);
+                if (djangoInput && toggle){
+                    toggle.dataset.value = djangoInput.checked;
+                    if(!djangoInput.checked) allChecked = false;
+                }
+            });
+
             publicToggle.dataset.value = allChecked;
-        }
 
-        publicToggle.onclick = (e) => {
-            e.preventDefault();
-            const isNowTrue = publicToggle.dataset.value !== 'true';
-            publicToggle.dataset.value = isNowTrue;
+            function passBooleanValue(newChanges={}){
+                const currentState = {
+                    'ad': newChanges.hasOwnProperty('ad') ? newChanges.ad : (document.getElementById('adminToggle').dataset.value === 'true'),
+                    'lc': newChanges.hasOwnProperty('lc') ? newChanges.lc : (document.getElementById('lecturerToggle').dataset.value === 'true'),
+                    'tp': newChanges.hasOwnProperty('tp') ? newChanges.tp : (document.getElementById('studentToggle').dataset.value === 'true'),
+                };
 
-            const fields = {
-                'ad': isNowTrue,
-                'lc': isNowTrue,
-                'tp': isNowTrue,
-            };
+                Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
+                    if(newChanges.hasOwnProperty(key)){
+                        const input = document.querySelector(`#id_${djangoId}`);
+                        if (input) input.checked = newChanges[key];
 
-            passBooleanValue(fields);
-        }
-        
-        adminToggle.onclick = (e) => {
-            e.preventDefault();
-            const isNowTrue = adminToggle.dataset.value !== 'true';
-            const fields = {
-                'ad': isNowTrue,
-            };
+                        const toggle = template.querySelector(toggleId);
+                        if(toggle) toggle.dataset.value = newChanges[key];
+                    }
+                });
 
-            passBooleanValue(fields);
-        }
+                const allChecked = Object.values(currentState).every(val => val === true);
+                publicToggle.dataset.value = allChecked;
+            }
 
-        lecturerToggle.onclick = (e) => {
-            e.preventDefault();
-            const isNowTrue = lecturerToggle.dataset.value !== 'true';
-            const fields = {
-                'lc': isNowTrue,
-            };
+            publicToggle.onclick = (e) => {
+                e.preventDefault();
+                const isNowTrue = publicToggle.dataset.value !== 'true';
+                publicToggle.dataset.value = isNowTrue;
+                const fields = {
+                    'ad': isNowTrue,
+                    'lc': isNowTrue,
+                    'tp': isNowTrue,
+                };
 
-            passBooleanValue(fields);
-        }
-        
-        studentToggle.onclick = (e) => {
-            e.preventDefault();
-            const isNowTrue = studentToggle.dataset.value !== 'true';
-            const fields = {
-                'tp': isNowTrue,
-            };
+                passBooleanValue(fields);
+            }
+            
+            adminToggle.onclick = (e) => {
+                e.preventDefault();
+                const isNowTrue = adminToggle.dataset.value !== 'true';
+                const fields = {
+                    'ad': isNowTrue,
+                };
+                passBooleanValue(fields);
+            }
 
-            passBooleanValue(fields);
-        }
+            lecturerToggle.onclick = (e) => {
+                e.preventDefault();
+                const isNowTrue = lecturerToggle.dataset.value !== 'true';
+                const fields = {
+                    'lc': isNowTrue,
+                };
 
-        configContent.innerHTML = ``;
-        configContent.appendChild(template);
-    }
+                passBooleanValue(fields);
+            }
+            
+            studentToggle.onclick = (e) => {
+                e.preventDefault();
+                const isNowTrue = studentToggle.dataset.value !== 'true';
+                const fields = {
+                    'tp': isNowTrue,
+                };
 
-    attachmentIcon.onclick = () => {
-        extraConfig.dataset.config = 'attachments';
-        const template = document.getElementById('attachmentSection').content.cloneNode(true);
+                passBooleanValue(fields);
+            }
 
-        if(template){
             configContent.innerHTML = ``;
             configContent.appendChild(template);
         }
@@ -164,8 +158,8 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     let idCounter = 1;
 
-    function renderComment(){
-        const comments = document.querySelectorAll('.comment');
+    function renderComment(template){
+        const comments = template.querySelectorAll('.comment');
         comments.forEach(comment => {
             const showReplies = comment.querySelector('.showReplies');
             const repliesContainer = comment.querySelector('.repliesContainer');
