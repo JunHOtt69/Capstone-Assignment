@@ -197,7 +197,7 @@ def attendance_lecturer_otp(request):
         )
 
     present = late = absent = 0
-    total_students = User.objects.filter(group__name="student").distinct().count()
+    total_students = User.objects.filter(groups__name="student").distinct().count()
 
     if session:
         present = AttendanceMark.objects.filter(session=session,status="PRESENT").count()
@@ -207,6 +207,29 @@ def attendance_lecturer_otp(request):
     return render(request, "attendance_lecturer_otp.html", {
         "session": session,
         "OTP_TTL_MIN": OTP_TTL_MIN,
+        "present": present,
+        "late": late,
+        "absent": absent,
+    })
+
+@login_required
+@role_required(['lecturer'])
+def attendance_chart_data(request):
+    session = AttendanceSession.objects.filter(is_active=True).order_by("-created_at").first()
+
+    present = late = absent = 0
+    total_students = User.objects.filter(groups__name="student").distinct().count()
+
+    if session:
+        if timezone.now() > session.expires_at:
+            session.is_active = False
+            session.save()
+        else:
+            present = AttendanceMark.objects.filter(session=session, status="PRESENT").count()
+            late = AttendanceMark.objects.filter(session=session, status="LATE").count()
+            absent = max(total_students - present - late, 0)
+
+    return JsonResponse({
         "present": present,
         "late": late,
         "absent": absent,
