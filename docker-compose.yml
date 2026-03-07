@@ -19,6 +19,13 @@ services:
       - ./db_init:/docker-entrypoint-initdb.d 
     ports:
       - "3306:3306"
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate --fake-initial &&
+             python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy
       
   web:
     build: .

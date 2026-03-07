@@ -85,11 +85,11 @@ IS_DOCKER = os.environ.get('DOCKER_RUNNING') == 'True'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'smart_campus', # Create this database in PHPMyAdmin first!
-        'USER': 'root',               # Default XAMPP username
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),               # Default XAMPP password is empty
-        'HOST': os.getenv('DB_HOST', 'db' if IS_DOCKER else '127.0.0.1'),          # Or 'localhost'
-        'PORT': '3306',               # Default MySQL port
+        'NAME': 'smart_campus',
+        'USER': 'root', 
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'db' if IS_DOCKER else '127.0.0.1'),
+        'PORT': '3306', 
     }
 }
 
