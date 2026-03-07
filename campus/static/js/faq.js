@@ -90,18 +90,20 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             function passBooleanValue(newChanges={}){
                 const currentState = {
-                    'ad': newChanges.hasOwnProperty('ad') ? newChanges.ad : (document.getElementById('adminToggle').dataset.value === 'true'),
-                    'lc': newChanges.hasOwnProperty('lc') ? newChanges.lc : (document.getElementById('lecturerToggle').dataset.value === 'true'),
-                    'tp': newChanges.hasOwnProperty('tp') ? newChanges.tp : (document.getElementById('studentToggle').dataset.value === 'true'),
+                    'ad': newChanges.hasOwnProperty('ad') ? newChanges['ad'] : (document.getElementById('adminToggle').dataset.value === 'true'),
+                    'lc': newChanges.hasOwnProperty('lc') ? newChanges['lc'] : (document.getElementById('lecturerToggle').dataset.value === 'true'),
+                    'tp': newChanges.hasOwnProperty('tp') ? newChanges['tp'] : (document.getElementById('studentToggle').dataset.value === 'true'),
                 };
 
                 Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
                     if(newChanges.hasOwnProperty(key)){
                         const input = document.querySelector(`#id_${djangoId}`);
+                        console.log(input);
                         if (input) input.checked = newChanges[key];
-
-                        const toggle = template.querySelector(toggleId);
+                        
+                        const toggle = document.querySelector(toggleId);
                         if(toggle) toggle.dataset.value = newChanges[key];
+                        console.log(toggle);
                     }
                 });
 
@@ -125,6 +127,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             adminToggle.onclick = (e) => {
                 e.preventDefault();
                 const isNowTrue = adminToggle.dataset.value !== 'true';
+                console.log('toggled admin', isNowTrue);
                 const fields = {
                     'ad': isNowTrue,
                 };
@@ -134,6 +137,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             lecturerToggle.onclick = (e) => {
                 e.preventDefault();
                 const isNowTrue = lecturerToggle.dataset.value !== 'true';
+                console.log('lecturerToggle', isNowTrue);
                 const fields = {
                     'lc': isNowTrue,
                 };
@@ -144,6 +148,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             studentToggle.onclick = (e) => {
                 e.preventDefault();
                 const isNowTrue = studentToggle.dataset.value !== 'true';
+                console.log('studentToggle', isNowTrue);
                 const fields = {
                     'tp': isNowTrue,
                 };

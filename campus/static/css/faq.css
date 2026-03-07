@@ -369,7 +369,7 @@ form .faqInfo{
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 0.5vw;
+    gap: 0.6vw;
 }
 
 .faqInfo .extraConfig ul{
@@ -383,6 +383,10 @@ form .faqInfo{
     border: 0.1vw solid rgba(var(--black), 0.2);
     padding: 0.2vw 0.3vw;
     position: relative;
+}
+
+.faqInfo .extraConfig ul .visibleIcon svg{
+    margin: 0;
 }
 
 .faqInfo .extraConfig ul::before{
@@ -403,7 +407,7 @@ form .faqInfo{
 }
 
 .faqInfo .extraConfig ul[data-config = "visibility"]::before{
-    width: calc(1.5vw + 0.5vw);
+    width: calc(1.5vw + 0.3vw + 0.3vw);
     left: calc(1.5vw + 1vw);
 }
 
