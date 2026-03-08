@@ -9,6 +9,38 @@
                     <span class="categoryBadge">
                         {{ item.get_category_display }}
                     </span>
+                    {% if user_role == 'admin' %}
+                        {% if item.is_visitor_visible and item.is_ad_visible and item.is_lc_visible and item.is_tp_visible %}
+                            <span class="categoryBadge">
+                                All Users
+                            </span>
+                        {% elif item.is_visitor_visible or item.is_ad_visible or item.is_lc_visible or item.is_tp_visible %}
+                            {% if item.is_visitor_visible %}
+                                <span class="categoryBadge">
+                                    Visitor
+                                </span>
+                            {% endif %}
+                            {% if item.is_ad_visible %}
+                                <span class="categoryBadge">
+                                    Admin
+                                </span>
+                            {% endif %}
+                            {% if item.is_lc_visible %}
+                                <span class="categoryBadge">
+                                    Lecturer
+                                </span>
+                            {% endif %}
+                            {% if item.is_tp_visible %}
+                                <span class="categoryBadge">
+                                    Student
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="categoryBadge hidden">
+                                    Hidden
+                                </span>   
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
             <div class="contentOV">{{ item.content|safe }}</div>
