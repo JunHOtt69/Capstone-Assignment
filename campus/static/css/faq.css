@@ -67,13 +67,13 @@ main{
     stroke: none;
 }
 
-.visibleIcon[data-visible=true] .eye-closed,
-.visibleIcon[data-visible=false] .eye-open{
+.visibleIcon[data-visible='true'] .eye-closed,
+.visibleIcon[data-visible='false'] .eye-open{
     display: none;
 }
 
-.visibleIcon[data-visible=true] .eye-open,
-.visibleIcon[data-visible=false] .eye-closed{
+.visibleIcon[data-visible='true'] .eye-open,
+.visibleIcon[data-visible='false'] .eye-closed{
     display: block;
 }
 
@@ -216,8 +216,8 @@ form .faqInfo{
     justify-content: flex-start;
     align-items: flex-start;
     position: relative;
-    width: auto;
-    max-width: 15vw;
+    width: 13vw;
+    max-width: 13vw;
     height: auto;
     background-color: transparent;
     cursor: pointer;
@@ -284,7 +284,7 @@ form .faqInfo{
     border: 0.1vw solid rgba(var(--black), 1);
     opacity: 0;
     pointer-events: none;
-    font-size: var(--p-fontsize);
+    font-size: var(--xs-fontsize);
 }
 
 .selectInput.active .optionContainer{
@@ -401,12 +401,12 @@ form .faqInfo{
     transition: width 0.2s, left 0.2s;
 }
 
-.faqInfo .extraConfig ul[data-config = "comments"]::before{
+.faqInfo .extraConfig ul[data-config = "visibility"]::before{
     width: calc(1.5vw + 0.3vw + 0.3vw);
     left: 0;
 }
 
-.faqInfo .extraConfig ul[data-config = "visibility"]::before{
+.faqInfo .extraConfig ul[data-config = "comments"]::before{
     width: calc(1.5vw + 0.3vw + 0.3vw);
     left: calc(1.5vw + 1vw);
 }
@@ -1012,4 +1012,16 @@ form .contentInput{
 
 .visibiltyWrapper .toggleBtn[data-value='true']{
     background-color: rgba(var(--dark-green), 1);
+}
+
+.errorMessage{
+    background-color: blue;
+    width: 100%;
+    color: red;
+    font-size: var(--p-fontsize);
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    overflow: hidden;
 }
