@@ -21,6 +21,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         ]
     });
 
+    const hiddenContent = document.querySelector('#id_content').value;
+    if (hiddenContent && hiddenContent.trim() !== "") {
+        quill.root.innerHTML = hiddenContent;
+    }else {
+        quill.setContents([]); 
+    }
+
     const contentInput = document.querySelector('#id_content');
     quill.on('text-change', function() {
         const html = quill.root.innerHTML;

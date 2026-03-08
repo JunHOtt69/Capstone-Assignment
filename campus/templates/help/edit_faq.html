@@ -32,7 +32,8 @@
                     <div class="optionContainer" id="categoryOptions">
                         {% for value, label in form.fields.category.choices %}
                             <div class="option">
-                                <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}">
+                                <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.category.value == value %}checked{% endif %}>
+                                
                                 <label for="cat_{{ forloop.counter }}">{{label}}</label>
                             </div>
                         {% endfor %}
@@ -46,8 +47,8 @@
                     <div class="views">
                         <span>Views: </span>
                         <span class="value"> 
-                            {% if faqInfo.views %}
-                                {{ faqInfo.views }}
+                            {% if faqInfo.view_count %}
+                                {{ faqInfo.view_count }}
                             {% else %}
                                 0
                             {% endif %}
@@ -66,8 +67,8 @@
                     <div class="publish_date">
                         <span>Publish Date: </span>
                         <span class="value">
-                            {% if faqInfo.publish_date %}
-                                {{ faqInfo.publish_date }}
+                            {% if faqInfo.published_time %}
+                                {{ faqInfo.published_time }}
                             {% else %}
                                 Not Published Yet
                             {% endif %}
@@ -82,8 +83,8 @@
 
                             </span>
                             <span class="value">
-                                {% if faqInfo.likes %}
-                                {{ faqInfo.likes }}
+                                {% if faqInfo.n_likes %}
+                                {{ faqInfo.n_likes }}
                                 {% else %}
                                     0
                                 {% endif %}
@@ -96,8 +97,8 @@
                                 </svg>
                             </span>
                             <span class="value">
-                                {% if faqInfo.dislikes %}
-                                {{ faqInfo.dislikes }}
+                                {% if faqInfo.n_dislikes %}
+                                {{ faqInfo.n_dislikes }}
                                 {% else %}
                                     0
                                 {% endif %}

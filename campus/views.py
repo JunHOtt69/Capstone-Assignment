@@ -725,7 +725,9 @@ def viewFAQ(request):
 
     queryset = faq.objects.all()
 
-    if not request.user.is_authenticated:
+    if request.user.is_superuser:
+        pass
+    elif not request.user.is_authenticated:
         queryset = queryset.filter(is_visitor_visible=True)
     else:
         user_groups = request.user.groups.values_list('name', flat=True)
@@ -801,16 +803,24 @@ def submit_feedback(request):
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
-def edit_faq(request): 
+def edit_faq(request, slug=None): 
+    instance = None
+    if slug:
+        instance = get_object_or_404(faq, slug=slug)
+
+
     if request.method == "POST":
         print(request.POST)
-        form = newFAQForm(request.POST)
+        form = newFAQForm(request.POST, instance=instance)
+        
         if form.is_valid():
-            new_faq = form.save(commit=False)
-            new_faq.author = request.user.admin_profile 
-            new_faq.save()
+            faq_obj = form.save(commit=False)
 
-            soup = BeautifulSoup(new_faq.content, 'html.parser')
+            if not instance:
+                faq_obj.author = request.user.admin_profile
+            faq_obj.save()
+            
+            soup = BeautifulSoup(faq_obj.content, 'html.parser')
             images = soup.find_all('img')
             images_processed = False
 
@@ -823,13 +833,13 @@ def edit_faq(request):
                         ext = format.split('/')[-1]
                         
                         # Create a unique filename for the media folder
-                        filename = f"faq_{new_faq.id}_{uuid.uuid4().hex[:8]}.{ext}"
+                        filename = f"faq_{faq_obj.id}_{uuid.uuid4().hex[:8]}.{ext}"
                         data = ContentFile(base64.b64decode(imgstr), name=filename)
 
                         # 3. Create record in your attachments model
                         new_attachment = attachments.objects.create(
-                            content_type=ContentType.objects.get_for_model(new_faq),
-                            object_id=new_faq.id,
+                            content_type=ContentType.objects.get_for_model(faq_obj),
+                            object_id=faq_obj.id,
                             file=data
                         )
 
@@ -841,8 +851,8 @@ def edit_faq(request):
                         continue
             
             if images_processed:
-                new_faq.content = str(soup)
-                new_faq.save()
+                faq_obj.content = str(soup)
+                faq_obj.save()
 
             messages.success(request, "FAQ saved successfully!")
             return redirect('viewFAQ')
@@ -850,10 +860,11 @@ def edit_faq(request):
             messages.error(request, "There was an error saving the FAQ. Please check all the fields")
             print(form.errors)
     else:
-        form = newFAQForm()
+        form = newFAQForm(instance=instance)
         
     context = {
         'form': form,
+        'faqInfo': instance
     }
 
     return render(request, "help/edit_faq.html", context)

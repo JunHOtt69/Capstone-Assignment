@@ -60,6 +60,12 @@ class admin_profiles(models.Model):
     
     class Meta:
         db_table = 'admin_profiles'
+    
+    def __str__(self):
+        full_name = self.user.get_full_name().strip()
+        if full_name:
+            return full_name
+        return self.ad_id
 
 class class_session(models.Model):
     id = models.AutoField(primary_key = True)

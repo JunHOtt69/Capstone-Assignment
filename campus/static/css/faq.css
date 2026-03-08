@@ -347,6 +347,11 @@ main{
     color: rgba(var(--black), 0.4);
 }
 
+.itemCategory .categoryBadge.hidden{
+    border: 0.01vw solid red;
+    color: red;
+}
+
 .infoWrapper{
     display: flex;
     justify-content: space-between;
