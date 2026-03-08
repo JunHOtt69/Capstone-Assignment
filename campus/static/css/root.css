@@ -712,7 +712,7 @@ header li a{
     background-color: greenyellow;
     height: 2vw;
     margin-top: 3vw;
-    z-index: 1;
+    z-index: 997;
     display: flex;
     justify-content: center;
     align-items: center;

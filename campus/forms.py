@@ -95,6 +95,11 @@ class AcademicTermForm(forms.ModelForm):
         return cleaned_data
 
 class newFAQForm(forms.ModelForm):
+    category = forms.ChoiceField(
+        choices= faq.CATEGORY_CHOICES,
+        required=True, 
+        widget=forms.HiddenInput(),
+    )
     class Meta:
         model = faq
         fields = ['title', 'content', 'category', 'is_ad_visible', 'is_lc_visible', 'is_tp_visible']
@@ -103,9 +108,9 @@ class newFAQForm(forms.ModelForm):
                 'class' : 'form-control',
                 'placeholder': ' '
                 }),
-            'content': forms.HiddenInput(),
-            'category' : forms.HiddenInput(),
-            'is_ad_visible': forms.HiddenInput(),
-            'is_lc_visible': forms.HiddenInput(),
-            'is_tp_visible': forms.HiddenInput(),
+            'content': forms.HiddenInput(attrs={'required': True}),
+            'category' : forms.HiddenInput(attrs={'required': True}),
+            'is_ad_visible': forms.HiddenInput(attrs={'required': True}),
+            'is_lc_visible': forms.HiddenInput(attrs={'required': True}),
+            'is_tp_visible': forms.HiddenInput(attrs={'required': True}),
         }
