@@ -232,12 +232,12 @@ class faq(models.Model):
     is_ad_visible = models.BooleanField(default= False)
     is_lc_visible = models.BooleanField(default= False)
     is_tp_visible = models.BooleanField(default= False)
-    author = models.OneToOneField(
+    author = models.ForeignKey(
         'admin_profiles',
         on_delete= models.SET_NULL,
         null=True,
         blank=True,
-        related_name='admin_author'
+        related_name='authored_faqs'
     )
     view_count =models.PositiveIntegerField(default=0)
     n_likes = models.PositiveIntegerField(default=0)

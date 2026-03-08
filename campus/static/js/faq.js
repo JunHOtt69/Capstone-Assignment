@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         replyContainer.appendChild(replyBtnWrapper);
 
         dic[editorId] = new Quill(`#${editorId}`, {
-            placeholder: 'Compose an epic...',
+            placeholder: 'Say Someting...',
             theme: 'bubble',
         });
 
