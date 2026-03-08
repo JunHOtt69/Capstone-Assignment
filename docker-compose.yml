@@ -16,7 +16,7 @@ services:
       # This saves the DB data in your project folder!
       - ./db_data:/var/lib/mysql
       # This imports your XAMPP data on the first run
-      - ./db_init:/docker-entrypoint-initdb.d 
+      - ./db_init:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
       

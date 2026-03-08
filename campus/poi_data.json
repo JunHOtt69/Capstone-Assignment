@@ -1,1 +1,35 @@
-{}
+{
+  "testing": {
+    "label": "TESTING",
+    "images": [
+      {
+        "src": "/media/poi/a56f3037d76f41649adef15f3de5496c.jpg",
+        "caption": "Sayuri"
+      },
+      {
+        "src": "/media/poi/0bc3e5a598a94451b61de38df8e6211f.jpg",
+        "caption": "Sugar"
+      },
+      {
+        "src": "/media/poi/c5fed99567ba4c49af8c2deb264b5596.jpg",
+        "caption": "Rine"
+      },
+      {
+        "src": "/media/poi/9eb4d6d31e594df6b1bd58e205aac834.jpg",
+        "caption": "Sanketsu Shoujo"
+      }
+    ]
+  },
+  "test-2": {
+    "label": "test 2",
+    "images": []
+  },
+  "test-3": {
+    "label": "test 3",
+    "images": []
+  },
+  "test-4": {
+    "label": "test 4",
+    "images": []
+  }
+}

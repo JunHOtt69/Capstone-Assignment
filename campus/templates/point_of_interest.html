@@ -49,6 +49,21 @@
         </div>
     </div>
 </div>
+
+<!-- Lightbox modal -->
+<div id="poi-lightbox" class="poi-lightbox" aria-hidden="true">
+    <div class="poi-lightbox-content">
+        <button id="poi-lightbox-close" class="poi-lightbox-close" aria-label="Close lightbox">&times;</button>
+        <button id="poi-lightbox-prev" class="poi-lightbox-prev" aria-label="Previous image">&#10094;</button>
+        <button id="poi-lightbox-next" class="poi-lightbox-next" aria-label="Next image">&#10095;</button>
+        <div class="poi-lightbox-image-wrap">
+            <img id="poi-lightbox-img" class="poi-lightbox-img" alt="Lightbox image" />
+        </div>
+        <div class="poi-lightbox-caption-wrap">
+            <div id="poi-lightbox-caption" class="poi-lightbox-caption"></div>
+        </div>
+    </div>
+</div>
 {% endif %}
 
 <script src="{% static 'js/point_of_interest.js' %}"></script>
