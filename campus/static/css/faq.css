@@ -40,16 +40,42 @@ main{
     background-color: transparent;
 }
 
+.viewFaq .controls{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 1vw;
+    margin: 0 36.5vw;
+    width: calc(100% - 2 * (36.5vw));
+    gap: 0.5vw;
+}
+
+.createNew{
+    width: 1.9vw;
+    height: 1.8vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0.01vw solid rgba(var(--black), 1);
+    font-size: var(--h3-fontsize);
+    font-weight: 200;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background-color: rgba(var(--black), 0);
+}
+
+.createNew:hover{
+    background-color: rgba(var(--black), 0.1);
+}
+
 .searchContainer{
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: column;
-    margin: 0 36.5vw;
     background-color: transparent;
-    width: calc(100% - 2 * (36.5vw));
+    width: 100%;
     position: relative;
-    margin-top: 1vw;
 }
 
 .searchContainer .searchBar{
@@ -391,11 +417,15 @@ main{
     height: auto;
 }
 
-.infoWrapper .views .visibleIcon,
-.infoWrapper .likes .likes-icon,
-.infoWrapper .dislikes .dislikes-icon{
+.infoWrapper .views .visibleIcon{
     width: 1vw;
     height: 1vw;
+}
+
+.infoWrapper .likes .likes-icon,
+.infoWrapper .dislikes .dislikes-icon{
+    width: 0.8vw;
+    height: 0.8vw;
 }
 
 .itemTitle{
@@ -1495,3 +1525,4 @@ form .contentInput{
     flex-direction: column;
     overflow: hidden;
 }
+

@@ -1,7 +1,7 @@
 {% extends "base.html" %} 
 {% load static %} 
 {% load faq_extras %} 
-{% block title %} Help {% endblock %}
+{% block title %} FAQ {% endblock %}
 
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/faq.css' %}">
@@ -14,18 +14,26 @@
                 <div class="pageTitle"><h2>Frequently Asked Questions (FAQ)</h2></div>
                 <div class="pageSubtitle"><p>Browse frequently asked questions to quickly resolve common issues.</p></div>
             </div>
-            <div class="searchContainer">
-                <div class="searchBar">
-                    <input type="text" name='faqSearch' id="faqSearch" placeholder="Search FAQs" list="faqSuggestions" autocomplete="off">
-                    <span class="searchIcon">
-                        <svg viewBox="0 0 176 164" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M173 160L116.645 111.94M116.645 111.94C104.774 124.572 87.8224 132.476 69.0024 132.476C33.1026 132.476 4 103.716 4 68.2379C4 32.7603 33.1026 4 69.0024 4C104.902 4 134.005 32.7603 134.005 68.2379C134.005 85.1169 127.417 100.475 116.645 111.94Z" />
-                        </svg>
-                    </span>
+            <div class="controls">
+                <div class="searchContainer">
+                    <div class="searchBar">
+                        <input type="text" name='faqSearch' id="faqSearch" placeholder="Search FAQs" list="faqSuggestions" autocomplete="off">
+                        <span class="searchIcon">
+                            <svg viewBox="0 0 176 164" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M173 160L116.645 111.94M116.645 111.94C104.774 124.572 87.8224 132.476 69.0024 132.476C33.1026 132.476 4 103.716 4 68.2379C4 32.7603 33.1026 4 69.0024 4C104.902 4 134.005 32.7603 134.005 68.2379C134.005 85.1169 127.417 100.475 116.645 111.94Z" />
+                            </svg>
+                        </span>                 
+                    </div>
+                    
+                    <div id="faqSuggestions"></div>
                 </div>
-                <div id="faqSuggestions"></div>
+                {% if user_role == 'admin' %}
+                    <div class="createNew" onclick="location.href='/edit-faq/';">
+                        +
+                    </div>
+                {% endif %}
             </div>
-            
+
             <section class="browseCategory">
                 <div class="sectionHeader">
                     <div class="sectionTitle"><h3>Browse By Category</h3></div>
