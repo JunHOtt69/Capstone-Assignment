@@ -278,7 +278,7 @@
     {% elif user_role == 'lecturer'%}
         <div class="functionG1">
             <span class="title">Attendance Management</span>
-            <span class="item"><a href="">Open Attendance Session</a></span>
+            <span class="item"><a href="{% url 'attendance_lecturer_otp' %}">Open Attendance Session</a></span>
             <span class="item"><a href="">Class Attendance Rate</a></span>
         </div>
     {% endif %}

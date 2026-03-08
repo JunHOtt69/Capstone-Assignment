@@ -9,6 +9,8 @@
 
 {% block content %}
 <div class="otp-card">
+  <form style="display:none;">{% csrf_token %}</form>
+  
   <h2>Enter OTP</h2>
 
   <div id="msg" class="msg" style="display:none;"></div>
@@ -29,11 +31,12 @@
 document.addEventListener("DOMContentLoaded", function () {
   const inputs = Array.from(document.querySelectorAll(".otp-box-input"));
   const msg = document.getElementById("msg");
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-  function showMsg(text, type) {
+  function showMsg(text, ok) {
     msg.style.display = "block";
     msg.textContent = text;
-    msg.className = "msg " + (type === "ok" ? "msg-success" : "msg-error");
+    msg.className = "msg " + (ok ? "msg-success" : "msg-error");
   }
 
   function getOTP() {
@@ -51,24 +54,13 @@ document.addEventListener("DOMContentLoaded", function () {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": "{{ csrf_token }}",
+        "X-CSRFToken": csrfToken
       },
       body: new URLSearchParams({ otp })
     });
 
-    const text = await res.text();
-
-    if (text.includes("Attendance recorded successfully")) {
-      showMsg("Attendance successful!", "ok");
-    } else if (text.includes("OTP not available")) {
-      showMsg("OTP not available yet. Please ask lecturer to generate OTP.", "err");
-    } else if (text.includes("OTP expired")) {
-      showMsg("OTP expired. Please ask lecturer to generate a new OTP.", "err");
-    } else if (text.includes("Invalid OTP")) {
-      showMsg("Invalid code. Please try again.", "err");
-    } else {
-      showMsg("Verification failed. Please try again.", "err");
-    }
+    const data = await res.json();
+    showMsg(data.message, data.ok);
   }
 
   inputs.forEach((input, idx) => {
@@ -92,12 +84,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     input.addEventListener("paste", (e) => {
       e.preventDefault();
-      const data = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 4);
-      data.split("").forEach((ch, i) => {
+      const pasted = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 4);
+
+      pasted.split("").forEach((ch, i) => {
         if (inputs[i]) inputs[i].value = ch;
       });
-      inputs[Math.min(data.length, 4) - 1]?.focus();
-      if (data.length === 4) verifyOTP();
+
+      if (pasted.length > 0) {
+        inputs[Math.min(pasted.length, 4) - 1].focus();
+      }
+
+      if (pasted.length === 4) {
+        verifyOTP();
+      }
     });
   });
 
