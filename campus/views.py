@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.db import transaction
@@ -720,7 +720,7 @@ def help(request):
     return render(request, "help/help.html")
 
 def viewFAQ(request):
-    return render(request, 'help/faq.html')
+    return render(request, 'help/view_faq.html')
 
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def support_center(request):
@@ -803,6 +803,38 @@ def config_bot(request):
 def system_log(request): 
     return render(request, "help/system_log.html")
 
+
+def faq_suggestions(request):
+    query = request.GET.get('q', '')
+    
+    if query:
+        words = query.split()
+        
+        q_objects = Q()
+        for word in words:
+            q_objects |= Q(title__icontains=word)
+            
+        results = faq.objects.filter(q_objects)[:5]
+        suggestions = [
+            {
+                'title': item.title,
+                'category': item.get_category_display(), 
+                'slug': item.slug
+            } for item in results
+        ]
+    else: suggestions =[]
+
+    return JsonResponse({
+        'suggestions': suggestions
+    })
+
+def faq_detail(request, slug):
+    post = get_object_or_404(faq, slug=slug)
+
+    post.view_count += 1
+    post.save()
+    
+    return render(request, 'help/faq_detail.html', {'post': post})
 
 #extract and store image
 def extract_and_save_images(faq_instance):
