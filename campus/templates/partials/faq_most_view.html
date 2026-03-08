@@ -3,7 +3,14 @@
     {% for item in faqs %}
         <div class="faqItem" onclick="location.href='/FAQs/{{ item.slug }}/';">
             <div class="itemTitle">{{ item.title }}</div>
-            <div class="itemPublishTime">{{ item.published_time }}</div>
+            <div class="faqItemWrapper">
+                <div class="itemPublishTime">{{ item.published_time }}</div>
+                <div class="itemCategory">
+                    <span class="categoryBadge">
+                        {{ item.get_category_display }}
+                    </span>
+                </div>
+            </div>
             <div class="contentOV">{{ item.content|safe }}</div>
             <div class="infoWrapper">
                 <ul>

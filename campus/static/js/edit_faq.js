@@ -93,6 +93,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         'ad' : ['is_ad_visible', '#adminToggle'],
         'lc' : ['is_lc_visible', '#lecturerToggle'],
         'tp' : ['is_tp_visible','#studentToggle'],
+        'vr' : ['is_visitor_visible','#visitorToggle'],
     }
 
     renderVisibility();
@@ -102,8 +103,10 @@ document.addEventListener("DOMContentLoaded", async function() {
         const djangoInput = document.querySelector(`#id_${djangoId}`);
         const toggle = document.querySelector(toggleId);
         if (djangoInput && toggle){
-            toggle.dataset.value = djangoInput.checked;
-            if(!djangoInput.checked) allChecked = false;
+            const val = djangoInput.value === 'True';
+            toggle.dataset.value = val;
+
+            if(!val) allChecked = false;
         }
     });
 
@@ -150,6 +153,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         const adminToggle = template.querySelector('#adminToggle');
         const lecturerToggle = template.querySelector('#lecturerToggle');
         const studentToggle = template.querySelector('#studentToggle');
+        const visitorToggle = template.querySelector('#visitorToggle');
 
         let allChecked = true;
 
@@ -157,8 +161,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             const djangoInput = document.querySelector(`#id_${djangoId}`);
             const toggle = template.querySelector(toggleId);
             if (djangoInput && toggle){
-                toggle.dataset.value = djangoInput.checked;
-                if(!djangoInput.checked) allChecked = false;
+                const val = djangoInput.value === 'True';
+                toggle.dataset.value = val;
+                
+                if(!val) allChecked = false;
             }
         });
 
@@ -169,12 +175,13 @@ document.addEventListener("DOMContentLoaded", async function() {
                 'ad': newChanges.hasOwnProperty('ad') ? newChanges['ad'] : (document.getElementById('adminToggle').dataset.value === 'true'),
                 'lc': newChanges.hasOwnProperty('lc') ? newChanges['lc'] : (document.getElementById('lecturerToggle').dataset.value === 'true'),
                 'tp': newChanges.hasOwnProperty('tp') ? newChanges['tp'] : (document.getElementById('studentToggle').dataset.value === 'true'),
+                'vr': newChanges.hasOwnProperty('vr') ? newChanges['vr'] : (document.getElementById('visitorToggle').dataset.value === 'true'),
             };
 
             Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
                 if(newChanges.hasOwnProperty(key)){
                     const input = document.querySelector(`#id_${djangoId}`);
-                    if (input) input.checked = newChanges[key];
+                    if (input) input.value = newChanges[key] ? 'True' : 'False';
                     
                     const toggle = document.querySelector(toggleId);
                     if(toggle) toggle.dataset.value = newChanges[key];
@@ -196,6 +203,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 'ad': isNowTrue,
                 'lc': isNowTrue,
                 'tp': isNowTrue,
+                'vr': isNowTrue,
             };
 
             passBooleanValue(fields);
@@ -225,6 +233,19 @@ document.addEventListener("DOMContentLoaded", async function() {
             const isNowTrue = studentToggle.dataset.value !== 'true';
             const fields = {
                 'tp': isNowTrue,
+            };
+
+            passBooleanValue(fields);
+        }
+
+        visitorToggle.onclick = (e) => {
+            e.preventDefault();
+            const isNowTrue = visitorToggle.dataset.value !== 'true';
+            const fields = {
+                'ad': isNowTrue,
+                'lc': isNowTrue,
+                'tp': isNowTrue,
+                'vr': isNowTrue,
             };
 
             passBooleanValue(fields);
@@ -347,9 +368,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             title: document.querySelector('#id_title').value,
             content: document.querySelector('#id_content').value,
             category: document.querySelector('#id_category').value,
-            ad: document.querySelector('#id_is_ad_visible').checked,
-            lc: document.querySelector('#id_is_lc_visible').checked,
-            tp: document.querySelector('#id_is_tp_visible').checked
+            ad: document.querySelector('#id_is_ad_visible').value,
+            lc: document.querySelector('#id_is_lc_visible').value,
+            tp: document.querySelector('#id_is_tp_visible').value,
+            vr: document.querySelector('#id_is_visitor_visible').value
         };
     }
 
@@ -372,9 +394,10 @@ window.addEventListener('beforeunload', (event) => {
         title: document.querySelector('#id_title').value,
         content: document.querySelector('#id_content').value,
         category: document.querySelector('#id_category').value,
-        ad: document.querySelector('#id_is_ad_visible').checked,
-        lc: document.querySelector('#id_is_lc_visible').checked,
-        tp: document.querySelector('#id_is_tp_visible').checked
+        ad: document.querySelector('#id_is_ad_visible').value,
+        lc: document.querySelector('#id_is_lc_visible').value,
+        tp: document.querySelector('#id_is_tp_visible').value,
+        vr: document.querySelector('#id_is_visitor_visible').value
     };
 
     console.log()
@@ -385,6 +408,7 @@ window.addEventListener('beforeunload', (event) => {
         currentData.category !== initialData.category ||
         currentData.ad !== initialData.ad ||
         currentData.lc !== initialData.lc ||
+        currentData.vr !== initialData.vr ||
         currentData.tp !== initialData.tp;
 
     if (hasChanged) {

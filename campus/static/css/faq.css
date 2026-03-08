@@ -179,15 +179,10 @@ main{
 .viewCategory .empty,
 .browseCategory .empty{
     width: 100%;
-    display: none;
+    display: flex;
     justify-content: flex-start;
     align-items: center;
     font-size: var(--p-fontsize);
-}
-
-.browseCategory .empty.active,
-.viewCategory .empty.active{
-    display: flex;
 }
 
 .viewCategory{
@@ -301,6 +296,108 @@ main{
     border-right: none;
 }
 
+.faqItemWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    width: 100%;
+    margin-bottom: 0.3vw;
+    margin-top: -0.1vw;
+}
+
+.itemCategory{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    overflow: hidden;
+}
+
+.itemCategory .categoryBadge{
+    padding: 0.2vw 0.5vw;
+    font-size: var(--xs-fontsize);
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    color: rgba(var(--black), 0.4);
+}
+
+.infoWrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5vw;
+    width: 100%;
+}
+
+.adminControls{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.infoWrapper .adminControls .editIcon{
+    width: 1vw;
+    height: 1vw;
+    fill: none;
+    object-fit: contain;
+    overflow: hidden;
+}
+
+.infoWrapper .adminControls .editIcon svg{
+    width: 1vw;
+    height: 1vw;
+    fill: none;
+}
+
+.infoWrapper .adminControls .editIcon path{
+    stroke-width: 1;
+    stroke: rgba(var(--black), 1);
+    transition: stroke 0.2s;
+}
+
+.infoWrapper .adminControls .editIcon:hover path{
+    stroke: rgba(var(--dark-green), 1);
+}
+
+.infoWrapper ul{
+    list-style-type: none;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.infoWrapper .views,
+.infoWrapper .likes,
+.infoWrapper .dislikes{
+    list-style-type: none;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.2vw;
+}
+
+.infoWrapper .views svg,
+.infoWrapper .likes svg,
+.infoWrapper .dislikes svg{
+    margin: 0 !important; 
+}
+
+.infoWrapper .views .value,
+.infoWrapper .likes .value,
+.infoWrapper .dislikes .value{
+    width: auto;
+    height: auto;
+}
+
+.infoWrapper .views .visibleIcon,
+.infoWrapper .likes .likes-icon,
+.infoWrapper .dislikes .dislikes-icon{
+    width: 1vw;
+    height: 1vw;
+}
+
 .itemTitle{
     font-size: var(--p-fontsize);
     font-weight: 600;
@@ -313,8 +410,6 @@ main{
 .itemPublishTime {
     font-size: var(--xs-fontsize);
     color: rgba(var(--black), 0.4);
-    margin-top: -0.1vw;
-    margin-bottom: 0.3vw;
 }
 
 .contentOV {
@@ -329,7 +424,7 @@ main{
 /* Clamping logic for 3 lines with ellipsis */
 .contentOV {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;

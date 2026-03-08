@@ -722,52 +722,55 @@ def help(request):
 
 def viewFAQ(request):
     categories = faq.CATEGORY_CHOICES
-    
-    try:
-        page = int(request.GET.get('page', 1))
-    except (ValueError, TypeError):
-        page = 1
 
-    limit = 9
-    start = (page - 1) * limit
-    end = start + limit
-
-    selected_cats = request.GET.getlist('category')
-    all_faqs = faq.objects.all().order_by('-published_time')
+    queryset = faq.objects.all()
 
     if not request.user.is_authenticated:
-        all_faqs = all.faqs.filter(is_visitor_visible=True)
+        queryset = queryset.filter(is_visitor_visible=True)
     else:
         user_groups = request.user.groups.values_list('name', flat=True)
 
         role_query = Q(is_visitor_visible=True) 
-        
         if "admin" in user_groups:
             role_query |= Q(is_ad_visible=True)
         if "lecturer" in user_groups:
             role_query |= Q(is_lc_visible=True)
         if "student" in user_groups:
             role_query |= Q(is_tp_visible=True)
-            
-        all_faqs = all_faqs.filter(role_query)
+        queryset = queryset.filter(role_query).distinct()
     
+    most_viewed_faqs = queryset.order_by('-view_count')[:9]
+    
+    try:
+        page = int(request.GET.get('page', 1))
+    except (ValueError, TypeError):
+        page = 1
+
+    selected_cats = request.GET.getlist('category')
+    main_list_qs = queryset.order_by('-published_time')
+
 
     if selected_cats:
-        all_faqs = all_faqs.filter(category__in=selected_cats)
+        main_list_qs = main_list_qs.filter(category__in=selected_cats)
 
-    total_count = all_faqs.count()
+    limit = 9
+
+    total_count = main_list_qs.count()
     max_pages = max(1, math.ceil(total_count / limit))
+    start = (page - 1) * limit
+    end = start + limit
+    faqs = main_list_qs[start:end]
 
     if page > max_pages:
         page = max_pages
         start = (page - 1) * limit
         end = start + limit
 
-    faqs = all_faqs[start:end]
 
     context = {
         'categories': categories,
         'faqs': faqs,
+        'most_viewed': most_viewed_faqs,
         'current_page': page,
         'max_pages': max_pages,
         'show_pagination': total_count > limit
@@ -800,6 +803,7 @@ def submit_feedback(request):
 @transaction.atomic
 def edit_faq(request): 
     if request.method == "POST":
+        print(request.POST)
         form = newFAQForm(request.POST)
         if form.is_valid():
             new_faq = form.save(commit=False)
@@ -844,6 +848,7 @@ def edit_faq(request):
             return redirect('viewFAQ')
         else:
             messages.error(request, "There was an error saving the FAQ. Please check all the fields")
+            print(form.errors)
     else:
         form = newFAQForm()
         

@@ -102,7 +102,7 @@ class newFAQForm(forms.ModelForm):
     )
     class Meta:
         model = faq
-        fields = ['title', 'content', 'category', 'is_ad_visible', 'is_lc_visible', 'is_tp_visible']
+        fields = ['title', 'content', 'category', 'is_ad_visible', 'is_lc_visible', 'is_tp_visible', 'is_visitor_visible']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class' : 'form-control',
@@ -110,6 +110,7 @@ class newFAQForm(forms.ModelForm):
                 }),
             'content': forms.HiddenInput(attrs={'required': True}),
             'category' : forms.HiddenInput(attrs={'required': True}),
+            'is_visitor_visible': forms.HiddenInput(attrs={'required': True}),
             'is_ad_visible': forms.HiddenInput(attrs={'required': True}),
             'is_lc_visible': forms.HiddenInput(attrs={'required': True}),
             'is_tp_visible': forms.HiddenInput(attrs={'required': True}),

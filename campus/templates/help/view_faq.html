@@ -1,5 +1,6 @@
 {% extends "base.html" %} 
-{% load static %}  
+{% load static %} 
+{% load faq_extras %} 
 {% block title %} Help {% endblock %}
 
 {% block extra_head %}
@@ -72,21 +73,9 @@
             <section class="viewCategory">
                 <div class="sectionHeader">
                     <div class="sectionTitle"><h3>Most Viewed Questions</h3></div>
-                    <div class="displayControl">
-                        <input type="hidden" id="maxPages" value="{{ max_pages }}">
-                        <div class="pageWrapper">
-                            <button id="prevPage" class="pageBtn">&laquo;</button>
-                                
-                            <div id="pageNumbers" class="pageNumbers">
-                                0
-                            </div>
-
-                            <button id="nextPage" class="pageBtn">&raquo;</button>
-                        </div>
-                    </div>
                 </div>
                 <div class="categoryContent" id="viewFAQContainer">
-                    {% comment %} {% include "partials/faq_list.html" %} {% endcomment %}
+                    {% include "partials/faq_most_view.html" with faqs=most_viewed %}
                 </div>
             </section>
         </div>
