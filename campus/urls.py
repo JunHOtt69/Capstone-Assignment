@@ -52,7 +52,7 @@ urlpatterns = [
     path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
     path('review-feedback/', views.review_feedback,name='review_feedback'),
     path('submit-feedback/', views.submit_feedback,name='submit_feedback'),
-    path('manage-faq/', views.manage_faq,name='manage_faq'),
+    path('edit-faq/', views.edit_faq,name='edit_faq'),
     path('config-bot/', views.config_bot,name='config_bot'),
     path('system-log/', views.system_log,name='system_log'),
 ]

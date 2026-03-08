@@ -739,11 +739,25 @@ def submit_feedback(request):
     return render(request, "help/submit_feedback.html")
 
 @role_required(allowed_roles=['admin'])
-def manage_faq(request): 
+def edit_faq(request): 
+    
+
+    if request.method == "POST":
+        form = newFAQForm(request.POST)
+        if form.is_valid:
+            form.save()
+            messages.success(request, "FAQ saved successfully!")
+            return redirect('faq_list')
+        else:
+            messages.error(request, "There was an error saving the FAQ. Please check all the fields")
+    else:
+        form = newFAQForm()
+        
     context = {
-        'form': newFAQForm()
+        'form': form,
     }
-    return render(request, "help/manage_faq.html", context)
+
+    return render(request, "help/edit_faq.html", context)
 
 @role_required(allowed_roles=['admin'])
 def config_bot(request): 

@@ -19,7 +19,7 @@
                 {{ form.title }}
             </div>
             <div class="faqCategory">
-                <div class="selectInput inactive">
+                <div class="selectInput"  id="categorySelect">
                     <div class="selectedLabel">
                         <label for="">Please Choose a category</label>
                         <span class="arrow">
@@ -28,60 +28,89 @@
                             </svg>
                         </span>
                     </div>
-                    <div class="optionContainer" id="courseOptions">
+                    <div class="optionContainer" id="categoryOptions">
+                        {% for value, label in form.fields.category.choices %}
+                            <div class="option">
+                                <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}">
+                                <label for="cat_{{ forloop.counter }}">{{label}}</label>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
                 {{ form.category }}
             </div>
-            <div class="basicInfoWrapper">
-                <div class="views">
-                    <span>Views: </span>
-                    <span class="value"> 
-                        
-                    </span>
-                </div>
-                <div class="Author">
-                    <span>Author: </span>
-                    <span class="value"></span>
-                </div>
-                <div class="publish_date">
-                    <span>Publish Date: </span>
-                    <span class="value"></span>
-                </div>
-                <div class="likesWrapper">
-                    <div class="likes">
-                        <span>
-                            <svg class="likes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M35.5 69.9766V54.9766H1.5V173.477H35.5V151.477M35.5 69.9766C52 64.9766 64.5 51.4766 68.5 39.9766C72.6587 28.0203 71 17.4766 73 11.9766C75 6.47664 86 -3.02341 95.5 3.97659C105 10.9766 119 33.4766 106 64.9766C120.167 64.9766 144.9 64.9766 148.5 64.9766C160 64.9766 171.278 73.4766 169.5 89.4766C165 112.977 160.265 138.477 159.5 151.477C159 159.977 147.5 172.477 126 173.477C104.5 174.477 47.5 167.477 35.5 151.477M35.5 69.9766V151.477"/>
-                            </svg>
 
-                        </span>
-                        <span class="value">
+            {% if faqInfo %}
+                <div class="basicInfoWrapper">
+                    <div class="views">
+                        <span>Views: </span>
+                        <span class="value"> 
+                            {% if faqInfo.views %}
+                                {{ faqInfo.views }}
+                            {% else %}
+                                0
+                            {% endif %}
                         </span>
                     </div>
-                    <div class="dislikes">
-                        <span>
-                            <svg class="dislikes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M135.686 105.093V120.093H169.686V1.59344H135.686V23.5934M135.686 105.093C119.186 110.093 106.686 123.593 102.686 135.093C98.5269 147.05 100.186 157.593 98.1857 163.093C96.1857 168.593 85.1857 178.093 75.6857 171.093C66.1857 164.093 52.1857 141.593 65.1857 110.093C51.019 110.093 26.2857 110.093 22.6857 110.093C11.1857 110.093 -0.0921088 101.593 1.68567 85.5935C6.18567 62.0935 10.921 36.5934 11.6857 23.5934C12.1857 15.0934 23.6857 2.59344 45.1857 1.59344C66.6857 0.593445 123.686 7.59344 135.686 23.5934M135.686 105.093V23.5934"/>
-                            </svg>
-                        </span>
+                    <div class="Author">
+                        <span>Author: </span>
                         <span class="value">
+                            {% if faqInfo.author %}
+                                {{ faqInfo.author }}
+                            {% else %}
+                                {{ card_id }}
+                            {% endif %}
                         </span>
                     </div>
+                    <div class="publish_date">
+                        <span>Publish Date: </span>
+                        <span class="value">
+                            {% if faqInfo.publish_date %}
+                                {{ faqInfo.publish_date }}
+                            {% else %}
+                                Not Published Yet
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="likesWrapper">
+                        <div class="likes">
+                            <span>
+                                <svg class="likes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M35.5 69.9766V54.9766H1.5V173.477H35.5V151.477M35.5 69.9766C52 64.9766 64.5 51.4766 68.5 39.9766C72.6587 28.0203 71 17.4766 73 11.9766C75 6.47664 86 -3.02341 95.5 3.97659C105 10.9766 119 33.4766 106 64.9766C120.167 64.9766 144.9 64.9766 148.5 64.9766C160 64.9766 171.278 73.4766 169.5 89.4766C165 112.977 160.265 138.477 159.5 151.477C159 159.977 147.5 172.477 126 173.477C104.5 174.477 47.5 167.477 35.5 151.477M35.5 69.9766V151.477"/>
+                                </svg>
+
+                            </span>
+                            <span class="value">
+                                {% if faqInfo.likes %}
+                                {{ faqInfo.likes }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="dislikes">
+                            <span>
+                                <svg class="dislikes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M135.686 105.093V120.093H169.686V1.59344H135.686V23.5934M135.686 105.093C119.186 110.093 106.686 123.593 102.686 135.093C98.5269 147.05 100.186 157.593 98.1857 163.093C96.1857 168.593 85.1857 178.093 75.6857 171.093C66.1857 164.093 52.1857 141.593 65.1857 110.093C51.019 110.093 26.2857 110.093 22.6857 110.093C11.1857 110.093 -0.0921088 101.593 1.68567 85.5935C6.18567 62.0935 10.921 36.5934 11.6857 23.5934C12.1857 15.0934 23.6857 2.59344 45.1857 1.59344C66.6857 0.593445 123.686 7.59344 135.686 23.5934M135.686 105.093V23.5934"/>
+                                </svg>
+                            </span>
+                            <span class="value">
+                                {% if faqInfo.dislikes %}
+                                {{ faqInfo.dislikes }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="class"></div>
                 </div>
-                <div class="class"></div>
-            </div>
+            {% endif %}
+            
             <div class="extraConfig">
-                <ul data-config = 'comments'>
+                <ul data-config = 'visibility'>
                     <li>
-                        <span class="commentIcon">
-                            <svg viewBox="0 0 169 178" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M34.4339 41.9942H136.229M34.4339 68.4557H136.229M34.4339 94.9172H101.632M1.5 1.5H167.5V134.209H69.0311L36.0972 173.5V134.209H1.5V1.5Z"/>
-                            </svg>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="visibleIcon" data-visible = true>
+                        <span class="visibleIcon" id="visiblity" data-visible = 'true'>
                             <svg class="eye-closed" viewBox="0 0 190 67" xmlns="http://www.w3.org/2000/svg" fill="black">
                                 <path fill-rule="evenodd" clip-rule="evenodd" d="M0.774536 3.09583C8.69878 11.8704 21.5691 22.8716 41.7745 33.3818C38.7745 36.9532 25.1745 51.5958 20.7745 53.5958C25.2745 52.4365 42.0745 41.7156 47.2745 36.1068C55.7939 40.1175 64.9769 43.466 74.5808 45.5958C73.7745 51.5958 70.7745 61.5958 65.7745 66.0958C69.7745 64.9257 78.7745 59.4866 82.7745 47.0907C86.7876 47.663 90.8595 48.0058 94.9737 48.0811C98.9779 48.1543 102.915 47.9719 106.775 47.5675C107.608 51.2436 111.575 60.0958 120.775 66.0958C118.941 63.6941 115.075 56.4112 114.275 46.4933C125.349 44.4828 135.687 40.7322 145.023 36.1068C150.021 47.3156 162.273 52.4365 166.775 53.5958C159.975 48.7958 152.247 38.1198 150.233 33.3818C167.86 23.6723 181.392 11.2028 188.775 2.59584L184.775 0.64311C171.623 15.9428 136.459 42.9002 94.9737 42.1431C53.4887 41.386 18.0517 15.3119 4.77454 0.64311L0.774536 3.09583Z" fill="black" stroke="black"/>
                             </svg>
@@ -89,6 +118,14 @@
                             <path class="fill" fill-rule="evenodd" clip-rule="evenodd" d="M97.0801 0.504764C53.4376 0.0749323 14.693 28.8407 0.705811 41.4976C14.7811 57.0833 53.9266 84.6789 97.9052 85.4834C141.884 86.2878 180.763 57.7536 194.706 41.4976C181.038 29.669 143.406 2.42202 100.498 0.595363C99.6358 0.558658 98.7715 0.532217 97.9052 0.516371C97.63 0.511337 97.3549 0.507472 97.0801 0.504764ZM134.706 34.5C134.706 24.1378 129.661 14.8584 121.706 8.62214C149.964 15.951 175.886 33.3426 185.706 41.8219C172.554 57.1217 139.89 81.2547 98.4052 80.4976C56.9202 79.7405 22.983 56.4908 9.70581 41.8219C19.9834 32.5427 45.4422 14.0691 75.2058 7.50677C66.3897 13.7213 60.7058 23.5007 60.7058 34.5C60.7058 53.2777 77.2713 68.5 97.7058 68.5C118.14 68.5 134.706 53.2777 134.706 34.5ZM98.7058 62.5C115.827 62.5 129.706 49.964 129.706 34.5C129.706 19.036 115.827 6.5 98.7058 6.5C81.585 6.5 67.7058 19.036 67.7058 34.5C67.7058 49.964 81.585 62.5 98.7058 62.5Z" />
                             <path class="fill"  fill-rule="evenodd" clip-rule="evenodd" d="M97.9052 0.516371C97.63 0.511337 97.3549 0.507472 97.0801 0.504764C97.2882 0.501592 97.4968 0.5 97.7058 0.5C98.6451 0.5 99.5763 0.532165 100.498 0.595363C99.6358 0.558658 98.7715 0.532217 97.9052 0.516371Z"/>
                             <path d="M97.0801 0.504764C97.3549 0.507472 97.63 0.511337 97.9052 0.516371C98.7715 0.532217 99.6358 0.558658 100.498 0.595363M97.0801 0.504764C97.2882 0.501592 97.4968 0.5 97.7058 0.5C98.6451 0.5 99.5763 0.532165 100.498 0.595363M97.0801 0.504764C53.4376 0.0749323 14.693 28.8407 0.705811 41.4976C14.7811 57.0833 53.9266 84.6789 97.9052 85.4834C141.884 86.2878 180.763 57.7536 194.706 41.4976C181.038 29.669 143.406 2.42202 100.498 0.595363M121.706 8.62214C129.661 14.8584 134.706 24.1378 134.706 34.5C134.706 53.2777 118.14 68.5 97.7058 68.5C77.2713 68.5 60.7058 53.2777 60.7058 34.5C60.7058 23.5007 66.3897 13.7213 75.2058 7.50677C45.4422 14.0691 19.9834 32.5427 9.70581 41.8219C22.983 56.4908 56.9202 79.7405 98.4052 80.4976C139.89 81.2547 172.554 57.1217 185.706 41.8219C175.886 33.3426 149.964 15.951 121.706 8.62214ZM129.706 34.5C129.706 49.964 115.827 62.5 98.7058 62.5C81.585 62.5 67.7058 49.964 67.7058 34.5C67.7058 19.036 81.585 6.5 98.7058 6.5C115.827 6.5 129.706 19.036 129.706 34.5Z"/>
+                            </svg>
+                        </span>
+                    </li>
+
+                    <li>
+                        <span class="commentIcon">
+                            <svg viewBox="0 0 169 178" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M34.4339 41.9942H136.229M34.4339 68.4557H136.229M34.4339 94.9172H101.632M1.5 1.5H167.5V134.209H69.0311L36.0972 173.5V134.209H1.5V1.5Z"/>
                             </svg>
                         </span>
                     </li>
@@ -102,6 +139,18 @@
             {{ form.is_ad_visible }}
             {{ form.is_lc_visible }}
             {{ form.is_tp_visible }}
+
+            
+            {% if messages %}
+                <div class="errorMessage">
+                    {% for message in messages %}
+                        {% if "error" in message.tags %}
+                            <p>{{ message }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <div class="configContent">
             </div>
         </section>
@@ -176,8 +225,8 @@
     <template id="commentSection">
         <p class="configTitle">Comment Section</p>
         <div class="commentContainer">
-            {% if comments %}
-                {% for comment in comments %}
+            {% if faqInfo.comments %}
+                {% for comment in faqInfo.comments %}
                     <div class="comment">
                         <div class="userComment">
                             <div class="userTimeWrapper">
