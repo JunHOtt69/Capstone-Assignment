@@ -24,22 +24,69 @@
                 </div>
                 <div id="faqSuggestions"></div>
             </div>
-
+            
             <section class="browseCategory">
                 <div class="sectionHeader">
-                    <div class="pageTitle"><h3>Browse By Category</h3></div>
-                    <div class="categoryContent">
-                        <div class="faqItem">
-                            <div class="itemTitle"></div>
-                            <div class="itemPublishTime"></div>
-                            <div class="contentOV"></div>
+                    <div class="sectionTitle"><h3>Browse By Category</h3></div>
+                    <div class="displayControl">
+                        <div class="categoryOption">
+                            {% for value, label in categories %}
+                            <label class="categoryBox">
+                                <input type="checkbox" name="category" value="{{ value }}" class="categoryInput">
+                                <div class="categoryTile">
+                                    <span class="tickIcon">✔</span>
+                                    <span class="categoryLabel">{{ label }}</span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" id="maxPages" value="{{ max_pages }}">
+                        <div class="pageWrapper 
+                            {% if show_pagination %}
+                                active
+                            {% endif %}
+                        ">
+                            <button id="prevPage" class="pageBtn"
+                                {% if current_page == 1 %}
+                                    disabled
+                                {% endif %}
+                            >&laquo;</button>
+                                
+                            <div id="pageNumbers" class="pageNumbers">
+                                {{ current_page }} / {{ max_pages }}
+                            </div>
+
+                            <button id="nextPage" class="pageBtn"
+                                {% if current_page == max_pages %}
+                                    disabled
+                                {% endif %}
+                            >&raquo;</button>
                         </div>
                     </div>
                 </div>
+                <div class="categoryContent" id="catFAQContainer">
+                    {% include "partials/faq_list.html" %}
+                </div>
             </section>
-            <section class="browseCategory">
+
+            <section class="viewCategory">
                 <div class="sectionHeader">
-                    <div class="pageTitle"><h3>Most Viewed Questions</h3></div>
+                    <div class="sectionTitle"><h3>Most Viewed Questions</h3></div>
+                    <div class="displayControl">
+                        <input type="hidden" id="maxPages" value="{{ max_pages }}">
+                        <div class="pageWrapper">
+                            <button id="prevPage" class="pageBtn">&laquo;</button>
+                                
+                            <div id="pageNumbers" class="pageNumbers">
+                                0
+                            </div>
+
+                            <button id="nextPage" class="pageBtn">&raquo;</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="categoryContent" id="viewFAQContainer">
+                    {% comment %} {% include "partials/faq_list.html" %} {% endcomment %}
                 </div>
             </section>
         </div>

@@ -1,0 +1,11 @@
+{% if faqs %}
+    {% for item in faqs %}
+        <div class="faqItem">
+            <div class="itemTitle">{{ item.title }}</div>
+            <div class="itemPublishTime">{{ item.published_time }}</div>
+            <div class="contentOV">{{ item.content|safe }}</div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="empty">No FAQ posts available.</div>
+{% endif %}

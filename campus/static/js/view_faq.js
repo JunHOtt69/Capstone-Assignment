@@ -48,6 +48,79 @@ document.addEventListener('DOMContentLoaded', async() => {
                 }
             });
     });
+
+    let currentCatPage = 1;
+    const catContainer = document.querySelector('#catFAQContainer');
+    const pageWrapper = document.querySelector('.browseCategory .pageWrapper');
+    const categoryInputs = document.querySelectorAll('.categoryInput');
+
+    categoryInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            currentCatPage = 1; 
+            fetchFilteredFAQs();
+        });
+    });
+
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => fetchCategoryPage(-1));
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => fetchCategoryPage(1));
+    }
+
+    function fetchFilteredFAQs() {
+        const selected = Array.from(categoryInputs)
+            .filter(i => i.checked)
+            .map(i => `category=${encodeURIComponent(i.value)}`)
+            .join('&');
+
+        const url = `/FAQs/?page=${currentCatPage}${selected ? '&' + selected : ''}`;
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            const serverMaxPages = response.headers.get('X-Max-Pages');
+            if (serverMaxPages) {
+                document.querySelector('#maxPages').value = serverMaxPages;
+            }
+            return response.text();
+        })
+        .then(html => {
+            catContainer.innerHTML = html;
+            const newMax = parseInt(document.querySelector('#maxPages').value);
+            updateUI(newMax);
+        });
+    }
+
+    function fetchCategoryPage(pageIncrement) {
+        const maxPages = parseInt(document.querySelector('#maxPages').value);
+        const nextPage = currentCatPage + pageIncrement;
+
+        if (nextPage < 1 || nextPage > maxPages) return;
+
+        currentCatPage = nextPage;
+        fetchFilteredFAQs(); 
+    }
+
+    function updateUI(maxPages) {
+        const pageNumDisplay = document.querySelector('#pageNumbers');
+        if (pageNumDisplay) {
+            pageNumDisplay.innerText = `${currentCatPage} / ${maxPages}`;
+        }
+
+        if (maxPages > 1) {
+            pageWrapper.classList.add('active');
+        } else {
+            pageWrapper.classList.remove('active');
+        }
+
+        prevBtn.disabled = (currentCatPage === 1);
+        nextBtn.disabled = (currentCatPage === maxPages);
+    }
 })
 
 document.addEventListener('click', (event) => {

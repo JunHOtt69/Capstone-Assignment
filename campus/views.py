@@ -29,6 +29,7 @@ import datetime
 import random
 import json
 import base64
+import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, AttendanceSession, AttendanceMark, attachments
 from .decorators import role_required
@@ -720,7 +721,47 @@ def help(request):
     return render(request, "help/help.html")
 
 def viewFAQ(request):
-    return render(request, 'help/view_faq.html')
+    categories = faq.CATEGORY_CHOICES
+    
+    try:
+        page = int(request.GET.get('page', 1))
+    except (ValueError, TypeError):
+        page = 1
+
+    limit = 9
+    start = (page - 1) * limit
+    end = start + limit
+
+    selected_cats = request.GET.getlist('category')
+    all_faqs = faq.objects.all().order_by('-published_time')
+
+    if selected_cats:
+        all_faqs = all_faqs.filter(category__in=selected_cats)
+
+    total_count = all_faqs.count()
+    max_pages = max(1, math.ceil(total_count / limit))
+
+    if page > max_pages:
+        page = max_pages
+        start = (page - 1) * limit
+        end = start + limit
+
+    faqs = all_faqs[start:end]
+
+    context = {
+        'categories': categories,
+        'faqs': faqs,
+        'current_page': page,
+        'max_pages': max_pages,
+        'show_pagination': total_count > limit
+    }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        response = render(request, 'partials/faq_list.html', context)
+        response['X-Max-Pages'] = max_pages
+        return response
+
+    return render(request, 'help/view_faq.html', context)
 
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def support_center(request):
