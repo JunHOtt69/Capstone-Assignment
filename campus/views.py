@@ -543,7 +543,7 @@ def map_data(request):
         
         if not nodes.exists():
             # Return empty data structure if no data in DB
-            return JsonResponse({"nodes": [], "edges": []})
+            return JsonResponse({"nodes": [], "edges": [], "pois": []})
         
         # Return with 'id' and 'type' for backward compatibility with campus_map.js
         nodes_list = [
@@ -568,7 +568,7 @@ def map_data(request):
             for edge in edges
         ]
         
-        data = {"nodes": nodes_list, "edges": edges_list}
+        data = {"nodes": nodes_list, "edges": edges_list, "pois": []}
         return JsonResponse(data)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -618,7 +618,7 @@ def save_map(request):
                         to_node=to_node
                     )
         
-        return messages.success(request, "Map saved successfully!")
+        return JsonResponse({"message": "Map saved successfully!"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
     

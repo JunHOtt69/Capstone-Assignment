@@ -68,6 +68,10 @@
     svg.addEventListener('mousemove', handleMouseMove);
     svg.addEventListener('mouseup', handleMouseUp);
     svg.addEventListener('mouseleave', handleMouseLeave);
+    svg.addEventListener('dblclick', (e) => e.preventDefault());
+    svg.addEventListener('mousedown', (e) => {
+      if (e.detail > 1) e.preventDefault();
+    });
   }
   
   function toggleAddTerminalMode() {
@@ -368,6 +372,7 @@
 
       // allow renaming terminals on double-click
       circle.addEventListener('dblclick', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         if (node.node_type === 'terminal') {
           const newName = prompt('Enter name for terminal', node.name || node.node_id);
