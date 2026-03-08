@@ -1,6 +1,6 @@
 {% if faqs %}
     {% for item in faqs %}
-        <div class="faqItem">
+        <div class="faqItem" onclick="location.href='/FAQs/{{ item.slug }}/';">
             <div class="itemTitle">{{ item.title }}</div>
             <div class="itemPublishTime">{{ item.published_time }}</div>
             <div class="contentOV">{{ item.content|safe }}</div>

@@ -735,6 +735,23 @@ def viewFAQ(request):
     selected_cats = request.GET.getlist('category')
     all_faqs = faq.objects.all().order_by('-published_time')
 
+    if not request.user.is_authenticated:
+        all_faqs = all.faqs.filter(is_visitor_visible=True)
+    else:
+        user_groups = request.user.groups.values_list('name', flat=True)
+
+        role_query = Q(is_visitor_visible=True) 
+        
+        if "admin" in user_groups:
+            role_query |= Q(is_ad_visible=True)
+        if "lecturer" in user_groups:
+            role_query |= Q(is_lc_visible=True)
+        if "student" in user_groups:
+            role_query |= Q(is_tp_visible=True)
+            
+        all_faqs = all_faqs.filter(role_query)
+    
+
     if selected_cats:
         all_faqs = all_faqs.filter(category__in=selected_cats)
 

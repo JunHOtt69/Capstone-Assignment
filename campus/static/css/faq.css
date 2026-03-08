@@ -297,6 +297,10 @@ main{
     border-bottom: none;
 }
 
+.faqItem:last-child{
+    border-right: none;
+}
+
 .itemTitle{
     font-size: var(--p-fontsize);
     font-weight: 600;
@@ -325,7 +329,7 @@ main{
 /* Clamping logic for 3 lines with ellipsis */
 .contentOV {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
