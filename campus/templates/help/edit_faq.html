@@ -13,6 +13,7 @@
 <div class="faqPage">
     <h3 class="pageTitle">Create New FAQ Post</h3>
     <form method="post" id="faq">
+        {% csrf_token %}
         <section class="faqInfo">
             <div class="titleInputWrapper">
                 <span class="placeholder">Title</span>

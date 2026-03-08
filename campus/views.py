@@ -1,18 +1,15 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Q
 from django.core.mail import EmailMultiAlternatives
-from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from django.utils.encoding import force_bytes
 from django.utils import timezone
-from datetime import timedelta
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse_lazy
 from django.urls import reverse
-from .models import AttendanceSession
-from .models import AttendanceMark
 #from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, ADDITION
@@ -24,13 +21,16 @@ from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
+from datetime import timedelta
+from bs4 import BeautifulSoup
 import os
 import uuid
 import datetime
 import random
 import json
+import base64
 from .forms import UserRowForm, AcademicTermForm, newFAQForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, AttendanceSession, AttendanceMark, attachments
 from .decorators import role_required
 
 #playground
@@ -739,15 +739,51 @@ def submit_feedback(request):
     return render(request, "help/submit_feedback.html")
 
 @role_required(allowed_roles=['admin'])
+@transaction.atomic
 def edit_faq(request): 
-    
-
     if request.method == "POST":
         form = newFAQForm(request.POST)
-        if form.is_valid:
-            form.save()
+        if form.is_valid():
+            new_faq = form.save(commit=False)
+            new_faq.author = request.user.admin_profile 
+            new_faq.save()
+
+            soup = BeautifulSoup(new_faq.content, 'html.parser')
+            images = soup.find_all('img')
+            images_processed = False
+
+            for img in images: 
+                src = img.get('src', '')
+
+                if src.startswith('data:image'):
+                    try: 
+                        format, imgstr = src.split(';base64,')
+                        ext = format.split('/')[-1]
+                        
+                        # Create a unique filename for the media folder
+                        filename = f"faq_{new_faq.id}_{uuid.uuid4().hex[:8]}.{ext}"
+                        data = ContentFile(base64.b64decode(imgstr), name=filename)
+
+                        # 3. Create record in your attachments model
+                        new_attachment = attachments.objects.create(
+                            content_type=ContentType.objects.get_for_model(new_faq),
+                            object_id=new_faq.id,
+                            file=data
+                        )
+
+                        # 4. Replace the Base64 source with the new media URL
+                        img['src'] = new_attachment.file.url
+                        images_processed = True
+                    except Exception as e:
+                        print(f"Error processing image: {e}")
+                        continue
+            
+            if images_processed:
+                new_faq.content = str(soup)
+                new_faq.save()
+
             messages.success(request, "FAQ saved successfully!")
-            return redirect('faq_list')
+            return redirect('viewFAQ')
         else:
             messages.error(request, "There was an error saving the FAQ. Please check all the fields")
     else:
@@ -766,3 +802,31 @@ def config_bot(request):
 @role_required(allowed_roles=['admin'])
 def system_log(request): 
     return render(request, "help/system_log.html")
+
+
+#extract and store image
+def extract_and_save_images(faq_instance):
+    soup = BeautifulSoup(faq_instance.content, 'html.parser')
+    images = soup.find_all('img')
+    
+    for img in images:
+        src = img.get('src', '')
+        if src.startswith('data:image'):
+            # 1. Parse the Base64 string
+            format, imgstr = src.split(';base64,') 
+            ext = format.split('/')[-1] 
+            data = ContentFile(base64.b64decode(imgstr), name=f"faq_img.{ext}")
+
+            # 2. Save to your attachments model
+            attachment = attachments.objects.create(
+                content_type=ContentType.objects.get_for_model(faq_instance),
+                object_id=faq_instance.id,
+                file=data
+            )
+
+            # 3. Replace Base64 with the actual file URL
+            img['src'] = attachment.file.url
+
+    # Update the FAQ content with new cleaned HTML
+    faq_instance.content = str(soup)
+    faq_instance.save()

@@ -244,6 +244,14 @@ class faq(models.Model):
     n_dislikes = models.PositiveIntegerField(default=0)
     slug = models.SlugField(unique=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        # Generate slug if it doesn't exist
+        if not self.slug:
+            self.slug = slugify(self.title)
+        
+        # Call the real save method
+        super().save(*args, **kwargs)
+
 class attachments(models.Model):
     id = models.AutoField(primary_key = True)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

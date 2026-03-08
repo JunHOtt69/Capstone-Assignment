@@ -1,3 +1,6 @@
+let isSubmitting = false;
+let initialData = {};
+
 document.addEventListener("DOMContentLoaded", async function() {
     const quill = new Quill('#editor', {
         theme: 'snow',
@@ -41,11 +44,20 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     saveBtn.addEventListener('click', (e) => {
         contentInput.value = quill.root.innerHTML;
-    
+        const category =  document.querySelector('#id_category').value;
+        
+        isSubmitting = true;
+
         if (quill.getText().trim().length === 0) {
             e.preventDefault();
+            isSubmitting = false;
             alert("The FAQ content cannot be empty!");
         } 
+        else if(category == ''){
+            e.preventDefault();
+            isSubmitting = false;
+            alert("The FAQ category cannot be empty!");
+        }
     });
 
     const categoryInput = document.getElementById('id_category');
@@ -329,6 +341,19 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         dic[editorId].focus();
     }
+
+    function captureInitialState() {
+        initialData = {
+            title: document.querySelector('#id_title').value,
+            content: document.querySelector('#id_content').value,
+            category: document.querySelector('#id_category').value,
+            ad: document.querySelector('#id_is_ad_visible').checked,
+            lc: document.querySelector('#id_is_lc_visible').checked,
+            tp: document.querySelector('#id_is_tp_visible').checked
+        };
+    }
+
+    captureInitialState();
 }); 
 
 document.addEventListener('click', (e) => {
@@ -337,5 +362,33 @@ document.addEventListener('click', (e) => {
     
     if(!selectInput.contains(e.target) && !categoryOptions.contains(e.target)){
         selectInput.classList.toggle('active', false);
+    }
+});
+
+window.addEventListener('beforeunload', (event) => {
+    if (isSubmitting) return;
+
+    const currentData = {
+        title: document.querySelector('#id_title').value,
+        content: document.querySelector('#id_content').value,
+        category: document.querySelector('#id_category').value,
+        ad: document.querySelector('#id_is_ad_visible').checked,
+        lc: document.querySelector('#id_is_lc_visible').checked,
+        tp: document.querySelector('#id_is_tp_visible').checked
+    };
+
+    console.log()
+
+    const hasChanged = 
+        currentData.title !== initialData.title ||
+        currentData.content !== initialData.content ||
+        currentData.category !== initialData.category ||
+        currentData.ad !== initialData.ad ||
+        currentData.lc !== initialData.lc ||
+        currentData.tp !== initialData.tp;
+
+    if (hasChanged) {
+        event.preventDefault();
+        event.returnValue = ''; 
     }
 });
