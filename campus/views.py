@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.db import transaction
@@ -29,6 +29,7 @@ import datetime
 import random
 import json
 import base64
+import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, AttendanceSession, AttendanceMark, attachments
 from .decorators import role_required
@@ -720,7 +721,67 @@ def help(request):
     return render(request, "help/help.html")
 
 def viewFAQ(request):
-    return render(request, 'help/faq.html')
+    categories = faq.CATEGORY_CHOICES
+
+    queryset = faq.objects.all()
+
+    if not request.user.is_authenticated:
+        queryset = queryset.filter(is_visitor_visible=True)
+    else:
+        user_groups = request.user.groups.values_list('name', flat=True)
+
+        role_query = Q(is_visitor_visible=True) 
+        if "admin" in user_groups:
+            role_query |= Q(is_ad_visible=True)
+        if "lecturer" in user_groups:
+            role_query |= Q(is_lc_visible=True)
+        if "student" in user_groups:
+            role_query |= Q(is_tp_visible=True)
+        queryset = queryset.filter(role_query).distinct()
+    
+    most_viewed_faqs = queryset.order_by('-view_count')[:9]
+    
+    try:
+        page = int(request.GET.get('page', 1))
+    except (ValueError, TypeError):
+        page = 1
+
+    selected_cats = request.GET.getlist('category')
+    main_list_qs = queryset.order_by('-published_time')
+
+
+    if selected_cats:
+        main_list_qs = main_list_qs.filter(category__in=selected_cats)
+
+    limit = 9
+
+    total_count = main_list_qs.count()
+    max_pages = max(1, math.ceil(total_count / limit))
+    start = (page - 1) * limit
+    end = start + limit
+    faqs = main_list_qs[start:end]
+
+    if page > max_pages:
+        page = max_pages
+        start = (page - 1) * limit
+        end = start + limit
+
+
+    context = {
+        'categories': categories,
+        'faqs': faqs,
+        'most_viewed': most_viewed_faqs,
+        'current_page': page,
+        'max_pages': max_pages,
+        'show_pagination': total_count > limit
+    }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        response = render(request, 'partials/faq_list.html', context)
+        response['X-Max-Pages'] = max_pages
+        return response
+
+    return render(request, 'help/view_faq.html', context)
 
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def support_center(request):
@@ -742,6 +803,7 @@ def submit_feedback(request):
 @transaction.atomic
 def edit_faq(request): 
     if request.method == "POST":
+        print(request.POST)
         form = newFAQForm(request.POST)
         if form.is_valid():
             new_faq = form.save(commit=False)
@@ -786,6 +848,7 @@ def edit_faq(request):
             return redirect('viewFAQ')
         else:
             messages.error(request, "There was an error saving the FAQ. Please check all the fields")
+            print(form.errors)
     else:
         form = newFAQForm()
         
@@ -803,6 +866,38 @@ def config_bot(request):
 def system_log(request): 
     return render(request, "help/system_log.html")
 
+
+def faq_suggestions(request):
+    query = request.GET.get('q', '')
+    
+    if query:
+        words = query.split()
+        
+        q_objects = Q()
+        for word in words:
+            q_objects |= Q(title__icontains=word)
+            
+        results = faq.objects.filter(q_objects)[:5]
+        suggestions = [
+            {
+                'title': item.title,
+                'category': item.get_category_display(), 
+                'slug': item.slug
+            } for item in results
+        ]
+    else: suggestions =[]
+
+    return JsonResponse({
+        'suggestions': suggestions
+    })
+
+def faq_detail(request, slug):
+    post = get_object_or_404(faq, slug=slug)
+
+    post.view_count += 1
+    post.save()
+    
+    return render(request, 'help/faq_detail.html', {'post': post})
 
 #extract and store image
 def extract_and_save_images(faq_instance):

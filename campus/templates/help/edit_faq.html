@@ -138,6 +138,7 @@
                 </div>
             </div>
             {{ form.is_ad_visible }}
+            {{ form.is_visitor_visible }}
             {{ form.is_lc_visible }}
             {{ form.is_tp_visible }}
 
@@ -167,7 +168,7 @@
 
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
-    <script src="{% static 'js/faq.js' %}"></script>
+    <script src="{% static 'js/edit_faq.js' %}"></script>
 {% endblock %} 
 
 {% block extra_template %}
@@ -218,6 +219,15 @@
                     </div>
 
                     <div class="toggleBtn" id="studentToggle"  data-value = 'false'></div>
+                </div>
+
+                <div class="visibiltyWrapper">
+                    <div class="descWrapper">
+                        <p class="toggleTitle">Visitor Access</p>
+                        <p class="toggleDescription">Toggle this to allow visitors to view this FAQ. Turn it off to hide it from visitor users.</p>
+                    </div>
+
+                    <div class="toggleBtn" id="visitorToggle"  data-value = 'false'></div>
                 </div>
             </div>
         </div>

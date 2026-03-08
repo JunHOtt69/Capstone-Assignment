@@ -1,4 +1,6 @@
-from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
 
@@ -47,7 +49,7 @@ urlpatterns = [
 
     # Help center
     path("help/", views.help, name="help"),
-    path('FAQ/', views.viewFAQ, name='viewFAQ'),
+    path('FAQs/', views.viewFAQ, name='viewFAQ'),
     path('support-center/', views.support_center,name='support_center'),
     path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
     path('review-feedback/', views.review_feedback,name='review_feedback'),
@@ -55,5 +57,10 @@ urlpatterns = [
     path('edit-faq/', views.edit_faq,name='edit_faq'),
     path('config-bot/', views.config_bot,name='config_bot'),
     path('system-log/', views.system_log,name='system_log'),
+    path('suggestions/', views.faq_suggestions,name='faq_suggestions'),
+    path('FAQs/<slug:slug>/', views.faq_detail, name='faq_detail'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
