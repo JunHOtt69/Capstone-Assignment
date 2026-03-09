@@ -1,68 +1,188 @@
-document.addEventListener('DOMContentLoaded', async() => {
+document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('faqSearch');
     const suggestionsList = document.getElementById('faqSuggestions');
+    const searchContainer = document.querySelector('.searchContainer');
 
-    searchInput.addEventListener('input', function() {
-        const query = this.value;
-
-        if (query.length < 2) {
-            suggestionsList.classList.toggle('visible', false);
-            suggestionsList.innerHTML = '';
-            return;
-        }else{
-            suggestionsList.classList.toggle('visible', true);
-        }
-
-        fetch(`/suggestions/?q=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(data => {
-                suggestionsList.innerHTML = '';
-
-                if(data.suggestions.length > 0){
-                    data.suggestions.forEach(item => {
-                        const suggestion = document.createElement('a');
-                        suggestion.className = 'suggestion';
-                        suggestion.href = `/FAQs/${item.slug}/`;
-                        
-                        const suggestionTitle = document.createElement('p');
-                        suggestionTitle.className = 'suggestionTitle';
-                        
-                        const suggestionCat = document.createElement('span');
-                        suggestionCat.className = 'suggestionCat';
-                        
-                        suggestionTitle.innerText = item.title;
-                        suggestionCat.innerText = item.category;
-
-                        suggestion.appendChild(suggestionTitle);
-                        suggestion.appendChild(suggestionCat);
-                        suggestionsList.appendChild(suggestion);
-                    });
-                }else{
-                    const empty = document.createElement('div');
-                    empty.className = 'suggestion';
-                    empty.style.setProperty('font-size', 'var(--p-fontsize');
-                    empty.style.setProperty('color', 'rgba(var(--black), 0.4)');
-                    
-                    empty.innerText ='No matching suggestions. Press Enter to search for more results.'
-                    suggestionsList.appendChild(empty);
-                }
-            });
-    });
-
-    let currentCatPage = 1;
-    const catContainer = document.querySelector('#catFAQContainer');
+    const pageNumDisplay = document.getElementById('pageNumbers');
+    const maxPagesInput = document.getElementById('maxPages');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    const catContainer = document.getElementById('catFAQContainer');
     const pageWrapper = document.querySelector('.browseCategory .pageWrapper');
     const categoryInputs = document.querySelectorAll('.categoryInput');
 
-    categoryInputs.forEach(input => {
+    if (!searchInput || !suggestionsList || !catContainer || !maxPagesInput) {
+        return;
+    }
+
+    const parsedCurrent = pageNumDisplay
+        ? parseInt((pageNumDisplay.innerText || '1').split('/')[0], 10)
+        : 1;
+    let currentCatPage = Number.isFinite(parsedCurrent) ? parsedCurrent : 1;
+    let activeSuggestionHref = null;
+    let suggestionRequestId = 0;
+
+    const hideSuggestions = () => {
+        suggestionsList.classList.remove('visible');
+    };
+
+    const renderSuggestions = (suggestions) => {
+        suggestionsList.innerHTML = '';
+        activeSuggestionHref = null;
+
+        if (suggestions.length > 0) {
+            suggestions.forEach((item, index) => {
+                const suggestion = document.createElement('a');
+                suggestion.className = 'suggestion';
+                suggestion.href = `/FAQs/${item.slug}/`;
+
+                if (index === 0) {
+                    activeSuggestionHref = suggestion.href;
+                }
+
+                const suggestionTitle = document.createElement('p');
+                suggestionTitle.className = 'suggestionTitle';
+                suggestionTitle.innerText = item.title;
+
+                const suggestionCat = document.createElement('span');
+                suggestionCat.className = 'suggestionCat';
+                suggestionCat.innerText = item.category;
+
+                suggestion.appendChild(suggestionTitle);
+                suggestion.appendChild(suggestionCat);
+                suggestionsList.appendChild(suggestion);
+            });
+            suggestionsList.classList.add('visible');
+            return;
+        }
+
+        const empty = document.createElement('div');
+        empty.className = 'suggestion';
+        empty.style.setProperty('font-size', 'var(--p-fontsize)');
+        empty.style.setProperty('color', 'rgba(var(--black), 0.45)');
+        empty.innerText = 'No matching suggestions.';
+        suggestionsList.appendChild(empty);
+        suggestionsList.classList.add('visible');
+    };
+
+    const fetchSuggestions = async (query) => {
+        const requestId = ++suggestionRequestId;
+        try {
+            const response = await fetch(`/suggestions/?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            // Prevent out-of-order responses from replacing newer results.
+            if (requestId !== suggestionRequestId) {
+                return;
+            }
+
+            renderSuggestions(data.suggestions || []);
+        } catch (error) {
+            suggestionsList.innerHTML = '';
+            hideSuggestions();
+        }
+    };
+
+    searchInput.addEventListener('input', (event) => {
+        const query = event.target.value.trim();
+
+        if (query.length < 2) {
+            suggestionsList.innerHTML = '';
+            hideSuggestions();
+            return;
+        }
+
+        fetchSuggestions(query);
+    });
+
+    searchInput.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') {
+            return;
+        }
+
+        if (suggestionsList.classList.contains('visible') && activeSuggestionHref) {
+            event.preventDefault();
+            window.location.href = activeSuggestionHref;
+        }
+    });
+
+    const searchIcon = document.querySelector('.searchBar .searchIcon');
+    if (searchIcon) {
+        searchIcon.addEventListener('click', () => searchInput.focus());
+    }
+
+    document.addEventListener('click', (event) => {
+        if (!searchContainer.contains(event.target)) {
+            hideSuggestions();
+        }
+    });
+
+    const updateUI = (maxPages) => {
+        if (pageNumDisplay) {
+            pageNumDisplay.innerText = `${currentCatPage} / ${maxPages}`;
+        }
+
+        if (pageWrapper) {
+            pageWrapper.classList.toggle('active', maxPages > 1);
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = currentCatPage === 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = currentCatPage === maxPages;
+        }
+    };
+
+    const fetchFilteredFAQs = async () => {
+        const selected = Array.from(categoryInputs)
+            .filter((input) => input.checked)
+            .map((input) => `category=${encodeURIComponent(input.value)}`)
+            .join('&');
+
+        const url = `/FAQs/?page=${currentCatPage}${selected ? `&${selected}` : ''}`;
+
+        try {
+            const response = await fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            const serverMaxPages = parseInt(response.headers.get('X-Max-Pages'), 10);
+            if (Number.isFinite(serverMaxPages)) {
+                maxPagesInput.value = serverMaxPages;
+                if (currentCatPage > serverMaxPages) {
+                    currentCatPage = serverMaxPages;
+                }
+            }
+
+            const html = await response.text();
+            catContainer.innerHTML = html;
+
+            const newMax = parseInt(maxPagesInput.value, 10) || 1;
+            updateUI(newMax);
+        } catch (error) {
+            // Keep current content rendered if fetch fails.
+        }
+    };
+
+    const fetchCategoryPage = (pageIncrement) => {
+        const maxPages = parseInt(maxPagesInput.value, 10) || 1;
+        const nextPage = currentCatPage + pageIncrement;
+
+        if (nextPage < 1 || nextPage > maxPages) {
+            return;
+        }
+
+        currentCatPage = nextPage;
+        fetchFilteredFAQs();
+    };
+
+    categoryInputs.forEach((input) => {
         input.addEventListener('change', () => {
-            currentCatPage = 1; 
+            currentCatPage = 1;
             fetchFilteredFAQs();
         });
     });
-
-    const prevBtn = document.getElementById('prevPage');
-    const nextBtn = document.getElementById('nextPage');
 
     if (prevBtn) {
         prevBtn.addEventListener('click', () => fetchCategoryPage(-1));
@@ -71,62 +191,6 @@ document.addEventListener('DOMContentLoaded', async() => {
         nextBtn.addEventListener('click', () => fetchCategoryPage(1));
     }
 
-    function fetchFilteredFAQs() {
-        const selected = Array.from(categoryInputs)
-            .filter(i => i.checked)
-            .map(i => `category=${encodeURIComponent(i.value)}`)
-            .join('&');
-
-        const url = `/FAQs/?page=${currentCatPage}${selected ? '&' + selected : ''}`;
-
-        fetch(url, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => {
-            const serverMaxPages = response.headers.get('X-Max-Pages');
-            if (serverMaxPages) {
-                document.querySelector('#maxPages').value = serverMaxPages;
-            }
-            return response.text();
-        })
-        .then(html => {
-            catContainer.innerHTML = html;
-            const newMax = parseInt(document.querySelector('#maxPages').value);
-            updateUI(newMax);
-        });
-    }
-
-    function fetchCategoryPage(pageIncrement) {
-        const maxPages = parseInt(document.querySelector('#maxPages').value);
-        const nextPage = currentCatPage + pageIncrement;
-
-        if (nextPage < 1 || nextPage > maxPages) return;
-
-        currentCatPage = nextPage;
-        fetchFilteredFAQs(); 
-    }
-
-    function updateUI(maxPages) {
-        const pageNumDisplay = document.querySelector('#pageNumbers');
-        if (pageNumDisplay) {
-            pageNumDisplay.innerText = `${currentCatPage} / ${maxPages}`;
-        }
-
-        if (maxPages > 1) {
-            pageWrapper.classList.add('active');
-        } else {
-            pageWrapper.classList.remove('active');
-        }
-
-        prevBtn.disabled = (currentCatPage === 1);
-        nextBtn.disabled = (currentCatPage === maxPages);
-    }
-})
-
-document.addEventListener('click', (event) => {
-    const suggestionsList = document.getElementById('faqSuggestions');
-    
-    if (!suggestionsList.contains(event.target)) {
-        suggestionsList.classList.toggle('visible', false);
-    }
+    const initialMax = parseInt(maxPagesInput.value, 10) || 1;
+    updateUI(initialMax);
 });

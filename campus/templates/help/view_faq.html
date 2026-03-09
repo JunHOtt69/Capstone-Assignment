@@ -5,6 +5,7 @@
 
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/faq.css' %}">
+    <link rel="stylesheet" href="{% static 'css/view_faq.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -28,9 +29,9 @@
                     <div id="faqSuggestions"></div>
                 </div>
                 {% if user_role == 'admin' %}
-                    <div class="createNew" onclick="location.href='/edit-faq/';">
+                    <button class="createNew" type="button" onclick="location.href='/edit-faq/';" aria-label="Create new FAQ">
                         +
-                    </div>
+                    </button>
                 {% endif %}
             </div>
 
