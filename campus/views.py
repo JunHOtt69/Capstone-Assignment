@@ -589,6 +589,41 @@ def save_map(request):
         data = json.loads(request.body)
         nodes_data = data.get('nodes', [])
         edges_data = data.get('edges', [])
+        image_data = data.get('image_data', None)
+        
+        # Save new map image if provided
+        if image_data:
+            try:
+                import base64
+                from io import BytesIO
+                
+                # Remove data URL prefix (data:image/png;base64,)
+                if 'base64,' in image_data:
+                    image_data = image_data.split('base64,')[1]
+                
+                # Decode base64 image
+                image_bytes = base64.b64decode(image_data)
+                
+                # Delete old map images
+                static_dir = os.path.join(settings.BASE_DIR, 'campus', 'static', 'myapp', 'images')
+                os.makedirs(static_dir, exist_ok=True)
+                
+                old_extensions = ['png', 'jpg', 'jpeg', 'svg']
+                for ext in old_extensions:
+                    old_file = os.path.join(static_dir, f'campus-map.{ext}')
+                    if os.path.exists(old_file):
+                        try:
+                            os.remove(old_file)
+                        except Exception as e:
+                            print(f"Warning: Could not delete old file {old_file}: {e}")
+                
+                # Save new image
+                file_path = os.path.join(static_dir, 'campus-map.png')
+                with open(file_path, 'wb') as f:
+                    f.write(image_bytes)
+                    
+            except Exception as e:
+                return JsonResponse({"error": f"Failed to save image: {str(e)}"}, status=400)
         
         with transaction.atomic():
             # Clear existing data
@@ -618,9 +653,66 @@ def save_map(request):
                         to_node=to_node
                     )
         
-        return JsonResponse({"message": "Map saved successfully!"})
+        message = "Map saved successfully!"
+        if image_data:
+            message = "Map and image saved successfully!"
+        
+        return JsonResponse({"message": message})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+def upload_map_image(request):
+    """Upload and save a new campus map image"""
+    if request.method != 'POST':
+        return JsonResponse({"error": "POST required"}, status=400)
+    
+    if not request.FILES.get('image'):
+        return JsonResponse({"error": "No image file provided"}, status=400)
+    
+    try:
+        image_file = request.FILES['image']
+        
+        # Validate file type
+        allowed_types = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml']
+        if image_file.content_type not in allowed_types:
+            return JsonResponse({
+                "error": "Invalid file type. Only PNG, JPG, and SVG are allowed."
+            }, status=400)
+        
+        # Save the file
+        static_dir = os.path.join(settings.BASE_DIR, 'campus', 'static', 'myapp', 'images')
+        os.makedirs(static_dir, exist_ok=True)
+        
+        # Delete old map images before saving the new one
+        old_extensions = ['png', 'jpg', 'jpeg', 'svg']
+        for ext in old_extensions:
+            old_file = os.path.join(static_dir, f'campus-map.{ext}')
+            if os.path.exists(old_file):
+                try:
+                    os.remove(old_file)
+                except Exception as e:
+                    print(f"Warning: Could not delete old file {old_file}: {e}")
+        
+        # Always save as campus-map.png (since cropped images are PNG)
+        file_path = os.path.join(static_dir, 'campus-map.png')
+        
+        # Write the file
+        with open(file_path, 'wb+') as destination:
+            for chunk in image_file.chunks():
+                destination.write(chunk)
+        
+        # Return success with the new image URL
+        from django.templatetags.static import static
+        image_url = static('myapp/images/campus-map.png')
+        
+        return JsonResponse({
+            "success": True,
+            "message": "Map image uploaded successfully!",
+            "image_url": image_url
+        })
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
     
 def point_of_interest(request):
     return render(request, "point_of_interest.html")

@@ -67,6 +67,7 @@
       line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
       line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
       line.setAttribute('stroke', '#AAAAAA'); line.setAttribute('stroke-width', '3');
+      line.setAttribute('opacity', '0'); // Make pathways transparent
       svg.appendChild(line);
     });
   }
@@ -146,12 +147,30 @@
     addOpt(startSelect,'','-- select start --'); 
     addOpt(endSelect,'','-- select end --');
     
-    // Only add terminal nodes to dropdowns
-    nodes.forEach(n => {
-      if (n.type === 'terminal') {
-        addOpt(startSelect, n.id, n.name || 'Node '+n.id);
-        addOpt(endSelect, n.id, n.name || 'Node '+n.id);
-      }
+    // Get terminal nodes and sort by numeric value (extract numbers from names/IDs)
+    const terminals = nodes
+      .filter(n => n.type === 'terminal')
+      .sort((a, b) => {
+        const nameA = a.name || 'Node '+a.id;
+        const nameB = b.name || 'Node '+b.id;
+        
+        // Extract numeric parts for natural sorting
+        const numA = parseInt(nameA.match(/\d+/)?.[0] || '0');
+        const numB = parseInt(nameB.match(/\d+/)?.[0] || '0');
+        
+        // If both have numbers, sort numerically
+        if (numA !== numB) {
+          return numA - numB;
+        }
+        
+        // Otherwise, sort alphabetically
+        return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+      });
+    
+    // Add sorted terminals to dropdowns
+    terminals.forEach(n => {
+      addOpt(startSelect, n.id, n.name || 'Node '+n.id);
+      addOpt(endSelect, n.id, n.name || 'Node '+n.id);
     });
 
     if(poiList) {

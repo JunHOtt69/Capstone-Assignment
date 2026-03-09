@@ -28,6 +28,7 @@ urlpatterns = [
     path("navigation/map-data/", views.map_data, name="map_data"),
     path("navigation/map-data/", views.map_data, name="map_data"),
     path("save-map/", views.save_map, name="save_map"),
+    path("upload-map-image/", views.upload_map_image, name="upload_map_image"),
     path("point_of_interest/", views.point_of_interest, name="point_of_interest"),
     path("point_of_interest/data/", views.point_of_interest_data, name="point_of_interest_data"),
     path("point_of_interest/save/", views.point_of_interest_save, name="point_of_interest_save"),

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <link rel="stylesheet" href="{% static 'css/editmap.css' %}">
 {% endblock %}
 
@@ -34,18 +35,19 @@
 
         <!-- Map Controls Toolbar -->
         <div class="map-controls">
+            <button id="uploadMapBtn" class="upload-map-btn">Upload New Map</button>
             <button id="addTerminal">Add Terminal</button>
             <button id="addPath">Add Pathway</button>
             <button id="addEdge">Add Edge</button>
             <button id="deleteElement">Delete Element</button>
-            <button id="saveMap" class="save-btn">💾 Save Map</button>
+            <button id="saveMap" class="save-btn">Save Map</button>
             <a href="{% url 'navigation' %}" class="cancel-link">Cancel</a>
         </div>
 
         <!-- Map Container -->
         <div class="map-card">
             <div id="mapWrapper">
-                <img src="{% static 'myapp/images/campus-map.svg' %}" alt="Campus Map" />
+                <img src="{% static 'myapp/images/campus-map.png' %}" alt="Campus Map" id="campusMapImage" />
                 <svg 
                     id="editMap" 
                     viewBox="0 0 800 600">
@@ -54,7 +56,34 @@
         </div>
     </div>
 
+    <!-- Image Upload & Crop Modal -->
+    <div id="cropModal" class="crop-modal" style="display: none;">
+        <div class="crop-modal-content">
+            <div class="crop-modal-header">
+                <h2>Upload & Crop Campus Map</h2>
+                <button class="crop-modal-close" id="closeCropModal">&times;</button>
+            </div>
+            <div class="crop-modal-body">
+                <div class="crop-upload-section">
+                    <input type="file" id="mapImageInput" accept="image/*" style="display: none;">
+                    <button id="selectImageBtn" class="select-image-btn">📁 Select Image</button>
+                    <p class="crop-instructions">Select an image to crop to 800x600 pixels</p>
+                </div>
+                <div class="crop-preview-section" id="cropPreviewSection" style="display: none;">
+                    <div class="crop-container">
+                        <img id="cropImage" style="max-width: 100%;">
+                    </div>
+                    <div class="crop-actions">
+                        <button id="applyCropBtn" class="btn-primary">✓ Apply Cropped Image</button>
+                        <button id="cancelCropBtn" class="btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>window.MAP_DATA_URL = "{% url 'map_data' %}";</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="{% static 'js/edit_map.js' %}"></script>
 
 {% endblock %}
