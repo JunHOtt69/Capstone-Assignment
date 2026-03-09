@@ -132,11 +132,6 @@ STATIC_URL = '/static/'
 #ENABLE 3
 # STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Media files (User uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', 
 ]
@@ -158,5 +153,5 @@ PASSWORD_RESET_TIMEOUT = 15 * 60
 
 LOGOUT_REDIRECT_URL = 'login'
 
-MEDIA_URL = '/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
