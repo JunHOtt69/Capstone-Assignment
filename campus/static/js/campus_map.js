@@ -3,7 +3,6 @@
   const startSelect = document.getElementById('startSelect');
   const endSelect = document.getElementById('endSelect');
   const findBtn = document.getElementById('findPath');
-  const poiFilter = document.getElementById('poiFilter');
   const poiList = document.getElementById('poiList');
 
   function fetchData(){
@@ -68,6 +67,7 @@
       line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
       line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
       line.setAttribute('stroke', '#AAAAAA'); line.setAttribute('stroke-width', '3');
+      line.setAttribute('opacity', '0'); // Make pathways transparent
       svg.appendChild(line);
     });
   }
@@ -106,6 +106,7 @@
   }
 
   function drawPOIs(nodes, pois, pathNodeIds){
+    if(!Array.isArray(pois)) return;
     pois.forEach(p=>{
       const node = nodes.find(n=>n.id===p.node);
       if(!node) return;
@@ -139,31 +140,42 @@
   }
 
   function populateControls(nodes, pois){
+    const poiItems = Array.isArray(pois) ? pois : [];
     startSelect.innerHTML = '';
     endSelect.innerHTML = '';
     const addOpt = (sel, value, label)=>{ const o = document.createElement('option'); o.value = value; o.textContent = label; sel.appendChild(o); };
     addOpt(startSelect,'','-- select start --'); 
     addOpt(endSelect,'','-- select end --');
     
-    // Only add terminal nodes to dropdowns
-    nodes.forEach(n => {
-      if (n.type === 'terminal') {
-        addOpt(startSelect, n.id, n.name || 'Node '+n.id);
-        addOpt(endSelect, n.id, n.name || 'Node '+n.id);
-      }
-    });
-
-    poiFilter.innerHTML = '<option value="">All Locations</option>';
-    pois.forEach(p=>{ 
-      const o = document.createElement('option'); 
-      o.value = p.id; 
-      o.textContent = p.name; 
-      poiFilter.appendChild(o); 
+    // Get terminal nodes and sort by numeric value (extract numbers from names/IDs)
+    const terminals = nodes
+      .filter(n => n.type === 'terminal')
+      .sort((a, b) => {
+        const nameA = a.name || 'Node '+a.id;
+        const nameB = b.name || 'Node '+b.id;
+        
+        // Extract numeric parts for natural sorting
+        const numA = parseInt(nameA.match(/\d+/)?.[0] || '0');
+        const numB = parseInt(nameB.match(/\d+/)?.[0] || '0');
+        
+        // If both have numbers, sort numerically
+        if (numA !== numB) {
+          return numA - numB;
+        }
+        
+        // Otherwise, sort alphabetically
+        return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+      });
+    
+    // Add sorted terminals to dropdowns
+    terminals.forEach(n => {
+      addOpt(startSelect, n.id, n.name || 'Node '+n.id);
+      addOpt(endSelect, n.id, n.name || 'Node '+n.id);
     });
 
     if(poiList) {
       poiList.innerHTML = '';
-      pois.forEach(p=>{
+      poiItems.forEach(p=>{
         const d = document.createElement('div'); 
         d.className = 'poi-item'; 
         d.textContent = p.name + ' — ' + p.description; 
@@ -178,7 +190,7 @@
 
   // Initialize
   fetchData().then(data=>{
-    const {nodes, edges, pois} = data;
+    const {nodes = [], edges = [], pois = []} = data || {};
     const {byId, adj} = buildGraph(nodes, edges);
     populateControls(nodes, pois);
     
@@ -201,16 +213,5 @@
       draw(nodes, edges, pois, path);
     });
 
-    poiFilter.addEventListener('change', ()=>{
-      const filter = poiFilter.value; 
-      if(!filter){ 
-        draw(nodes, edges, pois, null); 
-        return; 
-      }
-      const p = pois.find(x=>x.id===filter); 
-      if(!p) return; 
-      // Just highlight the POI location
-      alert(p.name + '\nLocated at: ' + p.node);
-    });
   }).catch(err=>{ console.error('map load failed', err); });
 })();

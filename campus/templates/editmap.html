@@ -5,44 +5,85 @@
 {% block title %} Edit Campus Map {% endblock %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <link rel="stylesheet" href="{% static 'css/editmap.css' %}">
 {% endblock %}
 
 {% block content %}
-    <h2>Edit Campus Map</h2>
-    
-    <div class="instructions">
-        <p><strong>Instructions:</strong></p>
-        <ul>
-            <li><strong>Add Terminal:</strong> Click "Add Terminal" then click on the map to place a green terminal node. Double-click a terminal to rename it.</li>
-            <li><strong>Add Pathway:</strong> Click "Add Pathway" then click on the map to place a yellow pathway junction node.</li>
-            <li><strong>Add Edge:</strong> Click "Add Edge" then click two nodes to connect them (creates a pathway)</li>
-            <li><strong>Drag Nodes:</strong> Click and drag any node to reposition it on the map</li>
-            <li><strong>Delete:</strong> Click "Delete Element" then click a node or edge to remove it</li>
-            <li><strong>Save:</strong> Click "Save Map" to save all changes and update the navigation map</li>
-        </ul>
+    <div class="edit-map-container">
+        <!-- Header Section -->
+        <div class="edit-map-header">
+            <h1>Edit Campus Map</h1>
+            <p class="edit-map-subtitle">Manage campus navigation nodes and pathways</p>
+        </div>
+
+        <!-- Instructions Card -->
+        <div class="instructions">
+            <p><strong>Instructions:</strong></p>
+            <ul>
+                <li><strong>Add Terminal:</strong> Click "Add Terminal" then click on the map to place a green terminal node. Double-click a terminal to rename it.</li>
+                <li><strong>Add Pathway:</strong> Click "Add Pathway" then click on the map to place a yellow pathway junction node.</li>
+                <li><strong>Add Edge:</strong> Click "Add Edge" then click two nodes to connect them (creates a pathway)</li>
+                <li><strong>Drag Nodes:</strong> Click and drag any node to reposition it on the map</li>
+                <li><strong>Delete:</strong> Click "Delete Element" then click a node or edge to remove it</li>
+                <li><strong>Save:</strong> Click "Save Map" to save all changes and update the navigation map</li>
+            </ul>
+        </div>
+
+        <!-- Map Controls Toolbar -->
+        <div class="map-controls">
+            <button id="uploadMapBtn" class="upload-map-btn">Upload New Map</button>
+            <button id="addTerminal">Add Terminal</button>
+            <button id="addPath">Add Pathway</button>
+            <button id="addEdge">Add Edge</button>
+            <button id="deleteElement">Delete Element</button>
+            <button id="saveMap" class="save-btn">Save Map</button>
+            <a href="{% url 'navigation' %}" class="cancel-link">Cancel</a>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-card">
+            <div id="mapWrapper">
+                <img src="{% static 'myapp/images/campus-map.png' %}" alt="Campus Map" id="campusMapImage" />
+                <svg 
+                    id="editMap" 
+                    viewBox="0 0 800 600">
+                </svg>
+            </div>
+        </div>
     </div>
 
-    <div class="map-controls">
-        <button id="addTerminal">Add Terminal</button>
-        <button id="addPath">Add Pathway</button>
-        <button id="addEdge">Add Edge</button>
-        <button id="deleteElement">Delete Element</button>
-        <button id="saveMap" class="save-btn">Save Map</button>
-        <a href="{% url 'navigation' %}" class="cancel-link">Cancel</a>
-    </div>
-
-    <div id="mapWrapper" style="position: relative; display: inline-block;">
-        <img src="{% static 'myapp/images/campus-map.svg' %}" alt="Campus Map" />
-        <svg 
-            id="editMap" 
-            viewBox="0 0 800 600" 
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;">
-        </svg>
+    <!-- Image Upload & Crop Modal -->
+    <div id="cropModal" class="crop-modal" style="display: none;">
+        <div class="crop-modal-content">
+            <div class="crop-modal-header">
+                <h2>Upload & Crop Campus Map</h2>
+                <button class="crop-modal-close" id="closeCropModal">&times;</button>
+            </div>
+            <div class="crop-modal-body">
+                <div class="crop-upload-section">
+                    <input type="file" id="mapImageInput" accept="image/*" style="display: none;">
+                    <button id="selectImageBtn" class="select-image-btn">📁 Select Image</button>
+                    <p class="crop-instructions">Select an image to crop to 800x600 pixels</p>
+                </div>
+                <div class="crop-preview-section" id="cropPreviewSection" style="display: none;">
+                    <div class="crop-container">
+                        <img id="cropImage" style="max-width: 100%;">
+                    </div>
+                    <div class="crop-actions">
+                        <button id="applyCropBtn" class="btn-primary">✓ Apply Cropped Image</button>
+                        <button id="cancelCropBtn" class="btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>window.MAP_DATA_URL = "{% url 'map_data' %}";</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="{% static 'js/edit_map.js' %}"></script>
 
 {% endblock %}
