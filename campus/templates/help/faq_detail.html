@@ -1,32 +1,40 @@
 {% extends "base.html" %} 
 {% load static %} 
-{% load faq_extras %} 
 {% block title %} FAQ {% endblock %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/faq.css' %}">
+    <link rel="stylesheet" href="{% static 'css/view_faq.css' %}">
 {% endblock %}
 
 {% block content %}
-    .get pass faq object 
-
-    div.dqwiduqbwiubqud
-    {{ post.title }}
-    {{ post.content }}
-    {{ post.published_time }}
-    {{ post.category }}
-
-    {% if user_role == 'admin' %}
-        <div class="adminControls">
-            <a href="/edit-faq/{{ item.slug }}/" 
-                class="editIcon" 
-                onclick="event.stopPropagation();">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                </svg>
-            </a>
+    <section class="faqDetailPage">
+        <div class="faqDetailHeader">
+            <a class="backLink" href="/FAQs/">&larr; Back to FAQ</a>
+            {% if user_role == 'admin' %}
+                <a class="editBtn" href="/edit-faq/{{ post.slug }}/">Edit Post</a>
+            {% endif %}
         </div>
-    {% endif %}
+
+        <article class="faqDetailCard">
+            <h1 class="faqTitle">{{ post.title }}</h1>
+
+            <div class="faqMeta">
+                <span class="metaItem">{{ author_name }}</span>
+                <span class="metaDot">&middot;</span>
+                <span class="metaItem">{{ post.get_category_display }}</span>
+                {% if attachment_count %}
+                    <span class="metaDot">&middot;</span>
+                    <span class="metaItem">{{ attachment_count }} attachment{{ attachment_count|pluralize }}</span>
+                {% endif %}
+                <span class="metaDot">&middot;</span>
+                <span class="metaItem">
+                    <time datetime="{{ post.published_time|date:'c' }}">{{ post.published_time|date:"M d, Y" }}</time>
+                </span>
+            </div>
+
+            <div class="faqBody">{{ post.content|safe }}</div>
+        </article>
+    </section>
 {% endblock %}
 
 {% block extra_scripts %}

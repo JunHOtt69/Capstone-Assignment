@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.core.mail import EmailMultiAlternatives
 from django.core.files.base import ContentFile
 from django.utils.encoding import force_bytes
@@ -812,6 +812,46 @@ def announcements(request):
 def help(request): 
     return render(request, "help/help.html")
 
+
+def _infer_attachment_count_from_content(html_content):
+    if not html_content:
+        return 0
+
+    soup = BeautifulSoup(html_content, 'html.parser')
+    image_count = len(soup.find_all('img'))
+
+    linked_attachment_count = 0
+    for link in soup.find_all('a', href=True):
+        href = (link.get('href') or '').lower()
+        if '/media/attachments/' in href:
+            linked_attachment_count += 1
+
+    return image_count + linked_attachment_count
+
+
+def _attach_faq_attachment_counts(faq_items):
+    items = list(faq_items)
+    if not items:
+        return items
+
+    faq_content_type = ContentType.objects.get_for_model(faq)
+    faq_ids = [item.id for item in items]
+
+    counts = (
+        attachments.objects
+        .filter(content_type=faq_content_type, object_id__in=faq_ids)
+        .values('object_id')
+        .annotate(total=Count('id'))
+    )
+    count_map = {row['object_id']: row['total'] for row in counts}
+
+    for item in items:
+        db_count = count_map.get(item.id, 0)
+        inferred_count = _infer_attachment_count_from_content(item.content)
+        item.attachment_count = max(db_count, inferred_count)
+
+    return items
+
 def viewFAQ(request):
     categories = faq.CATEGORY_CHOICES
 
@@ -833,7 +873,7 @@ def viewFAQ(request):
             role_query |= Q(is_tp_visible=True)
         queryset = queryset.filter(role_query).distinct()
     
-    most_viewed_faqs = queryset.order_by('-view_count')[:9]
+    most_viewed_faqs = _attach_faq_attachment_counts(queryset.order_by('-view_count')[:9])
     
     try:
         page = int(request.GET.get('page', 1))
@@ -853,7 +893,7 @@ def viewFAQ(request):
     max_pages = max(1, math.ceil(total_count / limit))
     start = (page - 1) * limit
     end = start + limit
-    faqs = main_list_qs[start:end]
+    faqs = _attach_faq_attachment_counts(main_list_qs[start:end])
 
     if page > max_pages:
         page = max_pages
@@ -998,8 +1038,25 @@ def faq_detail(request, slug):
 
     post.view_count += 1
     post.save()
+
+    faq_content_type = ContentType.objects.get_for_model(faq)
+    attachment_count = attachments.objects.filter(
+        content_type=faq_content_type,
+        object_id=post.id,
+    ).count()
+
+    inferred_count = _infer_attachment_count_from_content(post.content)
+    attachment_count = max(attachment_count, inferred_count)
+
+    author_name = str(post.author) if post.author else 'Anonymous'
+    author_initial = author_name[0].upper() if author_name else 'A'
     
-    return render(request, 'help/faq_detail.html', {'post': post})
+    return render(request, 'help/faq_detail.html', {
+        'post': post,
+        'attachment_count': attachment_count,
+        'author_name': author_name,
+        'author_initial': author_initial,
+    })
 
 #extract and store image
 def extract_and_save_images(faq_instance):
