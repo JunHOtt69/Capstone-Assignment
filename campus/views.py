@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
 from django.core.mail import EmailMultiAlternatives
 from django.core.files.base import ContentFile
 from django.utils.encoding import force_bytes
@@ -16,6 +16,7 @@ from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
@@ -31,7 +32,7 @@ import json
 import base64
 import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, AttendanceSession, AttendanceMark, attachments
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments
 from .decorators import role_required
 
 #playground
@@ -1033,11 +1034,74 @@ def faq_suggestions(request):
         'suggestions': suggestions
     })
 
+
+@login_required
+@require_POST
+def faq_vote(request, slug):
+    post = get_object_or_404(faq, slug=slug)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8')) if request.body else {}
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid payload.'}, status=400)
+
+    reaction_type = payload.get('reaction')
+    if reaction_type not in {'like', 'dislike'}:
+        return JsonResponse({'error': 'Invalid reaction type.'}, status=400)
+
+    new_value = FAQReaction.LIKE if reaction_type == 'like' else FAQReaction.DISLIKE
+
+    with transaction.atomic():
+        reaction = FAQReaction.objects.select_for_update().filter(faq=post, user=request.user).first()
+
+        if reaction is None:
+            FAQReaction.objects.create(faq=post, user=request.user, value=new_value)
+            if new_value == FAQReaction.LIKE:
+                faq.objects.filter(pk=post.pk).update(n_likes=F('n_likes') + 1)
+                user_reaction = 'like'
+            else:
+                faq.objects.filter(pk=post.pk).update(n_dislikes=F('n_dislikes') + 1)
+                user_reaction = 'dislike'
+        elif reaction.value == new_value:
+            reaction.delete()
+            if new_value == FAQReaction.LIKE:
+                faq.objects.filter(pk=post.pk).update(n_likes=F('n_likes') - 1)
+            else:
+                faq.objects.filter(pk=post.pk).update(n_dislikes=F('n_dislikes') - 1)
+            user_reaction = None
+        else:
+            old_value = reaction.value
+            reaction.value = new_value
+            reaction.save(update_fields=['value', 'updated_at'])
+
+            if old_value == FAQReaction.LIKE:
+                faq.objects.filter(pk=post.pk).update(
+                    n_likes=F('n_likes') - 1,
+                    n_dislikes=F('n_dislikes') + 1,
+                )
+            else:
+                faq.objects.filter(pk=post.pk).update(
+                    n_likes=F('n_likes') + 1,
+                    n_dislikes=F('n_dislikes') - 1,
+                )
+            user_reaction = 'like' if new_value == FAQReaction.LIKE else 'dislike'
+
+    post.refresh_from_db(fields=['n_likes', 'n_dislikes'])
+
+    return JsonResponse({
+        'ok': True,
+        'n_likes': post.n_likes,
+        'n_dislikes': post.n_dislikes,
+        'user_reaction': user_reaction,
+    })
+
 def faq_detail(request, slug):
     post = get_object_or_404(faq, slug=slug)
 
-    post.view_count += 1
-    post.save()
+    # Count only explicit click-through visits from FAQ listing/search links.
+    if request.GET.get('from_click') == '1':
+        faq.objects.filter(pk=post.pk).update(view_count=F('view_count') + 1)
+        return redirect('faq_detail', slug=slug)
 
     faq_content_type = ContentType.objects.get_for_model(faq)
     attachment_count = attachments.objects.filter(
@@ -1050,12 +1114,20 @@ def faq_detail(request, slug):
 
     author_name = str(post.author) if post.author else 'Anonymous'
     author_initial = author_name[0].upper() if author_name else 'A'
+    user_reaction = None
+    if request.user.is_authenticated:
+        reaction = FAQReaction.objects.filter(faq=post, user=request.user).values_list('value', flat=True).first()
+        if reaction == FAQReaction.LIKE:
+            user_reaction = 'like'
+        elif reaction == FAQReaction.DISLIKE:
+            user_reaction = 'dislike'
     
     return render(request, 'help/faq_detail.html', {
         'post': post,
         'attachment_count': attachment_count,
         'author_name': author_name,
         'author_initial': author_initial,
+        'user_reaction': user_reaction,
     })
 
 #extract and store image

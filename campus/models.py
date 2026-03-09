@@ -259,6 +259,27 @@ class faq(models.Model):
         # Call the real save method
         super().save(*args, **kwargs)
 
+
+class FAQReaction(models.Model):
+    LIKE = 1
+    DISLIKE = -1
+    REACTION_CHOICES = [
+        (LIKE, 'Like'),
+        (DISLIKE, 'Dislike'),
+    ]
+
+    faq = models.ForeignKey('faq', on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='faq_reactions')
+    value = models.SmallIntegerField(choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('faq', 'user')
+
+    def __str__(self):
+        return f"{self.user_id}:{self.faq_id}:{self.value}"
+
 class attachments(models.Model):
     id = models.AutoField(primary_key = True)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

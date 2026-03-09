@@ -1158,3 +1158,7 @@ header li a{
         font-size: 11.2px;
     }
 } */
+
+.logoutWrapper form {
+    padding: 0 !important;
+}

@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="faqPage">
+    <div class="faqPage" data-is-authenticated="{% if request.user.is_authenticated %}1{% else %}0{% endif %}">
         <div class="viewFaq">
             <div class="sectionHeader">
                 <div class="pageTitle"><h2>Frequently Asked Questions (FAQ)</h2></div>

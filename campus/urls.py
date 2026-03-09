@@ -52,6 +52,7 @@ urlpatterns = [
     path("help/", views.help, name="help"),
     path('FAQs/', views.viewFAQ, name='viewFAQ'),
     path('FAQs/<slug:slug>/', views.faq_detail, name='faq_detail'),
+    path('FAQs/<slug:slug>/vote/', views.faq_vote, name='faq_vote'),
     path('edit-faq/', views.edit_faq,name='edit_faq'),
     path('edit-faq/<slug:slug>/', views.edit_faq, name='edit_existing_faq'),
     

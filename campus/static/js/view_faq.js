@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const faqPage = document.querySelector('.faqPage');
+    const isAuthenticated = faqPage?.dataset.isAuthenticated === '1';
+
     const searchInput = document.getElementById('faqSearch');
     const suggestionsList = document.getElementById('faqSuggestions');
     const searchContainer = document.querySelector('.searchContainer');
@@ -13,6 +16,97 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!searchInput || !suggestionsList || !catContainer || !maxPagesInput) {
         return;
+    }
+
+    const getCsrfToken = () => {
+        const cookies = document.cookie ? document.cookie.split('; ') : [];
+        for (const cookie of cookies) {
+            if (cookie.startsWith('csrftoken=')) {
+                return decodeURIComponent(cookie.split('=')[1]);
+            }
+        }
+        return '';
+    };
+
+    const applyVoteState = (faqItem, userReaction) => {
+        const likeBtn = faqItem.querySelector('.likeBtn');
+        const dislikeBtn = faqItem.querySelector('.dislikeBtn');
+        if (!likeBtn || !dislikeBtn) {
+            return;
+        }
+
+        likeBtn.classList.toggle('active', userReaction === 'like');
+        dislikeBtn.classList.toggle('active', userReaction === 'dislike');
+    };
+
+    const syncVoteCountsBySlug = (slug, payload) => {
+        document.querySelectorAll(`.faqItem[data-faq-slug="${slug}"]`).forEach((card) => {
+            const likeCount = card.querySelector('.likes .value');
+            const dislikeCount = card.querySelector('.dislikes .value');
+            if (likeCount) {
+                likeCount.textContent = String(payload.n_likes);
+            }
+            if (dislikeCount) {
+                dislikeCount.textContent = String(payload.n_dislikes);
+            }
+            applyVoteState(card, payload.user_reaction || null);
+        });
+    };
+
+    const handleVoteClick = async (event) => {
+        const voteBtn = event.target.closest('.voteBtn');
+        if (!voteBtn) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!isAuthenticated) {
+            window.alert('Please sign in to react to FAQs.');
+            return;
+        }
+
+        const faqItem = voteBtn.closest('.faqItem');
+        const slug = faqItem?.dataset.faqSlug;
+        const reaction = voteBtn.dataset.reaction;
+        if (!slug || !reaction) {
+            return;
+        }
+
+        if (faqItem.dataset.votePending === '1') {
+            return;
+        }
+
+        faqItem.dataset.votePending = '1';
+        try {
+            const response = await fetch(`/FAQs/${slug}/vote/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ reaction }),
+            });
+
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) {
+                throw new Error(payload.error || 'Unable to save reaction.');
+            }
+
+            syncVoteCountsBySlug(slug, payload);
+        } catch (error) {
+            window.alert('Unable to save your reaction right now.');
+        } finally {
+            faqItem.dataset.votePending = '0';
+        }
+    };
+
+    catContainer.addEventListener('click', handleVoteClick);
+    const viewContainer = document.getElementById('viewFAQContainer');
+    if (viewContainer) {
+        viewContainer.addEventListener('click', handleVoteClick);
     }
 
     const parsedCurrent = pageNumDisplay
@@ -34,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             suggestions.forEach((item, index) => {
                 const suggestion = document.createElement('a');
                 suggestion.className = 'suggestion';
-                suggestion.href = `/FAQs/${item.slug}/`;
+                suggestion.href = `/FAQs/${item.slug}/?from_click=1`;
 
                 if (index === 0) {
                     activeSuggestionHref = suggestion.href;
