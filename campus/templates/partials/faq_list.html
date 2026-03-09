@@ -1,7 +1,7 @@
 {% load faq_extras %} 
 {% if faqs %}
     {% for item in faqs %}
-        <div class="faqItem" onclick="location.href='/FAQs/{{ item.slug }}/';">
+        <div class="faqItem" onclick="location.href='/FAQs/{{ item.slug }}/?from_click=1';">
             <div class="itemTitle">{{ item.title }}</div>
             <div class="faqItemWrapper">
                 <div class="itemPublishTime">{{ item.published_time }}</div>

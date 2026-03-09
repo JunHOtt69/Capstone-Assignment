@@ -30,6 +30,37 @@
                 <span class="metaItem">
                     <time datetime="{{ post.published_time|date:'c' }}">{{ post.published_time|date:"M d, Y" }}</time>
                 </span>
+                            <span class="metaDot">&middot;</span>
+                            <span class="metaItem">{{ post.view_count }} view{{ post.view_count|pluralize }}</span>
+            </div>
+
+            <div
+                class="faqVotePanel"
+                data-faq-slug="{{ post.slug }}"
+                data-is-authenticated="{% if request.user.is_authenticated %}1{% else %}0{% endif %}"
+            >
+                <button
+                    type="button"
+                    class="detailVoteBtn likeBtn {% if user_reaction == 'like' %}active{% endif %}"
+                    data-reaction="like"
+                    aria-label="Like this FAQ"
+                >
+                    <svg class="likes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M35.5 69.9766V54.9766H1.5V173.477H35.5V151.477M35.5 69.9766C52 64.9766 64.5 51.4766 68.5 39.9766C72.6587 28.0203 71 17.4766 73 11.9766C75 6.47664 86 -3.02341 95.5 3.97659C105 10.9766 119 33.4766 106 64.9766C120.167 64.9766 144.9 64.9766 148.5 64.9766C160 64.9766 171.278 73.4766 169.5 89.4766C165 112.977 160.265 138.477 159.5 151.477C159 159.977 147.5 172.477 126 173.477C104.5 174.477 47.5 167.477 35.5 151.477M35.5 69.9766V151.477"/>
+                    </svg>
+                    <span class="count" data-role="likes">{{ post.n_likes }}</span>
+                </button>
+                <button
+                    type="button"
+                    class="detailVoteBtn dislikeBtn {% if user_reaction == 'dislike' %}active{% endif %}"
+                    data-reaction="dislike"
+                    aria-label="Dislike this FAQ"
+                >
+                    <svg class="dislikes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M135.686 105.093V120.093H169.686V1.59344H135.686V23.5934M135.686 105.093C119.186 110.093 106.686 123.593 102.686 135.093C98.5269 147.05 100.186 157.593 98.1857 163.093C96.1857 168.593 85.1857 178.093 75.6857 171.093C66.1857 164.093 52.1857 141.593 65.1857 110.093C51.019 110.093 26.2857 110.093 22.6857 110.093C11.1857 110.093 -0.0921088 101.593 1.68567 85.5935C6.18567 62.0935 10.921 36.5934 11.6857 23.5934C12.1857 15.0934 23.6857 2.59344 45.1857 1.59344C66.6857 0.593445 123.686 7.59344 135.686 23.5934M135.686 105.093V23.5934"/>
+                    </svg>
+                    <span class="count" data-role="dislikes">{{ post.n_dislikes }}</span>
+                </button>
             </div>
 
             <div class="faqBody">{{ post.content|safe }}</div>
@@ -38,6 +69,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
-
+    <script src="{% static 'js/faq_detail.js' %}"></script>
 {% endblock %} 
 
