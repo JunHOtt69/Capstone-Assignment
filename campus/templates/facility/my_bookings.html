@@ -1,0 +1,53 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">My Bookings</h2>
+        <a href="{% url 'facility_list' %}" class="btn btn-success">Book New Facility</a>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Facility</th>
+                        <th>Date</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Meeting Room A</td>
+                        <td>2025-06-20</td>
+                        <td>10:00</td>
+                        <td>12:00</td>
+                        <td><span class="badge bg-success">Approved</span></td>
+                        <td><button class="btn btn-danger btn-sm">Cancel</button></td>
+                    </tr>
+
+                    <tr>
+                        <td>Computer Lab 1</td>
+                        <td>2025-06-22</td>
+                        <td>14:00</td>
+                        <td>16:00</td>
+                        <td><span class="badge bg-warning text-dark">Pending</span></td>
+                        <td><button class="btn btn-danger btn-sm">Cancel</button></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="6" class="text-center text-muted d-none">
+                            No bookings found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
