@@ -969,7 +969,6 @@ def config_bot(request):
 def system_log(request): 
     return render(request, "help/system_log.html")
 
-
 def faq_suggestions(request):
     query = request.GET.get('q', '')
     
