@@ -68,6 +68,10 @@
     svg.addEventListener('mousemove', handleMouseMove);
     svg.addEventListener('mouseup', handleMouseUp);
     svg.addEventListener('mouseleave', handleMouseLeave);
+    svg.addEventListener('dblclick', (e) => e.preventDefault());
+    svg.addEventListener('mousedown', (e) => {
+      if (e.detail > 1) e.preventDefault();
+    });
   }
   
   function toggleAddTerminalMode() {
@@ -178,7 +182,7 @@
     nextNodeId++;
     
     const nodeType = type || 'terminal';
-    const defaultName = nodeType === 'terminal' ? `Terminal ${nextId}` : `Pathway ${nextId}`;
+    const defaultName = nodeType === 'terminal' ? `Terminal ${nextId}` : '';
     const node = {
       node_id: nextId,
       name: defaultName,
@@ -368,6 +372,7 @@
 
       // allow renaming terminals on double-click
       circle.addEventListener('dblclick', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         if (node.node_type === 'terminal') {
           const newName = prompt('Enter name for terminal', node.name || node.node_id);
@@ -413,6 +418,16 @@
     
     const edgesToSave = mapData.edges;
     
+    const payload = {
+      nodes: nodesToSave,
+      edges: edgesToSave
+    };
+    
+    // Include pending image data if user uploaded a new map
+    if (pendingImageData) {
+      payload.image_data = pendingImageData;
+    }
+    
     // Send to server - use absolute path since campus app is at root level
     fetch('/save-map/', {
       method: 'POST',
@@ -420,10 +435,7 @@
         'Content-Type': 'application/json',
         'X-CSRFToken': getCookie('csrftoken')
       },
-      body: JSON.stringify({
-        nodes: nodesToSave,
-        edges: edgesToSave
-      })
+      body: JSON.stringify(payload)
     })
     .then(r => {
       if (!r.ok) throw new Error('Save failed');
@@ -431,6 +443,7 @@
     })
     .then(data => {
       showMessage(data.message || 'Map saved successfully!', 'success');
+      pendingImageData = null; // Clear pending image after successful save
       setTimeout(() => {
         window.location.href = '/navigation/';
       }, 1500);
@@ -473,7 +486,135 @@
     }
     return cookieValue;
   }
+
+  // ============================================
+  // IMAGE UPLOAD & CROP FUNCTIONALITY
+  // ============================================
+  
+  let cropper = null;
+  let pendingImageData = null; // Store cropped image data until Save Map is clicked
+  
+  function setupImageUpload() {
+    const uploadBtn = document.getElementById('uploadMapBtn');
+    const cropModal = document.getElementById('cropModal');
+    const closeCropModal = document.getElementById('closeCropModal');
+    const selectImageBtn = document.getElementById('selectImageBtn');
+    const mapImageInput = document.getElementById('mapImageInput');
+    const cropPreviewSection = document.getElementById('cropPreviewSection');
+    const cropImage = document.getElementById('cropImage');
+    const applyCropBtn = document.getElementById('applyCropBtn');
+    const cancelCropBtn = document.getElementById('cancelCropBtn');
+    
+    // Open modal
+    uploadBtn?.addEventListener('click', () => {
+      cropModal.style.display = 'flex';
+      cropPreviewSection.style.display = 'none';
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+    });
+    
+    // Close modal
+    const closeModal = () => {
+      cropModal.style.display = 'none';
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      cropImage.src = '';
+      mapImageInput.value = '';
+      cropPreviewSection.style.display = 'none';
+    };
+    
+    closeCropModal?.addEventListener('click', closeModal);
+    cancelCropBtn?.addEventListener('click', closeModal);
+    
+    // Select image button
+    selectImageBtn?.addEventListener('click', () => {
+      mapImageInput.click();
+    });
+    
+    // File input change
+    mapImageInput?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      if (!file.type.startsWith('image/')) {
+        showMessage('Please select a valid image file', 'error');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        cropImage.src = event.target.result;
+        cropPreviewSection.style.display = 'block';
+        
+        // Initialize Cropper.js
+        if (cropper) {
+          cropper.destroy();
+        }
+        
+        cropper = new Cropper(cropImage, {
+          aspectRatio: 800 / 600,
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 1,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+        });
+      };
+      
+      reader.readAsDataURL(file);
+    });
+    
+    // Apply cropped image
+    applyCropBtn?.addEventListener('click', async () => {
+      if (!cropper) {
+        showMessage('No image selected', 'error');
+        return;
+      }
+      
+      applyCropBtn.disabled = true;
+      applyCropBtn.textContent = '⏳ Processing...';
+      
+      try {
+        // Get cropped canvas
+        const canvas = cropper.getCroppedCanvas({
+          width: 800,
+          height: 600,
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+        });
+        
+        // Store the cropped image data (will be uploaded on Save Map)
+        pendingImageData = canvas.toDataURL('image/png');
+        
+        // Update the preview immediately
+        const mapImage = document.getElementById('campusMapImage');
+        if (mapImage) {
+          mapImage.src = pendingImageData;
+        }
+        
+        showMessage('Image ready! Click "Save Map" to apply changes.', 'success');
+        closeModal();
+        
+      } catch (error) {
+        console.error('Crop error:', error);
+        showMessage('Failed to crop image: ' + error.message, 'error');
+      } finally {
+        applyCropBtn.disabled = false;
+        applyCropBtn.textContent = '✓ Apply Cropped Image';
+      }
+    });
+  }
   
   // Initialize on page load
+  setupImageUpload();
   init();
 })();
