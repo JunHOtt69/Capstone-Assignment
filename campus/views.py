@@ -22,7 +22,6 @@ from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from django import forms
 from datetime import timedelta
 from bs4 import BeautifulSoup
 import os
@@ -1212,9 +1211,6 @@ def save_manual_attachment(instance, file_obj):
         object_id=instance.id,
         file=file_obj
     )
-
-class MultipleFileInput(forms.ClearableFileInput):
-    allow_multiple_selected = True
 
 #Facility Booking
 def facility_list(request):
