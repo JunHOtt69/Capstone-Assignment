@@ -318,8 +318,8 @@
     {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
             <span class="title">Campus Resources</span>
-            <span class="item"><a href="">Book Facility</a></span>
-            <span class="item"><a href="">Booking History</a></span>
+            <span class="item"><a href="{% url 'facility_list' %}">Book Facility</a></span>
+            <span class="item"><a href="{% url 'my_bookings' %}">Booking History</a></span>
         </div>
         <div class="functionG2">
             <span class="title">Campus Guide</span>

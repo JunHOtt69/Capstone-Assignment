@@ -313,3 +313,15 @@ class AttendanceMark(models.Model):
     def __str__(self):
         return f"{self.student} - {self.status}"
 
+class booking(models.Model):
+    booking_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    facility = models.ForeignKey('facilities', on_delete=models.CASCADE)
+    booking_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    purpose = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='Pending')
+
+    class Meta:
+        db_table = 'booking'
