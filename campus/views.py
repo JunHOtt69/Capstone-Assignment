@@ -35,7 +35,7 @@ import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments
 from .decorators import role_required
-from .models import facilities
+from .models import facilities, booking
 
 #playground
 def testing(request):
@@ -1221,9 +1221,54 @@ def facility_list(request):
     facility_list = facilities.objects.all()
     return render(request, "facility/facility_list.html", {"facilities": facility_list})
 
+
 def booking_form(request, facility_id):
     facility = get_object_or_404(facilities, pk=facility_id)
+
+    if request.method == "POST":
+        booking_date = request.POST.get("date")
+        start_time = request.POST.get("start_time")
+        end_time = request.POST.get("end_time")
+        purpose = request.POST.get("purpose")
+
+        if start_time >= end_time:
+            return render(request, "facility/booking_form.html", {"facility": facility, "error": "End time must be later than start time."})
+
+        conflict = booking.objects.filter(
+            facility=facility,
+            booking_date=booking_date,
+            start_time__lt=end_time,
+            end_time__gt=start_time
+        ).exclude(status="Cancelled").exists()
+
+        if conflict:
+            return render(request, "facility/booking_form.html", {
+                "facility": facility,
+                "error": "This facility is already booked for the selected time."
+            })
+
+        booking.objects.create(
+            user=request.user,
+            facility=facility,
+            booking_date=booking_date,
+            start_time=start_time,
+            end_time=end_time,
+            purpose=purpose,
+            status="Pending"
+        )
+
+        return redirect("my_bookings")
+
     return render(request, "facility/booking_form.html", {"facility": facility})
 
+
 def my_bookings(request):
-    return render(request, "facility/my_bookings.html")
+    bookings = booking.objects.filter(user=request.user)
+    return render(request, "facility/my_bookings.html", {"bookings": bookings})
+
+@login_required
+def cancel_booking(request, booking_id):
+    selected_booking = get_object_or_404(booking, booking_id=booking_id, user=request.user)
+    selected_booking.status = "Cancelled"
+    selected_booking.save()
+    return redirect("my_bookings")

@@ -324,11 +324,24 @@ class booking(models.Model):
     booking_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     facility = models.ForeignKey('facilities', on_delete=models.CASCADE)
+
     booking_date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
+
     purpose = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, default='Pending')
+
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('Pending','Pending'),
+            ('Approved','Approved'),
+            ('Cancelled','Cancelled')
+        ],
+        default='Pending'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'booking'
