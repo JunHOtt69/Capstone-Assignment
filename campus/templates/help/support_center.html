@@ -4,9 +4,23 @@
 {% block title %} Support Control Center {% endblock %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/support.css' %}">
+    <link rel="stylesheet" href="{% static 'css/support_center.css' %}">
 {% endblock %}
 
 {% block content %}
     <h2>HELP DASHBOARD</h2>
+    <div class="dashboard">
+        <a href="{% url 'system_log' %}" class="dashboard-item">
+            <h3>View System Logs</h3>
+            {% comment %} {% include "partials/system_log_list.html" %} {% endcomment %}
+        </a>
+        <a href="{% url 'feedback_history' %}" class="dashboard-item">
+            <h3>View My Reviewed Tickets</h3>
+            {% comment %} {% include "partials/support_history_list.html" %} {% endcomment %}
+        </a>
+        
+    </div>
+    <div class="ticketOverview">
+        <h3>Feedback Tickets</h3>
+    </div>
 {% endblock %}

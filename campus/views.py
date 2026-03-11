@@ -930,6 +930,10 @@ def smart_assistant(request):
 def review_feedback(request): 
     return render(request, "help/review_feedback.html")
 
+@role_required(allowed_roles=['admin', 'lecturer', 'student'])
+def feedback_history(request): 
+    return render(request, "help/feedback_history.html")
+
 @role_required(allowed_roles=['lecturer', 'student'])
 def submit_feedback(request): 
     return render(request, "help/submit_feedback.html")
@@ -1002,13 +1006,6 @@ def edit_faq(request, slug=None):
 
     return render(request, "help/edit_faq.html", context)
 
-@role_required(allowed_roles=['admin'])
-def config_bot(request): 
-    return render(request, "help/config_bot.html")
-
-@role_required(allowed_roles=['admin'])
-def system_log(request): 
-    return render(request, "help/system_log.html")
 
 def faq_suggestions(request):
     query = request.GET.get('q', '')
@@ -1147,6 +1144,15 @@ def faq_detail(request, slug):
         'author_initial': author_initial,
         'user_reaction': user_reaction,
     })
+
+@role_required(allowed_roles=['admin'])
+def config_bot(request): 
+    return render(request, "help/config_bot.html")
+
+@role_required(allowed_roles=['admin'])
+def system_log(request): 
+    return render(request, "help/system_log.html")
+
 
 #extract and store image
 def extract_and_save_images(faq_instance):

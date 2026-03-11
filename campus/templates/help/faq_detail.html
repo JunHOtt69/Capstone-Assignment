@@ -1,6 +1,6 @@
 {% extends "base.html" %} 
 {% load static %} 
-{% block title %} FAQ {% endblock %}
+{% block title %} FAQ : {{ post.title }} {% endblock %}
 
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/view_faq.css' %}">

@@ -10,6 +10,38 @@
     <h2>Feedback Interface</h2>
     <p>User submit feedback ticket here.</p>
     <p>under construction...</p>
+    <div class="titleInputWrapper">
+        <span class="placeholder">Title</span>
+        {{ form.title }}
+    </div>
+    <div class="faqCategory">
+        <div class="selectInput"  id="categorySelect">
+            <div class="selectedLabel">
+                <label for="">Please Choose a category</label>
+                <span class="arrow">
+                    <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="optionContainer" id="categoryOptions">
+                {% for value, label in form.fields.category.choices %}
+                    <div class="option">
+                        <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.category.value == value %}checked{% endif %}>
+                        
+                        <label for="cat_{{ forloop.counter }}">{{label}}</label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {{ form.category }}
+    </div>
+    <section class="contentInput">
+        <div class="textAreaWrapper">
+            <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
+            {{ form.content }}
+        </div>
+    </section>
 {% endblock %}
 
 {% block extra_scripts %}
