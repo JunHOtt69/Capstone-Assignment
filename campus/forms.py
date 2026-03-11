@@ -148,14 +148,11 @@ class SupportTicketForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control', 
-                'placeholder': 'Enter a brief title'
+                'placeholder': "Provide a clear, concise title (e.g., 'Projector not working in Block B, Room 204').",
+                'required': True,
             }),
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'placeholder': 'Describe your issue in detail...',
-                'id': 'ticket-editor' 
-            }),
+            'category': forms.HiddenInput(attrs={'required': True}),
+            'description': forms.HiddenInput(attrs={'required': True}),
         }
 
     def clean_extra_attachments(self):
