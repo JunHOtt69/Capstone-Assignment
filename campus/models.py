@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from datetime import date
 from django.conf import settings
 from django.utils import timezone
+from datetime import timedelta
 # Create your models here.
 
 class academic_rules(models.Model):
@@ -340,6 +341,14 @@ class booking(models.Model):
         db_table = 'booking'
 
 class SupportTicket(models.Model):
+    CATEGORY_CHOICES = [
+        ('GEN', 'General'),
+        ('ANN', 'Announcements'),
+        ('ATT', 'Attendance'),
+        ('MAP', 'Campus Navigation'),
+        ('BOK', 'Facility Booking'),
+    ]
+
     STATUS_CHOICES = [
         ('open', 'Open'),
         ('in_progress', 'In Progress'),
@@ -349,11 +358,10 @@ class SupportTicket(models.Model):
     ]
 
     title = models.CharField(max_length=255)
-    category = models.CharField(max_length=100) # e.g., IT, Facilities, Finance
-    description = models.TextField() # The initial content
+    category = models.CharField(max_length=3, choices= CATEGORY_CHOICES, default='GEN')
+    description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     
-    # Creator can be Student or Lecturer (Linked via Django User)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets_created')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'is_staff': True}, related_name='tickets_handled')
     
@@ -364,7 +372,6 @@ class SupportTicket(models.Model):
     all_attachments = GenericRelation(attachments)
 
     def check_expiry(self):
-        """Logic to mark as expired if older than 7 days and still open."""
         if self.status == 'open' and self.created_at < timezone.now() - timedelta(days=7):
             self.status = 'expired'
             self.save()

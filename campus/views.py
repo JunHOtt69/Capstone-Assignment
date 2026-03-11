@@ -936,7 +936,31 @@ def feedback_history(request):
 
 @role_required(allowed_roles=['lecturer', 'student'])
 def submit_feedback(request): 
-    return render(request, "help/submit_feedback.html")
+    context = {
+        "form" : None,
+        
+    }
+
+    if request.method == 'POST':
+        context["form"] = SupportTicketForm(request.POST, request.FILES)
+        if context["form"].is_valid():
+            ticket = context["form"].save(commit=False)
+            ticket.created_by = request.user
+            ticket.save()
+
+            extract_and_save_images(ticket)
+
+            files = request.FILES.getlist('extra_attachments')
+            for f in files:
+                save_manual_attachment(ticket, f)
+
+            return redirect('ticket_detail', pk=ticket.pk)
+    else:
+        context["form"] = SupportTicketForm()
+    
+    
+    
+    return render(request, "help/submit_feedback.html", context)
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
@@ -1144,26 +1168,6 @@ def faq_detail(request, slug):
         'author_initial': author_initial,
         'user_reaction': user_reaction,
     })
-
-def create_ticket(request):
-    if request.method == 'POST':
-        form = SupportTicketForm(request.POST, request.FILES)
-        if form.is_valid():
-            ticket = form.save(commit=False)
-            ticket.created_by = request.user
-            ticket.save()
-
-            extract_and_save_images(ticket)
-
-            files = request.FILES.getlist('extra_attachments')
-            for f in files:
-                save_manual_attachment(ticket, f)
-
-            return redirect('ticket_detail', pk=ticket.pk)
-    else:
-        form = SupportTicketForm()
-    
-    return render(request, 'create_ticket.html', {'form': form})
 
 @role_required(allowed_roles=['admin'])
 def config_bot(request): 
