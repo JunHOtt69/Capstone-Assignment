@@ -116,6 +116,9 @@ class newFAQForm(forms.ModelForm):
             'is_tp_visible': forms.HiddenInput(attrs={'required': True}),
         }
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
 class LimitedMultipleFileField(forms.FileField):
     def __init__(self, max_files = 5, max_file_size = 10 * 1024 * 1024, *args, **kwargs):
         self.max_files = max_files
