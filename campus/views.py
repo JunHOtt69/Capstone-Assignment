@@ -814,7 +814,6 @@ def announcements(request):
 def help(request): 
     return render(request, "help/help.html")
 
-
 def _infer_attachment_count_from_content(html_content):
     if not html_content:
         return 0
@@ -1184,6 +1183,17 @@ def extract_and_save_images(faq_instance):
 
 #Facility
 
+<<<<<<< HEAD
+def save_manual_attachment(instance, file_obj):
+    return attachments.objects.create(
+        content_type=ContentType.objects.get_for_model(instance),
+        object_id=instance.id,
+        file=file_obj
+    )
+
+#Facility Booking
+=======
+>>>>>>> main
 def facility_list(request):
     facility_list = facilities.objects.all()
     return render(request, "facility/facility_list.html", {"facilities": facility_list})

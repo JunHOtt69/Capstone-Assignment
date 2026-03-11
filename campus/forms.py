@@ -1,5 +1,5 @@
 from django import forms
-from .models import course, academic_term, faq
+from .models import course, academic_term, faq, SupportTicket
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, PasswordResetForm
 
 class CustomLoginForm(AuthenticationForm):
@@ -115,3 +115,53 @@ class newFAQForm(forms.ModelForm):
             'is_lc_visible': forms.HiddenInput(attrs={'required': True}),
             'is_tp_visible': forms.HiddenInput(attrs={'required': True}),
         }
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class LimitedMultipleFileField(forms.FileField):
+    def __init__(self, max_files = 5, max_file_size = 10 * 1024 * 1024, *args, **kwargs):
+        self.max_files = max_files
+        self.max_file_size = max_files
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+    
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple())):
+            if len(data) > self.max_files:
+                raise forms.ValidationError(f"You can upload up to {self.max_files} files only.")
+            result = [single_file_clean(d, initial) for d in data]
+            for file in result: 
+                if file.size > self.max_file_size:
+                    raise forms.ValidationError(f"File size should not exceed {self.max_file_size} bytes.")
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+class SupportTicketForm(forms.ModelForm):
+    extra_attachments = LimitedMultipleFileField()
+
+    class Meta:
+        model = SupportTicket
+        fields = ['category', 'title', 'description', 'extra_attachments']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Enter a brief title'
+            }),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Describe your issue in detail...',
+                'id': 'ticket-editor' 
+            }),
+        }
+
+    def clean_extra_attachments(self):
+        """Optional: Add validation for file sizes or types here."""
+        files = self.files.getlist('extra_attachments')
+        for f in files:
+            if f.size > 10 * 1024 * 1024: 
+                raise forms.ValidationError(f"File {f.name} is too large. Max size is 10MB.")
+        return files
