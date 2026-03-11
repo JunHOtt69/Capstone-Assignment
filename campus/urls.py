@@ -63,6 +63,13 @@ urlpatterns = [
     path('config-bot/', views.config_bot,name='config_bot'),
     path('system-log/', views.system_log,name='system_log'),
     path('suggestions/', views.faq_suggestions,name='faq_suggestions'),
+
+
+    #Facility
+    path("facility/", views.facility_list, name="facility_list"),
+    path("facility/book/<int:facility_id>/", views.booking_form, name="booking_form"),
+    path("facility/my/", views.my_bookings, name="my_bookings"),
+
 ]
 
 if settings.DEBUG:

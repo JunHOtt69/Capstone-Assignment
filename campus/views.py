@@ -34,6 +34,7 @@ import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments
 from .decorators import role_required
+from .models import facilities
 
 #playground
 def testing(request):
@@ -1156,3 +1157,14 @@ def extract_and_save_images(faq_instance):
     # Update the FAQ content with new cleaned HTML
     faq_instance.content = str(soup)
     faq_instance.save()
+
+def facility_list(request):
+    facility_list = facilities.objects.all()
+    return render(request, "facility/facility_list.html", {"facilities": facility_list})
+
+def booking_form(request, facility_id):
+    facility = get_object_or_404(facilities, pk=facility_id)
+    return render(request, "facility/booking_form.html", {"facility": facility})
+
+def my_bookings(request):
+    return render(request, "facility/my_bookings.html")
