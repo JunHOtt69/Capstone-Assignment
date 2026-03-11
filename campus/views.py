@@ -814,7 +814,6 @@ def announcements(request):
 def help(request): 
     return render(request, "help/help.html")
 
-
 def _infer_attachment_count_from_content(html_content):
     if not html_content:
         return 0
@@ -829,7 +828,6 @@ def _infer_attachment_count_from_content(html_content):
             linked_attachment_count += 1
 
     return image_count + linked_attachment_count
-
 
 def _attach_faq_attachment_counts(faq_items):
     items = list(faq_items)
@@ -923,9 +921,6 @@ def viewFAQ(request):
 def support_center(request):
     return render(request, 'help/support_center.html')
 
-@role_required(allowed_roles=['lecturer', 'student'])
-def smart_assistant(request):
-    return render(request, 'help/smart_assistant.html')
 
 @role_required(allowed_roles=['admin'])
 def review_feedback(request): 
@@ -1146,6 +1141,17 @@ def faq_detail(request, slug):
         'user_reaction': user_reaction,
     })
 
+@property
+def is_expired(self):
+    if self.status == 'open' and self.created_at < timezone.now() - timedelta(days=7):
+        return True
+    return False
+
+
+@role_required(allowed_roles=['lecturer', 'student'])
+def smart_assistant(request):
+    return render(request, 'help/smart_assistant.html')
+
 @role_required(allowed_roles=['admin'])
 def config_bot(request): 
     return render(request, "help/config_bot.html")
@@ -1182,6 +1188,14 @@ def extract_and_save_images(faq_instance):
     faq_instance.content = str(soup)
     faq_instance.save()
 
+def save_file_attachment(instance, uploaded_file):
+    attachments.objects.create(
+        content_type=ContentType.objects.get_for_model(instance),
+        object_id=instance.id,
+        file=uploaded_file
+    )
+
+#Facility Booking
 def facility_list(request):
     facility_list = facilities.objects.all()
     return render(request, "facility/facility_list.html", {"facilities": facility_list})
