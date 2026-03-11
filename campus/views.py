@@ -22,7 +22,6 @@ from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from django import forms
 from datetime import timedelta
 from bs4 import BeautifulSoup
 import os
@@ -815,6 +814,7 @@ def announcements(request):
 def help(request): 
     return render(request, "help/help.html")
 
+
 def _infer_attachment_count_from_content(html_content):
     if not html_content:
         return 0
@@ -829,6 +829,7 @@ def _infer_attachment_count_from_content(html_content):
             linked_attachment_count += 1
 
     return image_count + linked_attachment_count
+
 
 def _attach_faq_attachment_counts(faq_items):
     items = list(faq_items)
@@ -922,6 +923,9 @@ def viewFAQ(request):
 def support_center(request):
     return render(request, 'help/support_center.html')
 
+@role_required(allowed_roles=['lecturer', 'student'])
+def smart_assistant(request):
+    return render(request, 'help/smart_assistant.html')
 
 @role_required(allowed_roles=['admin'])
 def review_feedback(request): 
@@ -1142,17 +1146,6 @@ def faq_detail(request, slug):
         'user_reaction': user_reaction,
     })
 
-@property
-def is_expired(self):
-    if self.status == 'open' and self.created_at < timezone.now() - timedelta(days=7):
-        return True
-    return False
-
-
-@role_required(allowed_roles=['lecturer', 'student'])
-def smart_assistant(request):
-    return render(request, 'help/smart_assistant.html')
-
 @role_required(allowed_roles=['admin'])
 def config_bot(request): 
     return render(request, "help/config_bot.html")
@@ -1163,60 +1156,34 @@ def system_log(request):
 
 
 #extract and store image
-def extract_and_save_images(instance):
-    if hasattr(instance, 'content'):
-        html_data = instance.content
-        field_name = 'content'
-    elif hasattr(instance, 'description'):
-        html_data = instance.description
-        field_name = 'description'
-    else:
-        return
-    
-    if not html_data:
-        return
-
-    soup = BeautifulSoup(instance.content, 'html.parser')
+def extract_and_save_images(faq_instance):
+    soup = BeautifulSoup(faq_instance.content, 'html.parser')
     images = soup.find_all('img')
-    has_changed = False
     
     for img in images:
         src = img.get('src', '')
         if src.startswith('data:image'):
-            try:
-                format, imgstr = src.split(';base64,') 
-                ext = format.split('/')[-1] 
+            # 1. Parse the Base64 string
+            format, imgstr = src.split(';base64,') 
+            ext = format.split('/')[-1] 
+            data = ContentFile(base64.b64decode(imgstr), name=f"faq_img.{ext}")
 
-                model_name = instance._meta.model_name
-                filename = f"{model_name}_{instance.id}_{timezone.now().strftime('%Y%m%d%H%M%S')}"
-                data = ContentFile(base64.b64decode(imgstr), name=filename)
+            # 2. Save to your attachments model
+            attachment = attachments.objects.create(
+                content_type=ContentType.objects.get_for_model(faq_instance),
+                object_id=faq_instance.id,
+                file=data
+            )
 
-                attachment = attachments.objects.create(
-                    content_type=ContentType.objects.get_for_model(instance),
-                    object_id=instance.id,
-                    file=data
-                )
+            # 3. Replace Base64 with the actual file URL
+            img['src'] = attachment.file.url
 
-                img['src'] = attachment.file.url
-                has_changed = True
-            except Exception as e:
-                print(f"Error processing base64 image: {e}")
+    # Update the FAQ content with new cleaned HTML
+    faq_instance.content = str(soup)
+    faq_instance.save()
 
-    if has_changed:
-        setattr(instance, field_name, str(soup))
-        instance.save(update_fields=[field_name])
+#Facility
 
-def save_manual_attachment(instance, file_obj):
-    return attachments.objects.create(
-        content_type=ContentType.objects.get_for_model(instance),
-        object_id=instance.id,
-        file=file_obj
-    )
-
-class MultipleFileInput(forms.ClearableFileInput):
-    allow_multiple_selected = True
-
-#Facility Booking
 def facility_list(request):
     facility_list = facilities.objects.all()
     return render(request, "facility/facility_list.html", {"facilities": facility_list})
