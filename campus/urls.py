@@ -55,6 +55,7 @@ urlpatterns = [
     path('FAQs/<slug:slug>/vote/', views.faq_vote, name='faq_vote'),
     path('edit-faq/', views.edit_faq,name='edit_faq'),
     path('edit-faq/<slug:slug>/', views.edit_faq, name='edit_existing_faq'),
+    path('delete-faq/<slug:slug>/', views.delete_faq, name='delete_faq'),
     
     path('support-center/', views.support_center,name='support_center'),
     path('smart-assistant/', views.smart_assistant,name='smart_assistant'),

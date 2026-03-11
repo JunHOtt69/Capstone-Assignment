@@ -780,6 +780,11 @@ header li a{
     animation: revealNotif 0.3s ease-in-out forwards;
 }
 
+.notifContainer .notif.error{
+    color: red;
+    border: 0.1vw solid red;
+}
+
 @keyframes revealNotif{
     from{
         transform: translateX(6.5vw);

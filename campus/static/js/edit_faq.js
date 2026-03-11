@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const faqForm = document.getElementById('faq');
     const saveBtn = document.querySelector('.save');
     const discardBtn = document.querySelector('.cancel');
+    const deleteBtn = document.querySelector('.delete');
 
     discardBtn.addEventListener('click', (e) => {
         e.preventDefault(); 
@@ -66,6 +67,25 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert("The FAQ category cannot be empty!");
         }
     });
+
+    deleteBtn.onclick = (e) => {
+        e.preventDefault();
+        if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            
+            form.submit();
+        }
+    }
 
     const categoryInput = document.getElementById('id_category');
     const selectInput = document.getElementById('categorySelect');

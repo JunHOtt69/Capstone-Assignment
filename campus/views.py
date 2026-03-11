@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from django.db import transaction
+from django.db import transaction, DatabaseError
 from django.db.models import Q, Count, F
 from django.core.mail import EmailMultiAlternatives
 from django.core.files.base import ContentFile
@@ -1094,6 +1094,24 @@ def faq_vote(request, slug):
         'n_dislikes': post.n_dislikes,
         'user_reaction': user_reaction,
     })
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def delete_faq(request, slug):
+    try:
+        post = get_object_or_404(faq, slug=slug)
+        post.delete()
+        messages.success(request, "FAQ deleted successfully!")
+        return redirect('viewFAQ')
+    except faq.DoesNotExist:
+        messages.error(request, "This FAQ was already deleted or does not exist.")
+        return redirect('viewFAQ')
+    except DatabaseError:
+        messages.error(request, "A database error occurred. Please try again later.")
+    except Exception as e:
+        messages.error(request, f"An unexpected error occurred: {str(e)}")
+    
+    return redirect('edit_existing_faq', slug=slug)
 
 def faq_detail(request, slug):
     post = get_object_or_404(faq, slug=slug)
