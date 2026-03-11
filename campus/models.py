@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.utils.dateparse import parse_date
 from django.utils.text import slugify
@@ -284,6 +284,7 @@ class attachments(models.Model):
     id = models.AutoField(primary_key = True)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
     file = models.FileField(upload_to='attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
@@ -291,7 +292,6 @@ class attachments(models.Model):
     def get_icon_url(self):
         """Returns the path to the SVG icon based on file extension."""
         ext = self.file.name.split('.')[-1].upper()
-        # Fallback to a generic icon if specific one doesn't exist
         return f"/media/file_icons/{ext}.svg"
 
 class AttendanceSession(models.Model):
@@ -333,6 +333,7 @@ class booking(models.Model):
     class Meta:
         db_table = 'booking'
 
+
 class SupportTicket(models.Model):
     STATUS_CHOICES = [
         ('open', 'Open'),
@@ -343,18 +344,16 @@ class SupportTicket(models.Model):
     ]
 
     title = models.CharField(max_length=255)
-    category = models.CharField(max_length=100) # e.g., IT, Facilities, Finance
+    category = models.CharField(max_length=100)
     description = models.TextField() # The initial content
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     
-    # Creator can be Student or Lecturer (Linked via Django User)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets_created')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'is_staff': True}, related_name='tickets_handled')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # This allows us to use ticket.attachments.all()
     all_attachments = GenericRelation(attachments)
 
     def check_expiry(self):
@@ -372,13 +371,12 @@ class TicketMessage(models.Model):
     content = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     
-    # Identify if it's an admin reply or user reply
     is_admin_reply = models.BooleanField(default=False)
     
     all_attachments = GenericRelation(attachments)
 
 class CannedResponse(models.Model):
-    title = models.CharField(max_length=100) # e.g., "General Acknowledgment"
+    title = models.CharField(max_length=100) 
     message = models.TextField()
 
     def __str__(self):
