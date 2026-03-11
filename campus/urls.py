@@ -55,11 +55,15 @@ urlpatterns = [
     path('FAQs/<slug:slug>/vote/', views.faq_vote, name='faq_vote'),
     path('edit-faq/', views.edit_faq,name='edit_faq'),
     path('edit-faq/<slug:slug>/', views.edit_faq, name='edit_existing_faq'),
+    path('delete-faq/<slug:slug>/', views.delete_faq, name='delete_faq'),
     
     path('support-center/', views.support_center,name='support_center'),
-    path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
+    
+    path('feedback-history/', views.feedback_history,name='feedback_history'),
     path('review-feedback/', views.review_feedback,name='review_feedback'),
     path('submit-feedback/', views.submit_feedback,name='submit_feedback'),
+    
+    path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
     path('config-bot/', views.config_bot,name='config_bot'),
     path('system-log/', views.system_log,name='system_log'),
     path('suggestions/', views.faq_suggestions,name='faq_suggestions'),

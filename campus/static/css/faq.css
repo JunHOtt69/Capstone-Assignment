@@ -13,6 +13,25 @@ main{
     flex: 1;
 }
 
+.faqPageReturn{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    margin: 1.5vw 1vw 0.5vw 2vw;
+}
+
+.faqPageReturn .returnIcon{
+    object-fit: contain;
+    width: 1.5vw;
+    height: 1.5vw;
+    cursor: pointer;
+}
+
+.faqPageReturn .pageTitle{
+    margin: 0;
+}
+
 .viewFaq{
     width: 100%;
     height: max-content;
@@ -1316,6 +1335,17 @@ form .faqInfo{
 .formBtnWrapper .cancel{
     background-color: white;
     color: rgba(var(--black), 1);
+}
+
+.formBtnWrapper .delete{
+    background-color: white;
+    color: red;
+    border: 0.1vw solid red;
+}
+
+.formBtnWrapper .delete:hover{
+    background-color: red;
+    color: white;
 }
 
 .replyBtnWrapper .cancel:hover,
