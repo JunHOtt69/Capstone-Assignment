@@ -22,29 +22,40 @@
                 </thead>
 
                 <tbody>
+                    {% for b in bookings %}
                     <tr>
-                        <td>Meeting Room A</td>
-                        <td>2025-06-20</td>
-                        <td>10:00</td>
-                        <td>12:00</td>
-                        <td><span class="badge bg-success">Approved</span></td>
-                        <td><button class="btn btn-danger btn-sm">Cancel</button></td>
-                    </tr>
-
-                    <tr>
-                        <td>Computer Lab 1</td>
-                        <td>2025-06-22</td>
-                        <td>14:00</td>
-                        <td>16:00</td>
-                        <td><span class="badge bg-warning text-dark">Pending</span></td>
-                        <td><button class="btn btn-danger btn-sm">Cancel</button></td>
-                    </tr>
-
-                    <tr>
-                        <td colspan="6" class="text-center text-muted d-none">
-                            No bookings found
+                        <td>{{ b.facility.facility_name }}</td>
+                        <td>{{ b.booking_date }}</td>
+                        <td>{{ b.start_time }}</td>
+                        <td>{{ b.end_time }}</td>
+                        <td>
+                            {% if b.status == "Approved" %}
+                                <span class="badge bg-success">{{ b.status }}</span>
+                            {% elif b.status == "Pending" %}
+                                <span class="badge bg-warning text-dark">{{ b.status }}</span>
+                            {% elif b.status == "Cancelled" %}
+                                <span class="badge bg-secondary">{{ b.status }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ b.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if b.status != "Cancelled" %}
+                                <a href="{% url 'cancel_booking' b.booking_id %}" class="btn btn-danger btn-sm">
+                                    Cancel
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled>
+                                    Cancelled
+                                </button>
+                            {% endif %}
                         </td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No bookings found</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
