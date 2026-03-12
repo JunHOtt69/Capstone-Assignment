@@ -345,6 +345,11 @@ form .uploadBox{
     border: 0.01vw solid rgba(var(--black), 0.2);
     height: 13vh;
     flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+
+form .uploadBox.drag-active{
+    background-color: rgba(var(--green-yellow), 0.2);
 }
 
 form .uploadBox p{

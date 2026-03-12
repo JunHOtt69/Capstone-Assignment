@@ -5,6 +5,7 @@ from django.db import transaction, DatabaseError
 from django.db.models import Q, Count, F
 from django.core.mail import EmailMultiAlternatives
 from django.core.files.base import ContentFile
+from django.core.exceptions import PermissionDenied
 from django.utils.encoding import force_bytes
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -32,7 +33,7 @@ import json
 import base64
 import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket
 from .decorators import role_required
 from .models import facilities, booking
 
@@ -829,7 +830,6 @@ def _infer_attachment_count_from_content(html_content):
 
     return image_count + linked_attachment_count
 
-
 def _attach_faq_attachment_counts(faq_items):
     items = list(faq_items)
     if not items:
@@ -926,9 +926,27 @@ def support_center(request):
 def smart_assistant(request):
     return render(request, 'help/smart_assistant.html')
 
-@role_required(allowed_roles=['admin'])
-def review_feedback(request): 
-    return render(request, "help/review_feedback.html")
+@login_required
+def review_feedback(request, ticket_id): 
+    ticket = get_object_or_404(SupportTicket, id=ticket_id)
+
+    is_admin = request.user.groups.filter(name='admin').exists()
+
+    ticket.check_expiry()
+
+    if not is_admin and ticket.created_by != request.user:
+        raise PermissionDenied("You do not have permission to view this ticket.")
+    
+    conversation = ticket.messages.all().order_by('sent_at')
+    attachments = ticket.all_attachments.all()
+
+    context = {
+        "ticket": ticket,
+        "conversation": conversation,
+        "attachments": attachments,
+    }
+
+    return render(request, "help/review_feedback.html", context)
 
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def feedback_history(request): 
@@ -936,15 +954,10 @@ def feedback_history(request):
 
 @role_required(allowed_roles=['lecturer', 'student'])
 def submit_feedback(request): 
-    context = {
-        "form" : None,
-        
-    }
-
     if request.method == 'POST':
-        context["form"] = SupportTicketForm(request.POST, request.FILES)
-        if context["form"].is_valid():
-            ticket = context["form"].save(commit=False)
+        form = SupportTicketForm(request.POST, request.FILES)
+        if form.is_valid():
+            ticket = form.save(commit=False)
             ticket.created_by = request.user
             ticket.save()
 
@@ -954,11 +967,12 @@ def submit_feedback(request):
             for f in files:
                 save_manual_attachment(ticket, f)
 
-            return redirect('ticket_detail', pk=ticket.pk)
+            messages.success(request, "Ticket Submit Successfully")
+            return redirect('review_feedback', ticket_id=ticket.id)
     else:
-        context["form"] = SupportTicketForm()
+        form = SupportTicketForm()
     
-    
+    context = {"form" : form,}
     
     return render(request, "help/submit_feedback.html", context)
 
@@ -1077,7 +1091,6 @@ def faq_suggestions(request):
     return JsonResponse({
         'suggestions': suggestions
     })
-
 
 @login_required
 @require_POST
@@ -1225,7 +1238,7 @@ def extract_and_save_images(instance):
             try:
                 format, imgstr = src.split(';base64,') 
                 ext = format.split('/')[-1] 
-                model_name = instance._meta.model_name  # e.g., 'faq' or 'supportticket'
+                model_name = instance._meta.model_name 
                 filename = f"{model_name}_{instance.id}_{timezone.now().strftime('%Y%m%d%H%M%S')}.{ext}"
                 data = ContentFile(base64.b64decode(imgstr), name=filename)
 

@@ -171,12 +171,63 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     uploadBox.addEventListener('click', () => fileInput.click());
 
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadBox.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadBox.addEventListener(eventName, () => {
+            uploadBox.classList.add('drag-active');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadBox.addEventListener(eventName, () => {
+            uploadBox.classList.remove('drag-active');
+        }, false);
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+        const droppedFiles = e.dataTransfer.files;
+        if (droppedFiles.length > 0) {
+            fileInput.files = droppedFiles;
+            fileInput.dispatchEvent(new Event('change'));
+        }
+    });
+
     fileInput.addEventListener('change', function() {
         const newFiles = Array.from(this.files || []);
         if (newFiles.length === 0) return; 
         
-        const allFiles = [...masterFileList, ...newFiles];
+        
+        const allowedExtensions = ['PDF', 'DOCX', 'XLSX', 'PNG', 'JPG', 'JPEG', 'MP4', 'MOV', 'RAR'];
 
+        const validNewFiles = [];
+        const invalidExtensions = [];
+
+        newFiles.forEach(file => {
+            const ext = file.name.split('.').pop().toUpperCase();
+            if (allowedExtensions.includes(ext)) {
+                validNewFiles.push(file);
+            } else {
+                invalidExtensions.push(file.name);
+            }
+        });
+
+        if (invalidExtensions.length > 0) {
+            fileError.innerHTML = `<p class="error">Unsupported file type: ${invalidExtensions.join(', ')}. Please use PDF, Office, or Media files.</p>`;
+            fileError.classList.remove('hide');
+            
+            const dt = new DataTransfer();
+            masterFileList.forEach(f => dt.items.add(f));
+            fileInput.files = dt.files;
+            return;
+        }
+
+        const allFiles = [...masterFileList, ...newFiles];
         if (allFiles.length > 5) {
             fileError.innerHTML = `<p class="error">You can only upload a maximum of 5 files.</p>`;
             fileError.classList.remove('hide');
@@ -287,16 +338,11 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         if (errors.length > 0) {
             e.preventDefault();
-            
             categoryerr.innerHTML = `<p class="error">${errors[0]}</p>`;
             categoryerr.classList.remove('hide');
             
-            // Optional: Scroll to the top error message so user sees it
             categoryerr.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
-            // If everything is fine, the form will submit naturally.
-            // If this button is NOT a type="submit", call: 
-            // document.querySelector('form').submit();
             console.log("Form validated. Submitting...");
         }
     });
