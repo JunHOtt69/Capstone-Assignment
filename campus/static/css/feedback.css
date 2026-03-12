@@ -163,14 +163,20 @@ main{
     padding: 0 1vw 0 2vw;
 }
 
+form .border{
+    width: 0;
+    height: 100%;
+    border: 0.01vw solid rgba(var(--black), 0.5);
+}
+
 .feedbackPage form{
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     margin: 0;
-    gap: 3vw;
+    gap: 1.5vw;
     width: 100%;
-    height: 100%;
+    height: 77.5vh;
 }
 
 .feedbackPage form .formTC{
@@ -180,7 +186,8 @@ main{
     flex-direction: column;
     gap: 1vw;
     width: 30vw;
-    background-color: transparent;
+    padding-top: 0.5vw;
+    height: 77.5vh;
 }
 
 .feedbackPage form .contentInput{
@@ -189,6 +196,12 @@ main{
     flex: 1;
     background-color: transparent;
     height: 40vw;
+    padding-top: 0.5vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1vw;
 }
 
 .feedbackPage form .sectionGuidance{
@@ -218,7 +231,7 @@ main{
 
 .feedbackPage form .faqCategory,
 .feedbackPage form .feedbackTitle{
-    padding-left: 1.8vw;
+    padding-left: 2.5vw;
     padding-bottom: 2.5vw;
     width: 100%;
 }
@@ -230,6 +243,13 @@ main{
     flex-direction: column;
     margin-top: 0;
     margin-left: 2.5vw;
+}
+
+.submitWrapper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
 }
 
 .submitWrapper button{
@@ -275,28 +295,161 @@ form .ql-editor::-webkit-scrollbar{
     z-index: 9999;
 }
 
-form .ql-editor::-webkit-scrollbar-track{
+form .uploadBox::-webkit-scrollbar{
+    height: 0.3vw;
+    z-index: 9999;
+}
+
+form .ql-editor::-webkit-scrollbar-track,
+form .uploadBox::-webkit-scrollbar-track{
     background: rgba(var(--black), 0.1);
 }
 
-form .ql-editor::-webkit-scrollbar-thumb{
+form .ql-editor::-webkit-scrollbar-thumb,
+form .uploadBox::-webkit-scrollbar-thumb{
     background: rgba(var(--black), 0.3);
 }
 
-form .ql-editor::-webkit-scrollbar-thumb:hover{
+form .ql-editor::-webkit-scrollbar-thumb:hover,
+form .uploadBox::-webkit-scrollbar-thumb:hover{
     background: rgba(var(--black), 0.5);
 }
 
+form .uploadBoxWrapper{
+    padding-left: 2.5vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    max-width: 66vw;
+    height: 14vh;
+    overflow: hidden;
+}
+
 form .uploadBox{
-    margin-left: 2.5vw;
-    margin-top: 1vw;
-    
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--black), 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+    padding: 0.5vw 0;
+}
+
+form .uploadBox p.hide{
+    display: none;
+}
+
+.fileCardList{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    height: max-content;
+    width: max-content;
+    outline: none;
+    padding: 0 0.7vw;
+}
+
+.fileCardList.hide{
+    display: none;
+}
+
+.fileCard .deleteFile svg{
+    width: 1.5vw;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+    stroke: rgba(var(--tertiary-color), 0.7);
+}
+
+.fileCard{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+    background-color: white;
+    padding: 1.5vh 0.2vw;
+    border-radius: 0.2vw;
+    gap: 0.2vw;
+    position: relative;
+    overflow: hidden;
+    filter: brightness(100%);
+    transition: filter 0.2s;
+    flex-shrink: 0;
+}
+
+.fileCard:hover{
+    filter: brightness(97%);
+}
+
+.fileCard .fileDetailWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden; 
+}
+
+.fileCard .fileName, 
+.fileCard .fileSize{
+    width: 5vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--xs-fontsize);
+    text-align: center;
+    background-color: transparent;
+}
+
+.fileCard .fileIcon{
+    width: 2vw;
+    height: 2vw;
+    overflow: hidden;
+    object-fit: contain;
+    flex:0; 
+}
+
+.fileCard .fileIcon img{
+    width: 2vw;
+    height: 2vw;
+}
+
+.fileCard .deleteFile{
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+    background-color: rgba(var(--black), 0);
+    width: 1vw;
+    height: 1vw;
+    margin: 0;
+    transition: background-color 0.2s;
+}
+
+.fileCard .deleteFile:hover{
+    background-color: rgba(var(--black), 0.2);
+}
+
+.fileCard .deleteFile svg{
+    width: 1vw;
+    stroke: rgba(var(--black), 1);
+}
+
+.fileCard .deleteFile:hover svg{
+    stroke: rgba(var(--black), 1);
 }
 
 form .textAreaWrapper{
-    margin-left: 2.5vw;
-    margin-top: 1vw;
-    margin-bottom: 3vw;
+    width: 100%;
+    padding-left: 2.5vw;
+    padding-bottom: 3vw;
 }
 
 form .editor{
@@ -324,4 +477,30 @@ form .editor ol li:has(.ql-size-large) .ql-ui{
 
 form .editor ol li:has(.ql-size-small) .ql-ui{
     font-size: .75em;
+}
+
+.feedbackTitle #faqSuggestions {
+    border: 0.08vw solid var(--faq-border-soft);
+    border-top: none;
+    border-radius: 0 0 0.85vw 0.85vw;
+    box-shadow: 0 0.55vw 1.2vw rgba(var(--black), 0.08);
+    max-height: 0;
+}
+
+.feedbackTitle #faqSuggestions.visible {
+    max-height: 16vw;
+}
+
+.feedbackTitle #faqSuggestions .suggestion {
+    padding: 0.6vw 0.8vw;
+    border-top: 0.05vw solid rgba(var(--black), 0.06);
+}
+
+.feedbackTitle #faqSuggestions .suggestion:first-child {
+    border-top: none;
+}
+
+.feedbackTitle #faqSuggestions .suggestion .suggestionTitle,
+.feedbackTitle #faqSuggestions .suggestion .suggestionCat {
+    width: 100%;
 }

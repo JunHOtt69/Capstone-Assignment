@@ -58,12 +58,8 @@
                     </div>
                     <div id="faqSuggestions"></div>
                 </div>
-
-                <div class="submitWrapper">
-                    <button class="cancel">Cancel</button>
-                    <button class="submit">Submit</button>
-                </div>
             </section>
+            <div class="border"></div>
             <section class="contentInput">
                 <div class="sectionGuidance">
                     <div class="steps">3</div>
@@ -72,8 +68,6 @@
                         <span>Include all relevant information, such as specific error messages, steps to reproduce the problem, or the exact location. You can paste images directly into this box.</span>
                     </div>
                 </div>
-                
-                
                 
                 <div class="textAreaWrapper">
                     <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
@@ -88,12 +82,32 @@
                     </div>
                 </div>
 
-                <div class="uploadBox">
+                <div class="uploadBoxWrapper">
                     {{form.extra_attachments}}
-                    <p>Click or Drag & Drop to upload files</p>
-                    <div class="fileCardList hide">
-
+                    <div class="uploadBox">
+                        <p class="">Click or Drag & Drop to upload files</p>
+                        <div class="fileCardList hide">
+                            <div class="fileCard">
+                                <span class="fileIcon">
+                                    <img src="/media/file_icons/DOCX.svg">
+                                </span>
+                                <div class="fileDetailWrapper">
+                                    <p class="fileName">${file.name}</p>
+                                    <p class="fileSize">a</p>
+                                </div>
+                                <label class="deleteFile">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </label>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <div class="submitWrapper">
+                    <button class="cancel">Cancel</button>
+                    <button class="submit">Submit</button>
                 </div>
             </section>
         </form>
