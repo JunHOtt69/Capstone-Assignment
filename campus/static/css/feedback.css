@@ -176,7 +176,9 @@ form .border{
     margin: 0;
     gap: 1.5vw;
     width: 100%;
-    height: 77.5vh;
+    height: 100%;
+    background-color: transparent;
+    margin-bottom: 2vw;
 }
 
 .feedbackPage form .formTC{
@@ -187,12 +189,13 @@ form .border{
     gap: 1vw;
     width: 30vw;
     padding-top: 0.5vw;
-    height: 77.5vh;
+    height: 100%;
+    background-color: transparent;
 }
 
 .feedbackPage form .contentInput{
     width: 100%;
-    height: 100%;
+    height: 100% !important;
     flex: 1;
     background-color: transparent;
     height: 40vw;
@@ -202,6 +205,7 @@ form .border{
     align-items: flex-start;
     flex-direction: column;
     gap: 1vw;
+    background-color: transparent;
 }
 
 .feedbackPage form .sectionGuidance{
@@ -250,6 +254,7 @@ form .border{
     justify-content: flex-end;
     align-items: center;
     width: 100%;
+    gap: 1vw;
 }
 
 .submitWrapper button{
@@ -268,7 +273,7 @@ form .border{
 }
 
 .submitWrapper .cancel:hover{
-    background-color: transparent;
+    background-color: red;
     color: white;
     border: 0.1vw solid rgba(var(--black), 0);
 }
@@ -320,21 +325,31 @@ form .uploadBoxWrapper{
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    flex-direction: column;
     width: 100%;
     max-width: 66vw;
-    height: 14vh;
+    height: 100%;
     overflow: hidden;
 }
 
 form .uploadBox{
     width: 100%;
-    height: 100%;
-    background-color: rgba(var(--black), 0.1);
+    background-color: rgba(var(--black), 0);
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
     overflow-x: auto;
     padding: 0.5vw 0;
+    cursor: pointer;
+    border: 0.01vw solid rgba(var(--black), 0.2);
+    height: 13vh;
+    flex-shrink: 0;
+}
+
+form .uploadBox p{
+    color: rgba(var(--black), 0.5);
+    user-select: none;
 }
 
 form .uploadBox p.hide{
@@ -480,27 +495,76 @@ form .editor ol li:has(.ql-size-small) .ql-ui{
 }
 
 .feedbackTitle #faqSuggestions {
-    border: 0.08vw solid var(--faq-border-soft);
+    border: 0.01vw solid rgba(var(--black), 0.2);
     border-top: none;
-    border-radius: 0 0 0.85vw 0.85vw;
     box-shadow: 0 0.55vw 1.2vw rgba(var(--black), 0.08);
     max-height: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.feedbackTitle #faqSuggestions p:first-child{
+    font-size: var(--xs-fontsize);
+    padding: 0.3vw 0.5vw;
+    
 }
 
 .feedbackTitle #faqSuggestions.visible {
     max-height: 16vw;
+    
 }
 
 .feedbackTitle #faqSuggestions .suggestion {
-    padding: 0.6vw 0.8vw;
+    padding: 0.3vw 0.5vw;
     border-top: 0.05vw solid rgba(var(--black), 0.06);
+    font-size: var(--xs-fontsize);
+    width: 100%;
+    color: rgba(var(--black), 1);
+    text-decoration: none;
+    filter: brightness(100%);
+    transition: background-color 0.2s;
+    background-color: rgba(var(--green-yellow), 0);
 }
 
-.feedbackTitle #faqSuggestions .suggestion:first-child {
+.feedbackTitle #faqSuggestions .suggestion:hover{
+    background-color: rgba(var(--green-yellow), 0.1);
+}
+
+.feedbackTitle #faqSuggestions .suggestion:nth-child(2) {
     border-top: none;
 }
 
-.feedbackTitle #faqSuggestions .suggestion .suggestionTitle,
-.feedbackTitle #faqSuggestions .suggestion .suggestionCat {
+.feedbackTitle #faqSuggestions .suggestion .suggestionTitle {
     width: 100%;
+    font-size: var(--xs-fontsize);
+    color: rgba(var(--black), 1);
+    text-decoration: none;
+}
+
+.errorContainer{
+    color: red;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5vw;
+    margin-top: 0.5vw;
+}
+
+.errorContainer .error{
+    font-size: var(--xs-fontsize);
+}
+
+.errorContainer.hide{
+    display: none;
+}
+
+#fileerr{
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
 }

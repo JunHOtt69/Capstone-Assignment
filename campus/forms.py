@@ -160,6 +160,12 @@ class LimitedMultipleFileField(forms.FileField):
         return result
 
 class SupportTicketForm(forms.ModelForm):
+    category = forms.ChoiceField(
+        initial='', 
+        choices= SupportTicket.CATEGORY_CHOICES,
+        widget=forms.HiddenInput(attrs={'required': True})
+    )
+
     extra_attachments = LimitedMultipleFileField(
         widget=MultipleFileInput(attrs={
             'style': 'display: none',
@@ -176,6 +182,5 @@ class SupportTicketForm(forms.ModelForm):
                 'placeholder': "Provide a clear, concise title (e.g., 'Projector not working in Block B, Room 204').",
                 'required': True,
             }),
-            'category': forms.HiddenInput(attrs={'required': True}),
             'description': forms.HiddenInput(attrs={'required': True}),
         }

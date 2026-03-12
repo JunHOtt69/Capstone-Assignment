@@ -39,14 +39,23 @@ document.addEventListener("DOMContentLoaded", async function() {
     const selectedLabel = categorySelect.querySelector('.selectedLabel label');
     const realCategoryInput = document.querySelector('input[name="category"][type="hidden"]'); 
     const options = document.querySelectorAll('.option input[type="radio"]');
+    const titleInput = document.querySelector('#id_title');
+    const suggestionsList = document.getElementById('faqSuggestions');
+
+    let suggestionRequestId = 0;
 
     categorySelect.addEventListener('click', (e) => {
         categorySelect.classList.toggle('active');
         e.stopPropagation();
     });
 
-    document.addEventListener('click', () => {
-        categorySelect.classList.remove('active');
+    document.addEventListener('click', (e) => {
+        if(!categorySelect.contains(e.target)){
+            categorySelect.classList.remove('active');
+        }
+        if(!titleInput.contains(e.target)){
+            suggestionsList.classList.toggle('visible', false);
+        }
     });
 
     options.forEach(opt => {
@@ -58,15 +67,15 @@ document.addEventListener("DOMContentLoaded", async function() {
             
             categorySelect.classList.remove('active');
             
+            const categoryerr = document.getElementById('categoryerr');
+
+            categoryerr.innerHTML = ``;
+            categoryerr.classList.toggle('hide', true);
+
             const query = document.querySelector('#id_title').value.trim();
             fetchSuggestions(query);
         });
     });
-
-    const titleInput = document.querySelector('#id_title');
-    const suggestionsList = document.getElementById('faqSuggestions');
-
-    let suggestionRequestId = 0;
 
     const fetchSuggestions = async (query) => {
         const requestId = ++suggestionRequestId;
@@ -76,7 +85,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         try {
             const response = await fetch(`/suggestions/?q=${encodeURIComponent(query)}&cat=${encodeURIComponent(selectedCategory)}`);
             const data = await response.json();
-            console.log(data);
             if (requestId !== suggestionRequestId) return;
 
             renderSuggestions(data.suggestions || []);
@@ -87,8 +95,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     };
 
+    titleInput.addEventListener('click', () => {
+        suggestionsList.classList.toggle('visible', true);
+    });
+
     titleInput.addEventListener('input', (event) => {
         const query = event.target.value.trim();
+
         if (query.length < 2) {
             suggestionsList.innerHTML = '';
             // hideSuggestions();
@@ -99,6 +112,17 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 
     titleInput.addEventListener('keydown', (event) => {
+        const selectedCategory = document.querySelector('input[name="category"]:checked')?.value || "";
+        const categoryerr = document.getElementById('categoryerr');
+
+        if(selectedCategory === '' && event.key != 'Tab' && event.key != 'Backspace'){
+            event.preventDefault();
+            categoryerr.innerHTML = `
+                <p class="error">Please Select a category to continue!</p>
+            `;
+            categoryerr.classList.toggle('hide', false);
+        }
+
         if (event.key !== 'Enter') {
             return;
         }
@@ -114,6 +138,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         activeSuggestionHref = null;
 
         if (suggestions.length > 0) {
+            suggestionsList.innerHTML = `
+                <p>Related FAQ Suggestions:</p>
+            `;
             suggestions.forEach((item, index) => {
                 const suggestion = document.createElement('a');
                 suggestion.className = 'suggestion';
@@ -139,19 +166,46 @@ document.addEventListener("DOMContentLoaded", async function() {
     const fileInput = document.querySelector('input[type="file"]');
     const fileCardList = document.querySelector('.fileCardList');
     const uploadPrompt = uploadBox.querySelector('p');
+    const fileError = document.getElementById('fileerr');
+    let masterFileList = [];
 
     uploadBox.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', function() {
-        const files = Array.from(this.files);
+        const newFiles = Array.from(this.files || []);
+        if (newFiles.length === 0) return; 
         
-        if (files.length > 0) {
-            fileCardList.innerHTML = ''; 
-            fileCardList.classList.remove('hide');
-            uploadPrompt.classList.add('hide');
+        const allFiles = [...masterFileList, ...newFiles];
 
-            files.forEach((file, index) => {
-                const extension = file.name.split('.').pop().toUpperCase();
+        if (allFiles.length > 5) {
+            fileError.innerHTML = `<p class="error">You can only upload a maximum of 5 files.</p>`;
+            fileError.classList.remove('hide');
+
+            const dt = new DataTransfer();
+            masterFileList.forEach(f => dt.items.add(f));
+            fileInput.files = dt.files;
+            return;
+        }
+
+        masterFileList = allFiles;
+
+        const finalDt = new DataTransfer();
+        allFiles.forEach(f => finalDt.items.add(f));
+        fileInput.files = finalDt.files;
+
+        renderFileCards();
+    });
+
+    function renderFileCards(){
+        fileCardList.innerHTML = ''; 
+        fileCardList.classList.remove('hide');
+        uploadPrompt.classList.add('hide');
+        fileError.classList.add('hide');
+
+        if (fileInput.files.length > 0) {
+            Array.from(fileInput.files).forEach((file, index) => {
+                let extension = file.name.split('.').pop().toUpperCase();
+                if(extension === 'JPEG') extension = 'JPG';
                 const fileSize = (file.size / 1024).toFixed(1) + ' KB';
                 
                 const card = document.createElement('div');
@@ -164,17 +218,86 @@ document.addEventListener("DOMContentLoaded", async function() {
                         <p class="fileName">${file.name}</p>
                         <p class="fileSize">${fileSize}</p>
                     </div>
-                    <div class="deleteFile" data-index="${index}">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                    </div>
                 `;
+
+                const deleteBtn = document.createElement('div');
+                deleteBtn.className = 'deleteFile';
+                deleteBtn.dataset.index = index;
+                deleteBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                `;
+
+                card.appendChild(deleteBtn);
                 fileCardList.appendChild(card);
             });
         } else {
             fileCardList.classList.add('hide');
             uploadPrompt.classList.remove('hide');
+        }
+    }
+
+    fileCardList.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const btn = e.target.closest('.deleteFile');
+        if (!btn) return;
+
+        const indexToRemove = parseInt(btn.dataset.index);
+        masterFileList.splice(indexToRemove, 1);
+
+        const dt = new DataTransfer();
+        masterFileList.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+
+        renderFileCards();
+    });
+
+
+    const cancelBtn = document.querySelector('.cancel');
+    const submitBtn = document.querySelector('.submit');
+    cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault(); 
+        const confirmCancel = confirm("Are you sure you want to discard this feedback? Your changes will not be saved.");
+        if (confirmCancel) {
+            window.location.href = '/FAQs/'; 
+        }
+    });
+
+    submitBtn.addEventListener('click', (e) => {
+        const categoryValue = document.querySelector('input[name="category"]').value;
+        const titleValue = document.querySelector('#id_title').value.trim();
+        
+        const descriptionText = quill.getText().trim(); 
+        const categoryerr = document.getElementById('categoryerr');
+
+        let errors = [];
+
+        if (!categoryValue || categoryValue === "") {
+            errors.push("Please select a Support Category.");
+        }
+
+        if (titleValue.length < 5) {
+            errors.push("Please provide a more descriptive Issue Summary (min 5 characters).");
+        }
+
+        if (descriptionText.length < 10) {
+            errors.push("Please provide a detailed description of at least 10 characters.");
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+            
+            categoryerr.innerHTML = `<p class="error">${errors[0]}</p>`;
+            categoryerr.classList.remove('hide');
+            
+            // Optional: Scroll to the top error message so user sees it
+            categoryerr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // If everything is fine, the form will submit naturally.
+            // If this button is NOT a type="submit", call: 
+            // document.querySelector('form').submit();
+            console.log("Form validated. Submitting...");
         }
     });
 }); 
