@@ -330,6 +330,7 @@ class booking(models.Model):
         choices=[
             ('Pending','Pending'),
             ('Approved','Approved'),
+            ('Rejected', 'Rejected'),
             ('Cancelled','Cancelled')
         ],
         default='Pending'

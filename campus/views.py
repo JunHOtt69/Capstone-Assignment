@@ -1284,3 +1284,23 @@ def cancel_booking(request, booking_id):
     selected_booking.status = "Cancelled"
     selected_booking.save()
     return redirect("my_bookings")
+
+def review_booking_request(request):
+    bookings = booking.objects.all().order_by("-booking_date")
+    return render(request, "facility/review_booking_request.html", {"bookings": bookings})
+
+def review_booking_request(request):
+    bookings = booking.objects.all().order_by("-booking_date", "-start_time")
+    return render(request, "facility/review_booking_request.html", {"bookings": bookings})
+
+def approve_booking(request, booking_id):
+    selected_booking = get_object_or_404(booking, booking_id=booking_id)
+    selected_booking.status = "Approved"
+    selected_booking.save()
+    return redirect("review_booking_request")
+
+def reject_booking(request, booking_id):
+    selected_booking = get_object_or_404(booking, booking_id=booking_id)
+    selected_booking.status = "Rejected"
+    selected_booking.save()
+    return redirect("review_booking_request")

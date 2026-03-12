@@ -74,6 +74,9 @@ urlpatterns = [
     path("facility/book/<int:facility_id>/", views.booking_form, name="booking_form"),
     path("facility/my/", views.my_bookings, name="my_bookings"),
     path("facility/cancel/<int:booking_id>/", views.cancel_booking, name="cancel_booking"),
+    path("dashboard/admin/review-booking/", views.review_booking_request, name="review_booking_request"),
+    path("dashboard/admin/approve-booking/<int:booking_id>/", views.approve_booking, name="approve_booking"),
+    path("dashboard/admin/reject-booking/<int:booking_id>/", views.reject_booking, name="reject_booking"),
 
 ]
 
