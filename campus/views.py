@@ -926,28 +926,6 @@ def support_center(request):
 def smart_assistant(request):
     return render(request, 'help/smart_assistant.html')
 
-@login_required
-def review_feedback(request, ticket_id): 
-    ticket = get_object_or_404(SupportTicket, id=ticket_id)
-
-    is_admin = request.user.groups.filter(name='admin').exists()
-
-    ticket.check_expiry()
-
-    if not is_admin and ticket.created_by != request.user:
-        raise PermissionDenied("You do not have permission to view this ticket.")
-    
-    conversation = ticket.messages.all().order_by('sent_at')
-    attachments = ticket.all_attachments.all()
-
-    context = {
-        "ticket": ticket,
-        "conversation": conversation,
-        "attachments": attachments,
-    }
-
-    return render(request, "help/review_feedback.html", context)
-
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def feedback_history(request): 
     return render(request, "help/feedback_history.html")
@@ -975,6 +953,29 @@ def submit_feedback(request):
     context = {"form" : form,}
     
     return render(request, "help/submit_feedback.html", context)
+
+@login_required
+def review_feedback(request, ticket_id): 
+    ticket = get_object_or_404(SupportTicket, id=ticket_id)
+
+    is_admin = request.user.groups.filter(name='admin').exists()
+
+    ticket.check_expiry()
+
+    if not is_admin and ticket.created_by != request.user:
+        raise PermissionDenied("You do not have permission to view this ticket.")
+    
+    conversation = ticket.messages.all().order_by('sent_at').prefetch_related('all_attachments')
+    ticket_attachments = ticket.all_attachments.all()
+
+    context = {
+        "ticket": ticket,
+        "conversation": conversation,
+        "ticket_attachments": ticket_attachments,
+
+    }
+
+    return render(request, "help/review_feedback.html", context)
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic

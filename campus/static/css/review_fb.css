@@ -1,0 +1,348 @@
+main{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.pageTitleWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    margin-left: 2vw;
+    margin-top: 1vw;
+}
+
+.pageTitleWrapper .titleCat{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    gap: 1vw;
+}
+
+.pageTitleWrapper .titleCat .cat,
+.pageTitleWrapper .titleCat .stat{
+    padding: 0.2vw 0.5vw;
+    border-radius: 0.1vw;
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    background-color: transparent;
+    margin-bottom: 0.8vw;
+    font-size: var(--xs-fontsize);
+}
+
+.pageTitleWrapper .titleCat .stat.open{
+    background-color: rgba(var(--dark-green), 1);;
+    border: none;
+    color: white;
+}
+
+.pageTitleWrapper .titleCat .stat.in_progress{
+    background-color: orange;
+    border: none;
+    color: white;
+}
+
+.pageTitleWrapper .titleCat .stat.resolved{
+    background-color: lightskyblue;
+    border: none;
+    color: white;
+}
+
+.pageTitleWrapper .titleCat .stat.closed{
+    background-color: grey;
+    border: none;
+    color: white;
+}
+
+.pageTitleWrapper .titleCat .stat.expired{
+    background-color: red;
+    border: none;
+    color: white;
+}
+
+.reviewPage{
+    display: flex;
+    justify-content: flex-start;
+    align-items: stretch;
+    flex-direction: row;
+    gap: 2vw;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 0.5vw 1vw 2vw 2vw;
+}
+
+.ticketDetails{
+    border: none;
+    padding: 0;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1vw;
+}
+
+.userTimeWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    font-size: var(--p-fontsize);
+}
+
+.userTimeWrapper .time{
+    color: rgba(var(--black), 0.4);
+    font-size: var(--xs-fontsize);
+}
+
+.ticketDetails .descContainer{
+    padding: 0.6vw 1.5vw;
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    width: 100%;
+    overflow: hidden;
+    font-size: var(--p-fontsize);
+    line-height: 1.5;
+}
+
+.descContainer p, 
+.descContainer ol, 
+.descContainer ul {
+    margin-top: 0;
+    margin-bottom: 0.5vw; 
+}
+
+.descContainer > *:last-child {
+    margin-bottom: 0;
+}
+
+.descContainer .ql-size-small{font-size:.75em}
+.descContainer .ql-size-large{font-size:1.5em}
+.descContainer .ql-size-huge{font-size:2.5em}
+.descContainer li{
+    font-size: 1em;
+}
+
+.descContainer p:has(img) img{
+    width: auto;
+    max-width: 20vw;
+    height: auto;
+}
+
+.descContainer hr{
+    margin-top: 2vw;
+}
+
+.descContainer .attList{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5vw;
+    background-color: white;
+    height: auto;
+    width: 100%;
+}
+
+.descContainer .fileCard{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+    background-color: rgb(246, 247, 243);
+    padding: 1.5vh 0.5vw;
+    border-radius: 0.2vw;
+    gap: 0.2vw;
+    position: relative;
+    overflow: hidden;
+    filter: brightness(100%);
+    transition: filter 0.2s;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.descContainer .fileCard:hover{
+    filter: brightness(97%);
+}
+
+.descContainer .fileCard .fileDetailWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden; 
+}
+
+.descContainer .fileCard .fileName, 
+.descContainer .fileCard .fileSize{
+    width: 5vw;
+    
+    font-size: var(--xs-fontsize);
+    color: rgba(var(--black), 1);
+    text-decoration: none;
+    text-align: center;
+
+    background-color: transparent;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-clamp: 2; 
+    white-space: normal;
+    word-break: break-all;
+}
+
+.descContainer .fileCard .fileIcon{
+    width: 2vw;
+    height: 2vw;
+    overflow: hidden;
+    object-fit: contain;
+    flex:0; 
+}
+
+.descContainer .fileCard .fileIcon img{
+    width: 2vw;
+    height: 2vw;
+}
+
+.chatContainer{
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    background-color: transparent;
+    gap: 0;
+}
+
+.chatContainer .configTitle{
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    width: 100%;
+    padding: 0.2vw 0.5vw;
+    color: white;
+    background-color: rgba(var(--black), 1);
+}
+
+.commentContainer{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    background-color: rgba(var(--green-yellow), 0.1);
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    width: 100%;
+    height: 60vh !important;
+    padding: 1vw;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.messageWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    gap: 1vw;
+}
+
+.messageWrapper .comment{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+    position: relative;
+    background-color: transparent;
+}
+
+.messageWrapper .comment .commentContent{
+    background-color: white;
+}
+
+#commentEditor{
+    width: 100%;
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    min-height: 10vh;
+    max-height: 20vh;
+    font-size: var(--xs-fontsize);
+}
+
+.commentContainer .empty{
+    color: rgba(var(--black), 0.4);
+    font-size: var(--xs-fontsize);
+    user-select: none;
+}
+
+.configContent .commentContainer .comment .userComment{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0;
+}
+
+.comment .userTimeWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.comment .time{
+    color: rgba(var(--black), 0.2);
+}
+
+.comment .commentContent{
+    width: 100%;
+    padding-left: 2vw;
+    margin-top: 0;
+    line-height: 1.5;
+    overflow: hidden;
+    position: relative;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    text-align: justify;
+    font-size: var(--xs-fontsize);
+}
+
+.comment .commentContent::after{
+    content: '';
+    width: 4vw; 
+    height: calc(var(--xs-fontsize) * 1.5 );
+    position: relative;
+    background-color: blue;
+}
+
+.comment .commentContent p{
+    position: relative;
+    font-size: var(--xs-fontsize);
+    width: 100%;
+    /* overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal; */
+    padding: 0;
+    margin: 0;
+    height: auto;
+    line-height: 1.5;
+}
+
+.configContent .commentContainer .comment .profileIcon{
+    flex-shrink: 0;
+    width: 1.5vw;
+    height: 1.5vw;
+    aspect-ratio: 1/1;
+    z-index: -1;
+}
