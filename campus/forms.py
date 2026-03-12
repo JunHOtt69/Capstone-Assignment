@@ -124,7 +124,7 @@ class LimitedMultipleFileField(forms.FileField):
     def __init__(self, max_files = 5, max_file_size = 10 * 1024 * 1024, *args, **kwargs):
         self.max_files = max_files
         self.max_file_size = max_file_size
-        self.allowed_extensions = ['.pdf', '.docx', '.xlsx', '.png', '.jpg', '.jpeg', '.mp4', '.mov']
+        self.allowed_extensions = ['.pdf', '.docx', '.xlsx', '.png', '.jpg', '.jpeg', '.mp4', '.mov', 'rar']
         kwargs.setdefault("widget", MultipleFileInput())
         super().__init__(*args, **kwargs)
     
@@ -169,7 +169,7 @@ class SupportTicketForm(forms.ModelForm):
     extra_attachments = LimitedMultipleFileField(
         widget=MultipleFileInput(attrs={
             'style': 'display: none',
-            'accept': '.pdf, .docx, .xlsx, .png, .jpg, .jpeg, .mp4, .mov',
+            'accept': '.pdf, .docx, .xlsx, .png, .jpg, .jpeg, .mp4, .mov, .rar',
         })
     )
 
