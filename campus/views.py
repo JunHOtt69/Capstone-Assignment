@@ -1032,12 +1032,35 @@ def edit_faq(request, slug=None):
 
 
 def faq_suggestions(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
+    category = request.GET.get('cat', '').strip()
+    queryset = faq.objects.all()
+
+    if request.user.is_superuser:
+        pass
+    elif not request.user.is_authenticated:
+        queryset = queryset.filter(is_visitor_visible=True)
+    else:
+        user_groups = request.user.groups.values_list('name', flat=True)
+        
+        role_query = Q(is_visitor_visible=True) 
+        
+        if "admin" in user_groups:
+            role_query |= Q(is_ad_visible=True)
+        if "lecturer" in user_groups:
+            role_query |= Q(is_lc_visible=True)
+        if "student" in user_groups:
+            role_query |= Q(is_tp_visible=True)
+            
+        queryset = queryset.filter(role_query).distinct()
     
+    if category:
+        queryset = queryset.filter(category=category)
+
     if query:
         words = query.split()
-        
         q_objects = Q()
+        
         for word in words:
             q_objects |= Q(title__icontains=word)
             

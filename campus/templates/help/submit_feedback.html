@@ -1,46 +1,120 @@
 {% extends "base.html" %} 
 {% load static %}  
-{% block title %} Help {% endblock %}
+{% block title %} Submit New Support Ticket {% endblock %}
 
 {% block extra_head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
     <link rel="stylesheet" href="{% static 'css/feedback.css' %}">
 {% endblock %}
 
 {% block content %}
-    <h2>Feedback Interface</h2>
-    <div class="titleInputWrapper">
-        <span class="placeholder">Title</span>
-        {{ form.title }}
-    </div>
-    <div class="faqCategory">
-        <div class="selectInput"  id="categorySelect">
-            <div class="selectedLabel">
-                <label for="">Please Choose a category</label>
-                <span class="arrow">
-                    <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
-                    </svg>
-                </span>
-            </div>
-            <div class="optionContainer" id="categoryOptions">
-                {% for value, label in form.fields.category.choices %}
-                    <div class="option">
-                        <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.category.value == value %}checked{% endif %}>
-                        
-                        <label for="cat_{{ forloop.counter }}">{{label}}</label>
+    {% if request.resolver_match.url_name == '' %}active{% endif %}
+    <h2 class="pageTitle">Submit New Support Ticket</h2>
+    <div class="feedbackPage">
+        <form method="post" id="feedback">
+            {% csrf_token %}
+            <section class="formTC">
+                <div class="sectionGuidance">
+                    <div class="steps">1</div>
+                    <div class="sectionWrapper">
+                        <h3>Support Category</h3>
+                        <span>Please select the department or service area related to your request. This ensures your ticket is routed to the correct campus specialist for a faster response.</span>
                     </div>
-                {% endfor %}
-            </div>
-        </div>
-        {{ form.category }}
+                </div>
+                <div class="faqCategory">
+                    <div class="selectInput"  id="categorySelect">
+                        <div class="selectedLabel">
+                            <label for="">Please Choose a category</label>
+                            <span class="arrow">
+                                <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="optionContainer" id="categoryOptions">
+                            {% for value, label in form.fields.category.choices %}
+                                <div class="option">
+                                    <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.category.value == value %}checked{% endif %}>
+                                    
+                                    <label for="cat_{{ forloop.counter }}">{{label}}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {{ form.category }}
+                </div>
+
+                <div class="sectionGuidance">
+                    <div class="steps">2</div>
+                    <div class="sectionWrapper title">
+                        <h3>Issue Summary</h3>
+                        <span>Briefly summarize your concern. A specific title helps our team identify and assign your request more quickly.</span>
+                    </div>
+                </div>
+
+                <div class="feedbackTitle">
+                    <div class="titleInputWrapper">
+                        {{ form.title }}
+                    </div>
+                    <div id="faqSuggestions"></div>
+                </div>
+            </section>
+            <div class="border"></div>
+            <section class="contentInput">
+                <div class="sectionGuidance">
+                    <div class="steps">3</div>
+                    <div class="sectionWrapper">
+                        <h3>Detailed Description</h3>
+                        <span>Include all relevant information, such as specific error messages, steps to reproduce the problem, or the exact location. You can paste images directly into this box.</span>
+                    </div>
+                </div>
+                
+                <div class="textAreaWrapper">
+                    <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
+                    {{ form.description }}
+                </div>
+
+                <div class="sectionGuidance">
+                    <div class="steps">4</div>
+                    <div class="sectionWrapper">
+                        <h3>Supporting Documentation (Optional)</h3>
+                        <span>Attach screenshots, error logs, or relevant documents to help our team resolve your issue faster. You may upload up to 5 files (Max 10MB each).</span>
+                    </div>
+                </div>
+
+                <div class="uploadBoxWrapper">
+                    {{form.extra_attachments}}
+                    <div class="uploadBox">
+                        <p class="">Click or Drag & Drop to upload files</p>
+                        <div class="fileCardList hide">
+                            <div class="fileCard">
+                                <span class="fileIcon">
+                                    <img src="/media/file_icons/DOCX.svg">
+                                </span>
+                                <div class="fileDetailWrapper">
+                                    <p class="fileName">${file.name}</p>
+                                    <p class="fileSize">a</p>
+                                </div>
+                                <label class="deleteFile">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submitWrapper">
+                    <button class="cancel">Cancel</button>
+                    <button class="submit">Submit</button>
+                </div>
+            </section>
+        </form>
     </div>
-    <section class="contentInput">
-        <div class="textAreaWrapper">
-            <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
-            {{ form.description }}
-        </div>
-    </section>
 {% endblock %}
 
 {% block extra_scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="{% static 'js/feedback.js' %}"></script>
 {% endblock %} 

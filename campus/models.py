@@ -342,6 +342,7 @@ class booking(models.Model):
 
 class SupportTicket(models.Model):
     CATEGORY_CHOICES = [
+        ('', 'Please Select a Category'),
         ('GEN', 'General'),
         ('ANN', 'Announcements'),
         ('ATT', 'Attendance'),
