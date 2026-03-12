@@ -1230,8 +1230,20 @@ def save_manual_attachment(instance, file_obj):
 
 #Facility Booking
 def facility_list(request):
+    query = request.GET.get("q", "")
     facility_list = facilities.objects.all()
-    return render(request, "facility/facility_list.html", {"facilities": facility_list})
+
+    if query:
+        facility_list = facility_list.filter(
+            Q(facility_name__icontains=query) |
+            Q(type__icontains=query) |
+            Q(building__icontains=query)
+        )
+
+    return render(request, "facility/facility_list.html", {
+        "facilities": facility_list,
+        "query": query
+    })
 
 
 def booking_form(request, facility_id):
@@ -1284,10 +1296,6 @@ def cancel_booking(request, booking_id):
     selected_booking.status = "Cancelled"
     selected_booking.save()
     return redirect("my_bookings")
-
-def review_booking_request(request):
-    bookings = booking.objects.all().order_by("-booking_date")
-    return render(request, "facility/review_booking_request.html", {"bookings": bookings})
 
 def review_booking_request(request):
     bookings = booking.objects.all().order_by("-booking_date", "-start_time")
