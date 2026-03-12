@@ -130,6 +130,8 @@ main{
     width: 100%;
     border: 0.01vw solid rgba(var(--black), 0.2);
     font-size: var(--xs-fontsize);
+    transition: background-color 0.2s, border 0.2s;
+    background-color: rgba(var(--black), 0);
 }
 
 .titleInputWrapper input{
@@ -140,6 +142,15 @@ main{
     background-color: transparent;
     outline: none;
     position: relative;
+}
+
+.titleInputWrapper:has(input:focus){
+    background-color: rgba(var(--black), 0.1);
+    border: 0.01vw solid rgba(var(--black), 1); 
+}
+
+.titleInputWrapper:has(input:hover){
+    border: 0.01vw solid rgba(var(--black), 1); 
 }
 
 .feedbackPage{
@@ -158,6 +169,8 @@ main{
     align-items: flex-start;
     margin: 0;
     gap: 3vw;
+    width: 100%;
+    height: 100%;
 }
 
 .feedbackPage form .formTC{
@@ -167,6 +180,15 @@ main{
     flex-direction: column;
     gap: 1vw;
     width: 30vw;
+    background-color: transparent;
+}
+
+.feedbackPage form .contentInput{
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    background-color: transparent;
+    height: 40vw;
 }
 
 .feedbackPage form .sectionGuidance{
@@ -178,16 +200,27 @@ main{
 
 .sectionGuidance .steps{
     position: absolute;
-    top: -1.8vw;
+    top: -1.7vw;
     left: 0;
     font-family: "Instrument Serif", serif;
     letter-spacing: 0.02em;
-    font-size: 6vw;
+    font-size: 5.5vw;
     font-weight: 550;
+    user-select: none;
+    color: rgba(var(--black), 0.4);
+    width: 2.2vw;
+    overflow: hidden;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.feedbackPage form .faqCategory{
-    margin-left: 1.9vw;
+.feedbackPage form .faqCategory,
+.feedbackPage form .feedbackTitle{
+    padding-left: 1.8vw;
+    padding-bottom: 2.5vw;
+    width: 100%;
 }
 
 .sectionGuidance .sectionWrapper{
@@ -196,9 +229,99 @@ main{
     align-items: flex-start;
     flex-direction: column;
     margin-top: 0;
-    margin-left: 1.9vw;
+    margin-left: 2.5vw;
 }
 
-.sectionGuidance .sectionWrapper.title{
-    margin-left: 3.2vw;
+.submitWrapper button{
+    outline: none;
+    border: 0.1vw solid rgba(var(--black), 0);
+    transition: border 0.2s, background-color 0.2s, color 0.2s;
+    cursor: pointer;
+    padding: 0.2vw 0.5vw;
+    font-size: var(--xs-fontsize);
+}
+
+.submitWrapper .cancel{
+    background-color: white;
+    color: rgba(var(--black), 1);
+    border: 0.1vw solid rgba(var(--black), 1);
+}
+
+.submitWrapper .cancel:hover{
+    background-color: transparent;
+    color: white;
+    border: 0.1vw solid rgba(var(--black), 0);
+}
+
+.submitWrapper .submit{
+    background-color: rgba(var(--black), 1);
+    border: 0.1vw solid rgba(var(--black), 1);
+    color: white;
+}
+
+.submitWrapper .submit:hover{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+}
+
+form .ql-editor{
+    outline: none;
+    max-height: 30vh;
+    font-size: var(--p-fontsize);
+}
+
+form .ql-editor::-webkit-scrollbar{
+    width: 0.3vw;
+    z-index: 9999;
+}
+
+form .ql-editor::-webkit-scrollbar-track{
+    background: rgba(var(--black), 0.1);
+}
+
+form .ql-editor::-webkit-scrollbar-thumb{
+    background: rgba(var(--black), 0.3);
+}
+
+form .ql-editor::-webkit-scrollbar-thumb:hover{
+    background: rgba(var(--black), 0.5);
+}
+
+form .uploadBox{
+    margin-left: 2.5vw;
+    margin-top: 1vw;
+    
+}
+
+form .textAreaWrapper{
+    margin-left: 2.5vw;
+    margin-top: 1vw;
+    margin-bottom: 3vw;
+}
+
+form .editor{
+    outline: none;
+    background-color: rgba(var(--black), 0);;
+    transition: filter 0.2s;
+    height: 30vh;
+    max-height: 30vh;
+    background-color: transparent;
+    filter: brightness(100%);
+    
+}
+
+form .editor:focus{
+    filter: brightness(95%);
+}
+
+form .editor ol li:has(.ql-size-huge) .ql-ui{
+    font-size: 2.5em;
+}
+
+form .editor ol li:has(.ql-size-large) .ql-ui{
+    font-size: 1.5em;
+}
+
+form .editor ol li:has(.ql-size-small) .ql-ui{
+    font-size: .75em;
 }

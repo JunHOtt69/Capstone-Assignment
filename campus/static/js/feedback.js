@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 ['link', 'image'],
             ]
         },
-        placeholder: ' ',
+        placeholder: 'Explain the issue in detail. You can paste screenshots or use the formatting tools below.',
         formats: [
             'size', 
             'bold', 'italic', 'underline', 

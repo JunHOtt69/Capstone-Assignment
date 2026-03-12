@@ -58,11 +58,42 @@
                     </div>
                     <div id="faqSuggestions"></div>
                 </div>
+
+                <div class="submitWrapper">
+                    <button class="cancel">Cancel</button>
+                    <button class="submit">Submit</button>
+                </div>
             </section>
             <section class="contentInput">
+                <div class="sectionGuidance">
+                    <div class="steps">3</div>
+                    <div class="sectionWrapper">
+                        <h3>Detailed Description</h3>
+                        <span>Include all relevant information, such as specific error messages, steps to reproduce the problem, or the exact location. You can paste images directly into this box.</span>
+                    </div>
+                </div>
+                
+                
+                
                 <div class="textAreaWrapper">
                     <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
                     {{ form.description }}
+                </div>
+
+                <div class="sectionGuidance">
+                    <div class="steps">4</div>
+                    <div class="sectionWrapper">
+                        <h3>Supporting Documentation (Optional)</h3>
+                        <span>Attach screenshots, error logs, or relevant documents to help our team resolve your issue faster. You may upload up to 5 files (Max 10MB each).</span>
+                    </div>
+                </div>
+
+                <div class="uploadBox">
+                    {{form.extra_attachments}}
+                    <p>Click or Drag & Drop to upload files</p>
+                    <div class="fileCardList hide">
+
+                    </div>
                 </div>
             </section>
         </form>

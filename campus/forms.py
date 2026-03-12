@@ -1,6 +1,7 @@
 from django import forms
 from .models import course, academic_term, faq, SupportTicket
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, PasswordResetForm
+import os
 
 class CustomLoginForm(AuthenticationForm):
     username = forms.EmailField(widget=forms.EmailInput(attrs={
@@ -122,25 +123,49 @@ class MultipleFileInput(forms.ClearableFileInput):
 class LimitedMultipleFileField(forms.FileField):
     def __init__(self, max_files = 5, max_file_size = 10 * 1024 * 1024, *args, **kwargs):
         self.max_files = max_files
-        self.max_file_size = max_files
+        self.max_file_size = max_file_size
+        self.allowed_extensions = ['.pdf', '.docx', '.xlsx', '.png', '.jpg', '.jpeg', '.mp4', '.mov']
         kwargs.setdefault("widget", MultipleFileInput())
         super().__init__(*args, **kwargs)
     
     def clean(self, data, initial=None):
         single_file_clean = super().clean
+
         if isinstance(data, (list, tuple())):
             if len(data) > self.max_files:
                 raise forms.ValidationError(f"You can upload up to {self.max_files} files only.")
             result = [single_file_clean(d, initial) for d in data]
+            
             for file in result: 
                 if file.size > self.max_file_size:
-                    raise forms.ValidationError(f"File size should not exceed {self.max_file_size} bytes.")
+                    raise forms.ValidationError(f"File '{file.name}' is too large. Max size is {self.max_file_size / (1024*1024)}MB.")
+                
+                ext = os.path.splitext(file.name)[1].lower()
+                if ext not in self.allowed_extensions:
+                    raise forms.ValidationError(
+                        f"Unsupported file extension: {ext}. Allowed types: {', '.join(self.allowed_extensions)}"
+                    )
+
         else:
             result = single_file_clean(data, initial)
+            if result: 
+                ext = os.path.splitext(file.name)[1].lower()
+                if ext not in self.allowed_extensions:
+                    raise forms.ValidationError(
+                        f"Unsupported file extension: {ext}. Allowed types: {', '.join(self.allowed_extensions)}"
+                    )
+                if file.size > self.max_file_size:
+                    raise forms.ValidationError(f"File is too large. Max size is {self.max_file_size / (1024*1024)}MB.")
+                
         return result
 
 class SupportTicketForm(forms.ModelForm):
-    extra_attachments = LimitedMultipleFileField()
+    extra_attachments = LimitedMultipleFileField(
+        widget=MultipleFileInput(attrs={
+            'style': 'display: none',
+            'accept': '.pdf, .docx, .xlsx, .png, .jpg, .jpeg, .mp4, .mov',
+        })
+    )
 
     class Meta:
         model = SupportTicket
@@ -154,11 +179,3 @@ class SupportTicketForm(forms.ModelForm):
             'category': forms.HiddenInput(attrs={'required': True}),
             'description': forms.HiddenInput(attrs={'required': True}),
         }
-
-    def clean_extra_attachments(self):
-        """Optional: Add validation for file sizes or types here."""
-        files = self.files.getlist('extra_attachments')
-        for f in files:
-            if f.size > 10 * 1024 * 1024: 
-                raise forms.ValidationError(f"File {f.name} is too large. Max size is 10MB.")
-        return files
