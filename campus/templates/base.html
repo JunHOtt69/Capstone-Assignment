@@ -306,7 +306,7 @@
     {% if user_role == 'admin' %}
         <div class="functionG1">
             <span class="title">Management &amp; Operations</span>
-            <span class="item"><a href="">Review Booking Request</a></span>
+            <span class="item"><a href="{% url 'review_booking_request' %}">Review Booking Request</a></span>
             <span class="item"><a href="{% url 'point_of_interest' %}">Manage Point of Interest</a></span>
         </div>
 
