@@ -42,8 +42,9 @@
                         </div>
                     </div>
                     {{ form.category }}
+                    <div class="errorContainer hide" id="categoryerr"></div>
                 </div>
-
+                
                 <div class="sectionGuidance">
                     <div class="steps">2</div>
                     <div class="sectionWrapper title">
@@ -86,25 +87,12 @@
                     {{form.extra_attachments}}
                     <div class="uploadBox">
                         <p class="">Click or Drag & Drop to upload files</p>
-                        <div class="fileCardList hide">
-                            <div class="fileCard">
-                                <span class="fileIcon">
-                                    <img src="/media/file_icons/DOCX.svg">
-                                </span>
-                                <div class="fileDetailWrapper">
-                                    <p class="fileName">${file.name}</p>
-                                    <p class="fileSize">a</p>
-                                </div>
-                                <label class="deleteFile">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                    </svg>
-                                </label>
-                            </div>
-                        </div>
+                        <div class="fileCardList hide"></div>
                     </div>
+                    <div class="errorContainer hide" id="fileerr"></div>
                 </div>
 
+                <div class="errorContainer" id="fileerr"></div>
                 <div class="submitWrapper">
                     <button class="cancel">Cancel</button>
                     <button class="submit">Submit</button>

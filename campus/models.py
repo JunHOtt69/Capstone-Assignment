@@ -342,7 +342,6 @@ class booking(models.Model):
 
 class SupportTicket(models.Model):
     CATEGORY_CHOICES = [
-        ('', 'Please Select a Category'),
         ('GEN', 'General'),
         ('ANN', 'Announcements'),
         ('ATT', 'Attendance'),
@@ -368,8 +367,6 @@ class SupportTicket(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # This allows us to use ticket.attachments.all()
     all_attachments = GenericRelation(attachments)
 
     def check_expiry(self):
