@@ -8,7 +8,6 @@ from datetime import date
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
-import os
 # Create your models here.
 
 class academic_rules(models.Model):
@@ -70,13 +69,24 @@ class admin_profiles(models.Model):
         return self.ad_id
 
 class class_session(models.Model):
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('cancelled', 'Cancelled'),
+        ('rearranged', 'Rearranged'),
+    ]
     id = models.AutoField(primary_key = True)
     session	= models.ForeignKey('session', on_delete=models.CASCADE)
     subject	= models.ForeignKey('subject', on_delete=models.CASCADE)
-    lecturer	= models.ForeignKey(User, on_delete=models.CASCADE)
+    lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
+    term = models.ForeignKey('academic_term', on_delete=models.CASCADE, null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
 
     class Meta:
         db_table = 'class_session'
+
+    def __str__(self):
+        return f"{self.subject} - {self.date} ({self.status})"
 
 class course(models.Model):
     LEVEL_CHOICES = [
@@ -157,6 +167,7 @@ class lecturer_profiles(models.Model):
     dept	= models.ForeignKey('departments', on_delete=models.CASCADE, null=True, blank=True)
     specialization = models.TextField(null=True, blank=True)
     is_head	= models.BooleanField(default = False)
+    max_hours_per_week = models.IntegerField(default=20)
     class Meta:
         db_table = 'lecturer_profiles'
 
@@ -193,12 +204,23 @@ class student_profiles(models.Model):
         db_table = 'student_profiles'
 
 class subject(models.Model):
+    CLASS_TYPE_CHOICES = [
+        ('Lecture', 'Lecture'),
+        ('Lab', 'Lab'),
+        ('Tutorial', 'Tutorial'),
+    ]
     subject_id = models.AutoField(primary_key = True)
     subject_code = models.CharField(max_length=20, unique=True)
     subject_name = models.CharField(max_length=255)
     credit_hour = models.IntegerField(default=0)
+    class_type = models.CharField(max_length=20, choices=CLASS_TYPE_CHOICES, default='Lecture')
+    parent_subject = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='child_components')
+
     class Meta:
         db_table = 'subject'
+
+    def __str__(self):
+        return f"{self.subject_code} - {self.subject_name}"
 
 class MapNode(models.Model):
     NODE_TYPES = [
@@ -289,34 +311,6 @@ class attachments(models.Model):
     file = models.FileField(upload_to='attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    @property
-    def filename(self):
-        return os.path.basename(self.file.name)
-
-    @property
-    def extension(self):
-        ext = os.path.splitext(self.file.name)[1].replace('.', '').upper()
-        if ext == 'JPEG':
-            return 'JPG'
-        return ext
-
-    @property
-    def filesize(self):
-        try:
-            size = self.file.size
-            for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-                if size < 1024.0:
-                    return f"{size:.0f} {unit}" if unit == 'B' else f"{size:.1f} {unit}"
-                size /= 1024.0
-            return f"{size:.1f} PB"
-        except (ValueError, OSError, AttributeError):
-            return "Unknown"
-
-    @property
-    def is_supported_icon(self):
-        supported = ['PDF', 'DOCX', 'XLSX', 'PNG', 'JPG', 'MP4', 'MOV', 'RAR']
-        return self.extension in supported
-
 class AttendanceSession(models.Model):
     otp = models.CharField(max_length=4)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_attendance_sessions")
@@ -406,11 +400,6 @@ class SupportTicket(models.Model):
 
     def __str__(self):
         return f"[{self.status.upper()}] {self.title}"
-    
-    @property
-    def creator_name(self):
-        full_name = self.created_by.get_full_name()
-        return full_name if full_name else self.created_by.username
 
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')
@@ -429,3 +418,43 @@ class CannedResponse(models.Model):
 
     def __str__(self):
         return self.title
+
+class timetable_preference(models.Model):
+    id = models.AutoField(primary_key=True)
+    term = models.ForeignKey('academic_term', on_delete=models.CASCADE, related_name='timetable_preferences')
+    subject = models.ForeignKey('subject', on_delete=models.CASCADE)
+    lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
+    session = models.ForeignKey('session', on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'timetable_preference'
+
+    def __str__(self):
+        return f"{self.term} - {self.subject} ({self.session.day_of_week})"
+
+class lecturer_assignment(models.Model):
+    id = models.AutoField(primary_key=True)
+    term = models.ForeignKey('academic_term', on_delete=models.CASCADE, related_name='lecturer_assignments')
+    subject = models.ForeignKey('subject', on_delete=models.CASCADE)
+    lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'lecturer_assignment'
+        unique_together = ('term', 'subject')
+
+    def __str__(self):
+        return f"{self.term} - {self.subject} -> {self.lecturer.get_full_name()}"
+
+class skipped_date(models.Model):
+    id = models.AutoField(primary_key=True)
+    term = models.ForeignKey('academic_term', on_delete=models.CASCADE, related_name='skipped_dates')
+    date = models.DateField()
+    reason = models.CharField(max_length=255, default='Public Holiday')
+
+    class Meta:
+        db_table = 'skipped_date'
+        unique_together = ('term', 'date')
+
+    def __str__(self):
+        return f"{self.date} - {self.reason}"
