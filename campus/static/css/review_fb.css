@@ -225,9 +225,24 @@ main{
     height: 2vw;
 }
 
-.chatContainer{
+.rightCt{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
     flex: 1;
     min-width: 0;
+    overflow: hidden;
+}
+
+.requestActions{
+    height: 3vw;
+    width: 100%;
+}
+
+.chatContainer{
     overflow: hidden;
     display: flex;
     justify-content: flex-start;
@@ -235,7 +250,42 @@ main{
     flex-direction: column;
     background-color: transparent;
     gap: 0;
-    margin-top: 3vw;
+    margin-top: 0;
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    height: auto;
+    transform: scale(1);
+    transition: transform 0.2s;
+    transform-origin: center;
+}
+
+.chatContainer.drag-active{
+    transform: scale(0.96);
+}
+
+.chatContainer::after{
+    content: 'Release to drop files';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: rgba(var(--green-yellow), 0.5);
+    pointer-events: none;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: var(--p-fontsize);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s, 
+        visibility 0 step-start;
+}
+
+.chatContainer.drag-active::after{
+    visibility: visible;
+    opacity: 1;
 }
 
 .chatContainer .configTitle{
@@ -443,6 +493,11 @@ main{
     transition: background-color 0.2s;
 }
 
+.commentInputWrapper.disabled{
+    pointer-events: none;
+    filter: brightness(70%);
+}
+
 .commentInputWrapper:has(.ql-editor:focus){
     background-color: rgba(var(--green-yellow), 0.05);
 }
@@ -462,22 +517,138 @@ main{
     height: auto;
 }
 
-.commentInputWrapper .sendIcon{
+.commentInputWrapper .controlWrapper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    width: 100%;
+    gap: 0.5vw;
+    padding: 0.5vw
+}
+
+.controlWrapper .attComList{
+    margin-left: 0;
+    margin-right: auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    overflow: hidden;
+    max-width: 43vw;
+    overflow-x: auto;
+}
+
+.controlWrapper .attComList::-webkit-scrollbar{
+    height: 0.3vw;
+    z-index: 9999;
+}
+
+.controlWrapper .attComList::-webkit-scrollbar-track{
+    background: rgba(var(--black), 0.1);
+}
+
+.controlWrapper .attComList::-webkit-scrollbar-thumb{
+    background: rgba(var(--black), 0.3);
+}
+
+.controlWrapper .attComList::-webkit-scrollbar-thumb:hover{
+    background: rgba(var(--black), 0.5);
+}
+
+.controlWrapper .attComList .fileCard{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    padding: 0.3vw 0.5vw; 
+    border-radius: 0.5vw;
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    filter: brightness(100%);
+    background-color: rgb(246, 247, 243);
+    transition: filter .2s;
+}
+
+.controlWrapper .attComList .fileCard:hover{
+    filter: brightness(95%);
+}
+
+.controlWrapper .attComList .fileCard .fileIcon{
+    width: 1.5vw;
+    height: auto;
+    object-fit: contain;
+    overflow: hidden;
+}
+
+.controlWrapper .attComList .fileCard .fileIcon img{
+    width: 1.5vw;
+    height: auto;
+}
+
+.controlWrapper .attComList .fileCard .fileDetailWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.controlWrapper .attComList .fileCard .fileDetailWrapper p{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--xs-fontsize);
+    max-width: 5vw;
+}
+
+.controlWrapper .attComList .fileCard .fileSize{
+    color: rgba(var(--black), 0.4);
+}
+
+.controlWrapper .attComList .deleteFile{
+    font-size: var(--h4-fontsize);
+    width: 1vw;
+    height: 1vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.controlWrapper .attComList .deleteFile::after{
+    content: '';
+    position: absolute;
+    width: 1.25vw;
+    height: 1.25vw;
+    background-color: rgba(var(--black), 0);
+    transition: background-color 0.2s;
+    transform: translateY(0.05vw);
+    border-radius: 1vw;
+}
+
+.controlWrapper .attComList .deleteFile:hover::after{
+    background-color: rgba(var(--black), 0.3);
+}
+
+.commentInputWrapper .sendIcon,
+.commentInputWrapper .attachmentIcon{
     width: 1vw;
     height: 1vw; 
     object-fit: contain;
     flex-shrink: 0;
-    margin: 0.5vw;
+    margin: 0;
     cursor: pointer;
 }
 
-.commentInputWrapper .sendIcon svg{
+.commentInputWrapper .sendIcon svg,
+.commentInputWrapper .attachmentIcon svg{
     fill: none;
     width: 100%;
     height: auto;
 }
 
-.commentInputWrapper .sendIcon svg path{
+.commentInputWrapper .sendIcon svg path,
+.commentInputWrapper .attachmentIcon svg path{
     stroke: rgba(var(--black), 1);
     stroke-width: 8;
 }
@@ -499,4 +670,14 @@ main{
 
 .comment .time{
     color: rgba(var(--black), 0.2);
+}
+
+.errorMessage{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    font-size: var(--xs-fontsize);
+    color: red;
 }

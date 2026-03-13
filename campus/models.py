@@ -435,6 +435,10 @@ class SupportTicket(models.Model):
         full_name = self.created_by.get_full_name()
         return full_name if full_name else self.created_by.username
 
+    @property
+    def is_inactive(self):
+        return self.status in ['closed', 'resolved', 'expired']
+
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
