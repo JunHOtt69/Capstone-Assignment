@@ -70,7 +70,7 @@
                             <span class="chatTimeStamp">
                                 {{ cluster.messages.0.sent_at|smart_date }}
                             </span>
-                            
+
                             {% include "partials/messages.html" %}
                         {% endfor %}
                     {% else %}
@@ -94,7 +94,8 @@
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script>
-        const FEEDBACK_URL = "{% url 'review_feedback' ticket.id %}";
+        const TICKET_ID = "{{ ticket.id }}";
+        const POST_REPLY_URL = "{% url 'post_reply_ajax' ticket.id %}";
         const CSRF_TOKEN = "{{ csrf_token }}";
     </script>
     <script src="{% static 'js/review_fb.js' %}"></script>

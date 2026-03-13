@@ -1050,18 +1050,26 @@ def post_reply_ajax(request, ticket_id):
 
         extract_and_save_images(message)
 
-        cluster = {
+        cluster_data = {
             'is_self': True,
-            'is_admin': request.user.groups.filter(name='admin').exists(),
             'messages': [message],
         }
-        
-        html = render_to_string('help/includes/message.html', {
-            'cluster': cluster,
-            'request': request
+
+        cluster_html = render_to_string('partials/messages.html', {
+            'cluster': cluster_data,
+            'just_now': True
         })
 
-        return JsonResponse({"status": "success", "html": html})
+        bubble_html = render_to_string('partials/single_bubble.html', {
+            'msg': message,
+            'just_now': True
+        })
+
+        return JsonResponse({
+            'status': 'success',
+            'cluster_html': cluster_html,  
+            'bubble_html': bubble_html
+        })
     
     return JsonResponse({"status": "error"}, status=400)
 

@@ -12,7 +12,7 @@
 
     <div class="commentContent">
         {% for msg in cluster.messages %}
-        <div class="bubble">
+        <div class="bubble" data-timestamp="{{ msg.sent_at|date:'c' }}">
             <span class="user">{{ msg.sender.username }}</span>
             
             <div class="message">

@@ -62,6 +62,7 @@ urlpatterns = [
     path('support/my-tickets/', views.feedback_history,name='feedback_history'),
     path('support/tickets/<int:ticket_id>/', views.review_feedback,name='review_feedback'),
     path('support/tickets/new/', views.submit_feedback,name='submit_feedback'),
+    path('support/tickets/<int:ticket_id>/reply/', views.post_reply_ajax, name='post_reply_ajax'),
     
     path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
     path('config-bot/', views.config_bot,name='config_bot'),

@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     const sendBtn = document.querySelector('.sendIcon');
     const messageWrapper = document.querySelector('.messageWrapper');
-
+    
     sendBtn.addEventListener('click', function() {
         if(sendBtn.classList.contains('loading')) return;
 
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         formData.append('content', content);
         formData.append('csrfmiddlewaretoken', CSRF_TOKEN); 
 
-        fetch(FEEDBACK_URL, { 
+        fetch(POST_REPLY_URL, { 
             method: 'POST',
             body: formData,
             headers: {
@@ -43,7 +43,8 @@ document.addEventListener("DOMContentLoaded", async function() {
             if (data.status === 'success') {
                 const lastComment = messageWrapper.lastElementChild;
                 const isSelf = true; // Since the AJAX sender is always 'self'
-                
+                console.log("Full Data Object:", data);
+                console.log(data.cluster_data)
                 // Check if a cluster exists and if it's a 'self' cluster
                 if (lastComment && lastComment.classList.contains('self')) {
                     const lastBubble = lastComment.querySelector('.bubble:last-child');
@@ -54,12 +55,13 @@ document.addEventListener("DOMContentLoaded", async function() {
                     // Calculate difference in minutes
                     const diffMs = currentTime - lastTime;
                     const diffMins = Math.floor(diffMs / 60000);
-
+                    
                     if (diffMins < 10) {
                         // MATCH! Just append the bubble inside the existing cluster
                         const commentContent = lastComment.querySelector('.commentContent');
                         commentContent.insertAdjacentHTML('beforeend', data.bubble_html);
                         finalizeMessageSend();
+                        console.log(data.bubble_html);
                         return;
                     }
                 }
@@ -74,8 +76,17 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     function finalizeMessageSend() {
         quill.setContents([]);
-        const chatContainer = document.querySelector('.chatContainer');
-        chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+        const commentContainer = document.querySelector('.commentContainer');
+        commentContainer.scrollTo({
+            top: commentContainer.scrollHeight,
+            behavior: 'smooth'
+        });
     }
+
+    const commentContainer = document.querySelector('.commentContainer');
+    commentContainer.scrollTo({
+        top: commentContainer.scrollHeight,
+        behavior: 'smooth'
+    });
 });
 
