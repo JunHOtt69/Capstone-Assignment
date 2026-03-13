@@ -1,0 +1,418 @@
+/* ============================================================
+   TIMETABLE MODULE JS
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', function () {
+    const termSelect = document.getElementById('termSelect');
+    const weekNav = document.getElementById('weekNav');
+    const actionBtns = document.getElementById('actionBtns');
+    const prevWeekBtn = document.getElementById('prevWeekBtn');
+    const nextWeekBtn = document.getElementById('nextWeekBtn');
+    const weekLabel = document.getElementById('weekLabel');
+    const generateBtn = document.getElementById('generateBtn');
+    const savePreferenceBtn = document.getElementById('savePreferenceBtn');
+    const replicateBtn = document.getElementById('replicateBtn');
+    const missingBtn = document.getElementById('missingBtn');
+    const addSkipBtn = document.getElementById('addSkipBtn');
+    const timetableGrid = document.getElementById('timetableGrid');
+    const timetableBody = document.getElementById('timetableBody');
+    const infoBar = document.getElementById('infoBar');
+    const skippedDatesSection = document.getElementById('skippedDatesSection');
+    const skippedDatesList = document.getElementById('skippedDatesList');
+
+    // Modals
+    const missingModal = document.getElementById('missingModal');
+    const closeMissingModal = document.getElementById('closeMissingModal');
+    const missingModalBody = document.getElementById('missingModalBody');
+
+    const skipModal = document.getElementById('skipModal');
+    const closeSkipModal = document.getElementById('closeSkipModal');
+    const confirmSkipBtn = document.getElementById('confirmSkipBtn');
+    const skipDateInput = document.getElementById('skipDateInput');
+    const skipReasonInput = document.getElementById('skipReasonInput');
+
+    const replicateModal = document.getElementById('replicateModal');
+    const closeReplicateModal = document.getElementById('closeReplicateModal');
+    const confirmReplicateBtn = document.getElementById('confirmReplicateBtn');
+    const replicateWeekInput = document.getElementById('replicateWeekInput');
+
+    let currentWeekMonday = null;
+    let termStart = null;
+    let termEnd = null;
+    let teachingCutoff = null;
+    let allTimeSlots = [];
+
+    // CSRF
+    function getCSRF() {
+        const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+        return cookie ? cookie.split('=')[1] : '';
+    }
+
+    // Helpers
+    function formatDate(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function getMondayOfWeek(d) {
+        const dt = new Date(d + 'T00:00:00');
+        const day = dt.getDay();
+        const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(dt.setDate(diff));
+        return monday.toISOString().split('T')[0];
+    }
+
+    function addDays(dateStr, days) {
+        const d = new Date(dateStr + 'T00:00:00');
+        d.setDate(d.getDate() + days);
+        return d.toISOString().split('T')[0];
+    }
+
+    function showInfo(msg, type) {
+        infoBar.textContent = msg;
+        infoBar.className = 'infoBar ' + type;
+        infoBar.style.display = 'block';
+        setTimeout(() => { infoBar.style.display = 'none'; }, 5000);
+    }
+
+    // Term selection
+    termSelect.addEventListener('change', function () {
+        const termId = this.value;
+        if (!termId) {
+            weekNav.style.display = 'none';
+            actionBtns.style.display = 'none';
+            timetableGrid.style.display = 'none';
+            skippedDatesSection.style.display = 'none';
+            return;
+        }
+
+        const opt = this.selectedOptions[0];
+        termStart = opt.dataset.start;
+        termEnd = opt.dataset.end;
+
+        // Start at term's first Monday
+        currentWeekMonday = getMondayOfWeek(termStart);
+
+        weekNav.style.display = 'flex';
+        actionBtns.style.display = 'flex';
+        timetableGrid.style.display = 'block';
+
+        loadTimetable();
+    });
+
+    // Week navigation
+    prevWeekBtn.addEventListener('click', function () {
+        currentWeekMonday = addDays(currentWeekMonday, -7);
+        loadTimetable();
+    });
+
+    nextWeekBtn.addEventListener('click', function () {
+        currentWeekMonday = addDays(currentWeekMonday, 7);
+        loadTimetable();
+    });
+
+    // Load timetable data
+    function loadTimetable() {
+        const termId = termSelect.value;
+        if (!termId || !currentWeekMonday) return;
+
+        const friday = addDays(currentWeekMonday, 4);
+        weekLabel.textContent = formatDate(currentWeekMonday) + ' — ' + formatDate(friday);
+
+        fetch(`/academic/timetable/data/?term_id=${encodeURIComponent(termId)}&week_start=${encodeURIComponent(currentWeekMonday)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showInfo(data.error, 'error');
+                    return;
+                }
+
+                teachingCutoff = data.teaching_cutoff;
+                renderTimetable(data.timetable);
+                renderSkippedDates(data.skipped_dates);
+
+                if (data.has_preference) {
+                    showInfo('Active preference exists for this intake. Use "Replicate" to apply to other weeks.', 'info');
+                }
+            })
+            .catch(err => showInfo('Failed to load timetable: ' + err, 'error'));
+    }
+
+    // Render the grid
+    function renderTimetable(sessions) {
+        timetableBody.innerHTML = '';
+
+        // Find all unique time slots
+        const slotMap = {};
+        sessions.forEach(s => {
+            const key = s.start_time + '-' + s.end_time;
+            if (!slotMap[key]) slotMap[key] = { start: s.start_time, end: s.end_time };
+        });
+
+        allTimeSlots = Object.values(slotMap).sort((a, b) => a.start.localeCompare(b.start));
+
+        if (allTimeSlots.length === 0) {
+            timetableBody.innerHTML = '<tr><td colspan="6" class="emptySlot">No classes scheduled for this week.</td></tr>';
+            return;
+        }
+
+        const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+
+        allTimeSlots.forEach(slot => {
+            const row = document.createElement('tr');
+            const timeCell = document.createElement('td');
+            timeCell.textContent = slot.start + ' - ' + slot.end;
+            timeCell.style.fontWeight = '600';
+            row.appendChild(timeCell);
+
+            days.forEach(day => {
+                const td = document.createElement('td');
+                const matching = sessions.filter(s => s.day === day && s.start_time === slot.start && s.end_time === slot.end);
+
+                if (matching.length > 0) {
+                    matching.forEach(m => {
+                        const div = document.createElement('div');
+                        let cellClass = 'sessionCell';
+                        if (m.class_type === 'Lab') cellClass += ' lab';
+                        if (m.class_type === 'Tutorial') cellClass += ' tutorial';
+                        div.className = cellClass;
+
+                        div.innerHTML = `
+                            <div class="subjectCode">${m.subject_code}</div>
+                            <div class="subjectName">${m.subject_name}</div>
+                            <div class="lecturerName">${m.lecturer}</div>
+                            <div class="facilityName">${m.facility}</div>
+                            ${m.status !== 'scheduled' ? `<div class="sessionStatus ${m.status}">${m.status}</div>` : ''}
+                        `;
+                        td.appendChild(div);
+                    });
+                } else {
+                    td.innerHTML = '<span class="emptySlot">—</span>';
+                }
+
+                row.appendChild(td);
+            });
+
+            timetableBody.appendChild(row);
+        });
+    }
+
+    // Render skipped dates
+    function renderSkippedDates(skippedDates) {
+        if (!skippedDates || skippedDates.length === 0) {
+            skippedDatesSection.style.display = 'none';
+            return;
+        }
+        skippedDatesSection.style.display = 'block';
+        skippedDatesList.innerHTML = '';
+
+        skippedDates.forEach(sd => {
+            const li = document.createElement('li');
+            const dateStr = typeof sd.date === 'string' ? sd.date : sd.date;
+            li.innerHTML = `<span>${formatDate(dateStr)} — ${sd.reason || 'N/A'}</span>
+                <button class="skipRemoveBtn" data-date="${dateStr}">&times;</button>`;
+            skippedDatesList.appendChild(li);
+        });
+
+        // Attach remove handlers
+        skippedDatesList.querySelectorAll('.skipRemoveBtn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                removeSkippedDate(this.dataset.date);
+            });
+        });
+    }
+
+    // Generate timetable
+    generateBtn.addEventListener('click', function () {
+        const termId = termSelect.value;
+        if (!termId) return;
+
+        if (!confirm('Generate a timetable for this week? Existing sessions will not be overwritten.')) return;
+
+        generateBtn.disabled = true;
+        fetch('/academic/timetable/generate/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ term_id: termId, week_start: currentWeekMonday })
+        })
+        .then(r => r.json())
+        .then(data => {
+            generateBtn.disabled = false;
+            if (data.error) {
+                showInfo(data.error, 'error');
+                return;
+            }
+            showInfo(`Generated ${data.created} session(s). ${data.errors.length ? 'Warnings: ' + data.errors.join('; ') : ''}`, 'success');
+            loadTimetable();
+        })
+        .catch(err => {
+            generateBtn.disabled = false;
+            showInfo('Error: ' + err, 'error');
+        });
+    });
+
+    // Save preference
+    savePreferenceBtn.addEventListener('click', function () {
+        const termId = termSelect.value;
+        if (!termId) return;
+
+        if (!confirm('Save the current week as the scheduling preference?')) return;
+
+        fetch('/academic/timetable/save-preference/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ term_id: termId, week_start: currentWeekMonday })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { showInfo(data.error, 'error'); return; }
+            showInfo(data.message, 'success');
+        })
+        .catch(err => showInfo('Error: ' + err, 'error'));
+    });
+
+    // Replicate modal
+    replicateBtn.addEventListener('click', () => { replicateModal.style.display = 'flex'; });
+    closeReplicateModal.addEventListener('click', () => { replicateModal.style.display = 'none'; });
+
+    confirmReplicateBtn.addEventListener('click', function () {
+        const termId = termSelect.value;
+        const targetWeek = replicateWeekInput.value;
+        if (!termId || !targetWeek) { showInfo('Please select a target week.', 'warning'); return; }
+
+        const targetMonday = getMondayOfWeek(targetWeek);
+
+        fetch('/academic/timetable/replicate/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ term_id: termId, target_week: targetMonday })
+        })
+        .then(r => r.json())
+        .then(data => {
+            replicateModal.style.display = 'none';
+            if (data.error) { showInfo(data.error, 'error'); return; }
+            let msg = `Replicated ${data.created} session(s).`;
+            if (data.skipped_classes && data.skipped_classes.length > 0) {
+                msg += ` ${data.skipped_classes.length} class(es) skipped.`;
+            }
+            showInfo(msg, 'success');
+            // Navigate to replicated week
+            currentWeekMonday = targetMonday;
+            loadTimetable();
+        })
+        .catch(err => showInfo('Error: ' + err, 'error'));
+    });
+
+    // Missing classes modal
+    missingBtn.addEventListener('click', function () {
+        const termId = termSelect.value;
+        if (!termId) return;
+
+        missingModalBody.innerHTML = '<p>Loading...</p>';
+        missingModal.style.display = 'flex';
+
+        fetch(`/academic/timetable/missing/?term_id=${encodeURIComponent(termId)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.missing_classes || data.missing_classes.length === 0) {
+                    missingModalBody.innerHTML = '<p>No missing or cancelled classes.</p>';
+                    return;
+                }
+                missingModalBody.innerHTML = '';
+                data.missing_classes.forEach(mc => {
+                    const div = document.createElement('div');
+                    div.className = 'missingItem';
+                    div.innerHTML = `
+                        <div class="missingInfo"><strong>${mc.subject_code}</strong> — ${mc.subject_name}</div>
+                        <div class="missingInfo">Date: ${formatDate(mc.date)} | ${mc.start_time} - ${mc.end_time}</div>
+                        <div class="missingInfo">Lecturer: ${mc.lecturer}</div>
+                        <button class="rearrangeBtn" data-id="${mc.id}">Rearrange</button>
+                    `;
+                    missingModalBody.appendChild(div);
+                });
+
+                // Attach rearrange handlers
+                missingModalBody.querySelectorAll('.rearrangeBtn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        rearrangeClass(this.dataset.id);
+                    });
+                });
+            })
+            .catch(err => {
+                missingModalBody.innerHTML = '<p>Error loading data.</p>';
+            });
+    });
+    closeMissingModal.addEventListener('click', () => { missingModal.style.display = 'none'; });
+
+    // Add skip date modal
+    addSkipBtn.addEventListener('click', () => { skipModal.style.display = 'flex'; });
+    closeSkipModal.addEventListener('click', () => { skipModal.style.display = 'none'; });
+
+    confirmSkipBtn.addEventListener('click', function () {
+        const termId = termSelect.value;
+        const skipDate = skipDateInput.value;
+        const reason = skipReasonInput.value || 'Public Holiday';
+
+        if (!termId || !skipDate) { showInfo('Please fill in the date.', 'warning'); return; }
+
+        fetch('/academic/timetable/skip-date/add/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ term_id: termId, date: skipDate, reason: reason })
+        })
+        .then(r => r.json())
+        .then(data => {
+            skipModal.style.display = 'none';
+            skipDateInput.value = '';
+            skipReasonInput.value = '';
+            if (data.error) { showInfo(data.error, 'error'); return; }
+            showInfo(data.message, 'success');
+            loadTimetable();
+        })
+        .catch(err => showInfo('Error: ' + err, 'error'));
+    });
+
+    // Remove skipped date
+    function removeSkippedDate(dateStr) {
+        const termId = termSelect.value;
+        if (!confirm('Remove this skipped date?')) return;
+
+        fetch('/academic/timetable/skip-date/remove/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ term_id: termId, date: dateStr })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { showInfo(data.error, 'error'); return; }
+            showInfo(data.message, 'success');
+            loadTimetable();
+        })
+        .catch(err => showInfo('Error: ' + err, 'error'));
+    }
+
+    // Rearrange a cancelled class
+    function rearrangeClass(classSessionId) {
+        if (!confirm('Attempt to rearrange this class to an available slot?')) return;
+
+        fetch('/academic/timetable/rearrange/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ class_session_id: classSessionId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { showInfo(data.error, 'error'); return; }
+            showInfo(data.message, 'success');
+            missingModal.style.display = 'none';
+            loadTimetable();
+        })
+        .catch(err => showInfo('Error: ' + err, 'error'));
+    }
+
+    // Close modals on backdrop click
+    [missingModal, skipModal, replicateModal].forEach(modal => {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+    });
+});

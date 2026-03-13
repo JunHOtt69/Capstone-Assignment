@@ -1,0 +1,94 @@
+[33me27423c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmok-tts[m[33m, [m[1;31morigin/mok-tts[m[33m)[m HEAD@{0}: pull --tags origin mok-tts: Fast-forward
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{1}: reset: moving to 2571d0aa4b988edf08c21e8aa09ea90584f9611a
+[33me27423c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmok-tts[m[33m, [m[1;31morigin/mok-tts[m[33m)[m HEAD@{2}: pull: Fast-forward
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{3}: checkout: moving from main to mok-tts
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{4}: checkout: moving from mok-tts to main
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{5}: reset: moving to 2571d0aa4b988edf08c21e8aa09ea90584f9611a
+[33me27423c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmok-tts[m[33m, [m[1;31morigin/mok-tts[m[33m)[m HEAD@{6}: commit: reference 0007
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{7}: checkout: moving from mok-tts to mok-tts
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{8}: checkout: moving from main to mok-tts
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{9}: checkout: moving from mok-tts to main
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{10}: checkout: moving from main to mok-tts
+[33m2571d0a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{11}: pull: Fast-forward
+[33m1d7fbb8[m[33m ([m[1;31morigin/mok-campusmap[m[33m, [m[1;32mmok-campusmap[m[33m)[m HEAD@{12}: checkout: moving from mok-campusmap to main
+[33m1d7fbb8[m[33m ([m[1;31morigin/mok-campusmap[m[33m, [m[1;32mmok-campusmap[m[33m)[m HEAD@{13}: merge main: Fast-forward
+[33m146806a[m HEAD@{14}: checkout: moving from main to mok-campusmap
+[33m1d7fbb8[m[33m ([m[1;31morigin/mok-campusmap[m[33m, [m[1;32mmok-campusmap[m[33m)[m HEAD@{15}: pull --tags origin main: Fast-forward
+[33m8fe625b[m HEAD@{16}: checkout: moving from mok-campusmap to main
+[33m146806a[m HEAD@{17}: checkout: moving from mok-temp to mok-campusmap
+[33m2e20ddd[m[33m ([m[1;31morigin/mok-temp[m[33m, [m[1;32mmok-temp[m[33m)[m HEAD@{18}: commit: extended base.html to facilities' html
+[33m8fe625b[m HEAD@{19}: checkout: moving from main to mok-temp
+[33m8fe625b[m HEAD@{20}: pull: Fast-forward
+[33m6c213f1[m HEAD@{21}: checkout: moving from Hong-FAQ to main
+[33m33dfc4d[m[33m ([m[1;32mHong-FAQ[m[33m)[m HEAD@{22}: commit: Implement FAQ reactions feature with voting functionality and update templates
+[33m0d60b40[m HEAD@{23}: commit: Add FAQ styling, enhance search functionality, and update FAQ detail template
+[33m4b28448[m HEAD@{24}: pull origin main: Fast-forward
+[33m4006336[m HEAD@{25}: checkout: moving from main to Hong-FAQ
+[33m6c213f1[m HEAD@{26}: pull origin main: Fast-forward
+[33m7ea6eba[m HEAD@{27}: pull origin main: Fast-forward
+[33m146806a[m HEAD@{28}: checkout: moving from mok-campusmap to main
+[33m146806a[m HEAD@{29}: checkout: moving from mok-campusmap to mok-campusmap
+[33m146806a[m HEAD@{30}: merge main: Fast-forward
+[33mdd92fbc[m HEAD@{31}: checkout: moving from main to mok-campusmap
+[33m146806a[m HEAD@{32}: pull origin main: Fast-forward
+[33mdd92fbc[m HEAD@{33}: checkout: moving from mok-campusmap to main
+[33mdd92fbc[m HEAD@{34}: merge main: Fast-forward
+[33m1f6f08b[m HEAD@{35}: checkout: moving from main to mok-campusmap
+[33mdd92fbc[m HEAD@{36}: pull origin main: Fast-forward
+[33m07300b9[m HEAD@{37}: checkout: moving from mok-campusmap to main
+[33m1f6f08b[m HEAD@{38}: commit: media thing
+[33maf9a1ca[m HEAD@{39}: commit: Add image upload and cropping functionality to campus map
+[33m713960f[m HEAD@{40}: commit: Refactor campus map and navigation styles, enhance UI components, and improve data handling in JavaScript
+[33m07300b9[m HEAD@{41}: merge main: Fast-forward
+[33md210ddd[m HEAD@{42}: checkout: moving from main to mok-campusmap
+[33m07300b9[m HEAD@{43}: pull origin main: Fast-forward
+[33mdf6ff3e[m HEAD@{44}: checkout: moving from mok-campusmap to main
+[33md210ddd[m HEAD@{45}: commit: Add lightbox feature for Points of Interest and update styles
+[33m31a7948[m HEAD@{46}: checkout: moving from main to mok-campusmap
+[33mdf6ff3e[m HEAD@{47}: checkout: moving from mok-campusmap to main
+[33m31a7948[m HEAD@{48}: checkout: moving from main to mok-campusmap
+[33mdf6ff3e[m HEAD@{49}: checkout: moving from mok-campusmap to main
+[33m31a7948[m HEAD@{50}: checkout: moving from main to mok-campusmap
+[33mdf6ff3e[m HEAD@{51}: pull origin main: Fast-forward
+[33m508cd67[m HEAD@{52}: checkout: moving from mok-campusmap to main
+[33m31a7948[m HEAD@{53}: pull origin main: Merge made by the 'ort' strategy.
+[33me62e3de[m HEAD@{54}: commit: Update migration timestamp in 0001_initial.py to reflect correct Django version
+[33mec9ab6d[m HEAD@{55}: checkout: moving from main to mok-campusmap
+[33m508cd67[m HEAD@{56}: checkout: moving from mok-campusmap to main
+[33mec9ab6d[m HEAD@{57}: commit (merge): Merge branch 'main' into mok-campusmap
+[33m5aaa7d7[m HEAD@{58}: checkout: moving from main to mok-campusmap
+[33m508cd67[m HEAD@{59}: pull origin main: Fast-forward
+[33mc3e91ed[m HEAD@{60}: checkout: moving from mok-campusmap to main
+[33m5aaa7d7[m HEAD@{61}: commit: Uncomment db_init volume in docker-compose.yml for database initialization
+[33mac67830[m HEAD@{62}: checkout: moving from main to mok-campusmap
+[33mc3e91ed[m HEAD@{63}: pull origin main: Fast-forward
+[33m152b75c[m HEAD@{64}: checkout: moving from mok-campusmap to main
+[33mac67830[m HEAD@{65}: pull origin main: Merge made by the 'ort' strategy.
+[33mfabad9f[m HEAD@{66}: commit: Refactor migration files and update docker-compose to comment out db_init import
+[33m152b75c[m HEAD@{67}: merge main: Fast-forward
+[33m0d095d5[m HEAD@{68}: checkout: moving from main to mok-campusmap
+[33m152b75c[m HEAD@{69}: pull origin main: Fast-forward
+[33m788222c[m HEAD@{70}: checkout: moving from mok-campusmap to main
+[33m0d095d5[m HEAD@{71}: commit: Replace JsonResponse with messages.success for successful map save notification
+[33m082d6e7[m HEAD@{72}: checkout: moving from main to mok-campusmap
+[33m788222c[m HEAD@{73}: pull origin main: Fast-forward
+[33m93fdc0e[m HEAD@{74}: checkout: moving from mok-campusmap to main
+[33m082d6e7[m HEAD@{75}: commit: Update links for Campus Map and Navigation to use URL template tags
+[33mafbcb1d[m HEAD@{76}: commit: Add URL for Campus Navigation Config and restrict editmap access to admin role
+[33m93fdc0e[m HEAD@{77}: merge main: Fast-forward
+[33ma6661fb[m HEAD@{78}: checkout: moving from main to mok-campusmap
+[33m93fdc0e[m HEAD@{79}: pull origin main: Fast-forward
+[33m8a5a2af[m HEAD@{80}: pull origin main: Fast-forward
+[33m736302c[m HEAD@{81}: checkout: moving from mok-campusmap to main
+[33ma6661fb[m HEAD@{82}: commit (merge): Merge branch 'main' into mok-campusmap
+[33me1aa802[m HEAD@{83}: checkout: moving from main to mok-campusmap
+[33m736302c[m HEAD@{84}: pull origin main: Fast-forward
+[33m5257d86[m HEAD@{85}: checkout: moving from mok-campusmap to main
+[33me1aa802[m HEAD@{86}: commit: Implement edit map function
+[33m5257d86[m HEAD@{87}: checkout: moving from main to mok-campusmap
+[33m5257d86[m HEAD@{88}: checkout: moving from mok-campusmap to main
+[33m5257d86[m HEAD@{89}: checkout: moving from mok-campusmap to mok-campusmap
+[33m5257d86[m HEAD@{90}: checkout: moving from main to mok-campusmap
+[33m5257d86[m HEAD@{91}: checkout: moving from mok-campusmap to main
+[33m5257d86[m HEAD@{92}: merge main: Fast-forward
+[33mcb2abcc[m HEAD@{93}: checkout: moving from main to mok
