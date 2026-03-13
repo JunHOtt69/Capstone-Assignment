@@ -1318,6 +1318,7 @@ def booking_form(request, facility_id):
             status="Pending"
         )
 
+        messages.success(request, "Booking request submitted successfully! Waiting for admin approval.")
         return redirect("my_bookings")
 
     return render(request, "facility/booking_form.html", {"facility": facility})
@@ -1332,6 +1333,8 @@ def cancel_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id, user=request.user)
     selected_booking.status = "Cancelled"
     selected_booking.save()
+
+    messages.success(request, "Booking cancelled successfully!")
     return redirect("my_bookings")
 
 def review_booking_request(request):
