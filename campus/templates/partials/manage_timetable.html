@@ -1,0 +1,90 @@
+{% extends "academic_management.html" %} 
+
+{% load static %}  
+
+{% block title %} Timetable Management {% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/timetable.css' %}">
+{% endblock %}
+
+{% block function_window %}
+<div class="timetableModule">
+    <!-- Intake Selection -->
+    <div class="timetableControls">
+        <h3>Timetable Scheduling</h3>
+        <div class="controlRow">
+            <div class="fieldGroup">
+                <label for="termSelect">Select Intake:</label>
+                <select id="termSelect" class="formControl">
+                    <option value="">-- Choose an Intake --</option>
+                    {% for t in terms %}
+                        <option value="{{ t.term_id }}" 
+                            data-start="{{ t.start_date|date:'Y-m-d' }}" 
+                            data-end="{{ t.end_date|date:'Y-m-d' }}">
+                            {{ t.intake_code }} — Sem {{ t.current_semester }} ({{ t.course.course_name }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="fieldGroup">
+                <label for="weekPicker">Week Starting:</label>
+                <input type="date" id="weekPicker" class="formControl">
+            </div>
+        </div>
+        
+        <div class="actionButtons">
+            <button id="btnLoadWeek" class="btn btnPrimary" disabled>Load Week</button>
+            <button id="btnGenerate" class="btn btnSuccess" disabled>Generate Timetable</button>
+            <button id="btnSavePref" class="btn btnInfo" disabled>Save as Preference</button>
+            <button id="btnReplicate" class="btn btnWarning" disabled>Replicate Preference</button>
+        </div>
+    </div>
+
+    <!-- Week Info Bar -->
+    <div class="weekInfoBar" id="weekInfoBar" style="display:none;">
+        <span id="weekLabel"></span>
+        <span id="termInfo"></span>
+        <span id="cutoffInfo"></span>
+    </div>
+
+    <!-- Timetable Grid -->
+    <div class="timetableGrid" id="timetableGrid">
+        <p class="placeholder">Select an intake and load a week to view the timetable.</p>
+    </div>
+
+    <!-- Skipped Dates Management -->
+    <div class="skippedDatesSection">
+        <h4>Skipped Dates (Public Holidays)</h4>
+        <div class="controlRow">
+            <div class="fieldGroup">
+                <label for="skipDateInput">Date to Skip:</label>
+                <input type="date" id="skipDateInput" class="formControl">
+            </div>
+            <div class="fieldGroup">
+                <label for="skipReasonInput">Reason:</label>
+                <input type="text" id="skipReasonInput" class="formControl" value="Public Holiday" placeholder="Reason">
+            </div>
+            <button id="btnAddSkip" class="btn btnDanger" disabled>Add Skipped Date</button>
+        </div>
+        <div id="skippedDatesList"></div>
+    </div>
+
+    <!-- Missing Classes -->
+    <div class="missingClassesSection" id="missingSection" style="display: none;">
+        <h4>Missing / Cancelled Classes</h4>
+        <div id="missingClassesList"></div>
+    </div>
+</div>
+
+<!-- Notification toast -->
+<div id="timetableToast" class="timetableToast" style="display:none;"></div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/timetable.js' %}"></script>
+{% endblock %}

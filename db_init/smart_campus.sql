@@ -3,11 +3,10 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Mar 07, 2026 at 02:01 PM
+-- Generation Time: Mar 13, 2026 at 03:21 AM
 -- Server version: 8.4.8
 -- PHP Version: 8.3.30
 
-SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -23,11 +22,6 @@ SET time_zone = "+00:00";
 --
 
 --
--- Truncate table before insert `academic_rules`
---
-
-TRUNCATE TABLE `academic_rules`;
---
 -- Dumping data for table `academic_rules`
 --
 
@@ -41,11 +35,6 @@ INSERT INTO `academic_rules` (`id`, `rule_name`, `value_days`, `description`) VA
 (7, 'Mid-Semester Break', 7, '1 week of mid-semester break');
 
 --
--- Truncate table before insert `academic_term`
---
-
-TRUNCATE TABLE `academic_term`;
---
 -- Dumping data for table `academic_term`
 --
 
@@ -56,22 +45,12 @@ INSERT INTO `academic_term` (`term_id`, `course_id`, `intake_code`, `current_sem
 (4, 3, 'B-CS-CYB-202601', 1, 1, '2026-01-05', '2026-05-11');
 
 --
--- Truncate table before insert `admin_profiles`
---
-
-TRUNCATE TABLE `admin_profiles`;
---
 -- Dumping data for table `admin_profiles`
 --
 
 INSERT INTO `admin_profiles` (`id`, `user_id`, `ad_id`) VALUES
 (1, 1, 'AD262069');
 
---
--- Truncate table before insert `auth_group`
---
-
-TRUNCATE TABLE `auth_group`;
 --
 -- Dumping data for table `auth_group`
 --
@@ -81,16 +60,6 @@ INSERT INTO `auth_group` (`id`, `name`) VALUES
 (2, 'lecturer'),
 (3, 'student');
 
---
--- Truncate table before insert `auth_group_permissions`
---
-
-TRUNCATE TABLE `auth_group_permissions`;
---
--- Truncate table before insert `auth_permission`
---
-
-TRUNCATE TABLE `auth_permission`;
 --
 -- Dumping data for table `auth_permission`
 --
@@ -199,27 +168,37 @@ INSERT INTO `auth_permission` (`id`, `name`, `content_type_id`, `codename`) VALU
 (101, 'Can add faq', 26, 'add_faq'),
 (102, 'Can change faq', 26, 'change_faq'),
 (103, 'Can delete faq', 26, 'delete_faq'),
-(104, 'Can view faq', 26, 'view_faq');
+(104, 'Can view faq', 26, 'view_faq'),
+(105, 'Can add faq reaction', 27, 'add_faqreaction'),
+(106, 'Can change faq reaction', 27, 'change_faqreaction'),
+(107, 'Can delete faq reaction', 27, 'delete_faqreaction'),
+(108, 'Can view faq reaction', 27, 'view_faqreaction'),
+(109, 'Can add canned response', 29, 'add_cannedresponse'),
+(110, 'Can change canned response', 29, 'change_cannedresponse'),
+(111, 'Can delete canned response', 29, 'delete_cannedresponse'),
+(112, 'Can view canned response', 29, 'view_cannedresponse'),
+(113, 'Can add booking', 28, 'add_booking'),
+(114, 'Can change booking', 28, 'change_booking'),
+(115, 'Can delete booking', 28, 'delete_booking'),
+(116, 'Can view booking', 28, 'view_booking'),
+(117, 'Can add ticket message', 31, 'add_ticketmessage'),
+(118, 'Can change ticket message', 31, 'change_ticketmessage'),
+(119, 'Can delete ticket message', 31, 'delete_ticketmessage'),
+(120, 'Can view ticket message', 31, 'view_ticketmessage'),
+(121, 'Can add support ticket', 30, 'add_supportticket'),
+(122, 'Can change support ticket', 30, 'change_supportticket'),
+(123, 'Can delete support ticket', 30, 'delete_supportticket'),
+(124, 'Can view support ticket', 30, 'view_supportticket');
 
---
--- Truncate table before insert `auth_user`
---
-
-TRUNCATE TABLE `auth_user`;
 --
 -- Dumping data for table `auth_user`
 --
 
 INSERT INTO `auth_user` (`id`, `email`, `username`, `password`, `first_name`, `last_name`, `is_active`, `is_staff`, `is_superuser`, `last_login`, `date_joined`) VALUES
 (1, 'limjunhong1015@gmail.com', 'limjunhong1015@gmail.com', 'pbkdf2_sha256$1200000$ZgIbRoHmmBmVAfw6p3BEeB$eMGNFxeWZUz/MiOV7d1WeATz4q/Rrq5gaS2lIF80dUA=', 'Lim', 'Jun Hong', 1, 1, 1, '2026-03-05 13:36:57.869553', '2026-02-26 11:30:16.196969'),
-(18, 'mokyusheng@gmail.com', 'mokyusheng@gmail.com', 'pbkdf2_sha256$1200000$Jys4B4WnS6Y77PYnj420fW$tPY6U2PF03NNZQNsw5ckwdeFj+qfVYvLVOjHsmtcnFA=', 'Mok', 'Yu Sheng', 1, 1, 0, '2026-03-04 12:15:25.611275', '2026-03-01 17:06:16.433234'),
+(18, 'mokyusheng@gmail.com', 'mokyusheng@gmail.com', 'pbkdf2_sha256$1200000$Jys4B4WnS6Y77PYnj420fW$tPY6U2PF03NNZQNsw5ckwdeFj+qfVYvLVOjHsmtcnFA=', 'Mok', 'Yu Sheng', 1, 1, 0, '2026-03-11 12:55:50.146356', '2026-03-01 17:06:16.433234'),
 (19, 'ljack7599@gmail.com', 'ljack7599@gmail.com', 'pbkdf2_sha256$1200000$FHRt0htUwRbwCLQ4fT38uT$QFjmLyJ4q18hLmP7VLchgNwmL57O+yiu+k7H75gRdWE=', 'Lee', 'Zhen Sheng', 1, 0, 0, '2026-03-04 06:17:45.268093', '2026-03-01 17:13:09.153354');
 
---
--- Truncate table before insert `auth_user_groups`
---
-
-TRUNCATE TABLE `auth_user_groups`;
 --
 -- Dumping data for table `auth_user_groups`
 --
@@ -230,50 +209,35 @@ INSERT INTO `auth_user_groups` (`id`, `user_id`, `group_id`) VALUES
 (50, 19, 3);
 
 --
--- Truncate table before insert `auth_user_user_permissions`
+-- Dumping data for table `campus_attachments`
 --
 
-TRUNCATE TABLE `auth_user_user_permissions`;
+INSERT INTO `campus_attachments` (`id`, `object_id`, `file`, `uploaded_at`, `content_type_id`) VALUES
+(1, 5, 'attachments/faq_5_688b3fae.jpeg', '2026-03-08 06:18:32.637793', 26),
+(2, 14, 'attachments/faq_14_c32a7302.png', '2026-03-09 14:48:57.812824', 26),
+(3, 1, 'attachments/supportticket_1_20260312093214.jpeg', '2026-03-12 09:32:14.444013', 30),
+(4, 2, 'attachments/supportticket_2_20260312155655.jpeg', '2026-03-12 15:56:55.380711', 30);
+
 --
--- Truncate table before insert `campus_attachments`
+-- Dumping data for table `campus_faq`
 --
 
-TRUNCATE TABLE `campus_attachments`;
+INSERT INTO `campus_faq` (`id`, `title`, `content`, `category`, `published_time`, `last_edit`, `is_ad_visible`, `is_lc_visible`, `is_tp_visible`, `view_count`, `n_likes`, `n_dislikes`, `slug`, `author_id`, `is_visitor_visible`) VALUES
+(2, 'a', '<p>a</p>', 'GEN', '2026-03-08 05:29:50.563449', '2026-03-08 13:59:59.756067', 0, 0, 0, 1, 0, 0, 'a', 1, 0),
+(10, 'Studnet View Only', '<p>Student View</p>', 'ATT', '2026-03-08 14:40:44.998226', '2026-03-08 14:40:44.998254', 0, 0, 1, 0, 0, 0, 'studnet-view-only', 1, 0),
+(11, 'Admin View Only', '<p>Admin View Only\r\nEdited\r\n</p>', 'ANN', '2026-03-08 14:42:11.000142', '2026-03-08 17:00:07.546734', 1, 0, 0, 4, 0, 0, 'admin-view-only', 1, 0),
+(12, 'Lecturer View only', '<p>Lecturer view only</p>', 'GEN', '2026-03-08 14:42:31.296623', '2026-03-09 14:45:43.546158', 0, 1, 0, 3, 0, 0, 'lecturer-view-only', 1, 0),
+(13, 'Visitor View Only', '<p>Welcome Visitor </p>', 'BOK', '2026-03-08 14:42:55.721731', '2026-03-11 02:07:49.324706', 0, 0, 0, 15, 0, 0, 'visitor-view-only', 1, 1),
+(14, 'A long time ago', '<p><img src=\"/media/attachments/faq_14_c32a7302.png\"/></p><p>Testing </p><p>wwwwwwwwq\r\nass</p>', 'MAP', '2026-03-09 14:48:57.758969', '2026-03-09 14:48:57.822691', 0, 1, 1, 0, 0, 0, 'a-long-time-ago', 1, 0);
+
 --
--- Truncate table before insert `campus_attendancemark`
+-- Dumping data for table `campus_supportticket`
 --
 
-TRUNCATE TABLE `campus_attendancemark`;
---
--- Truncate table before insert `campus_attendancesession`
---
+INSERT INTO `campus_supportticket` (`id`, `title`, `category`, `description`, `status`, `created_at`, `updated_at`, `assigned_to_id`, `created_by_id`) VALUES
+(1, 'Testing feedback submission', 'ANN', '<p>aThis is description</p><ol><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>sdqwa</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span><span class=\"ql-size-large\">List 2</span></li></ol><p><img src=\"/media/attachments/supportticket_1_20260312093214.jpeg\"/></p><p><br/></p>', 'open', '2026-03-12 09:32:13.610092', '2026-03-12 09:32:13.610121', NULL, 18),
+(2, 'More style', 'MAP', '<p><span class=\"ql-size-small\">Testing</span></p><p>Testing</p><p><span class=\"ql-size-large\">Testing</span></p><p><span class=\"ql-size-huge\">Testing</span></p><p><strong>Testing</strong></p><p><em>Testing</em></p><p><u>Testing</u></p><p>Testing</p><p><a href=\"https://heroicons.com/outline\" rel=\"noopener noreferrer\" target=\"_blank\">Testing</a></p><p><img src=\"/media/attachments/supportticket_2_20260312155655.jpeg\"/></p>', 'open', '2026-03-12 15:56:54.888813', '2026-03-12 15:56:54.888856', NULL, 18);
 
-TRUNCATE TABLE `campus_attendancesession`;
---
--- Truncate table before insert `campus_faq`
---
-
-TRUNCATE TABLE `campus_faq`;
---
--- Truncate table before insert `campus_mapedge`
---
-
-TRUNCATE TABLE `campus_mapedge`;
---
--- Truncate table before insert `campus_mapnode`
---
-
-TRUNCATE TABLE `campus_mapnode`;
---
--- Truncate table before insert `class_session`
---
-
-TRUNCATE TABLE `class_session`;
---
--- Truncate table before insert `course`
---
-
-TRUNCATE TABLE `course`;
 --
 -- Dumping data for table `course`
 --
@@ -285,27 +249,12 @@ INSERT INTO `course` (`course_id`, `course_code`, `course_name`, `total_credits_
 (4, 'D-ICT-SE', 'Diploma in Information & Communication Technology with a specialism in Software Engineering', 50, 5, 14, 'Diploma', 2, 'Software Engineering', 1, 1);
 
 --
--- Truncate table before insert `course_enrollment`
---
-
-TRUNCATE TABLE `course_enrollment`;
---
 -- Dumping data for table `course_enrollment`
 --
 
 INSERT INTO `course_enrollment` (`id`, `student_id`, `term_id`, `enrollment_status`) VALUES
 (5, 19, 2, 'Active');
 
---
--- Truncate table before insert `course_subject`
---
-
-TRUNCATE TABLE `course_subject`;
---
--- Truncate table before insert `departments`
---
-
-TRUNCATE TABLE `departments`;
 --
 -- Dumping data for table `departments`
 --
@@ -314,16 +263,6 @@ INSERT INTO `departments` (`dept_id`, `dept_name`, `dept_code`, `head_id`) VALUE
 (1, 'Information & Communication Technology', 'ICT', NULL),
 (2, 'Computer Science', 'CS', NULL);
 
---
--- Truncate table before insert `django_admin_log`
---
-
-TRUNCATE TABLE `django_admin_log`;
---
--- Truncate table before insert `django_content_type`
---
-
-TRUNCATE TABLE `django_content_type`;
 --
 -- Dumping data for table `django_content_type`
 --
@@ -339,6 +278,8 @@ INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
 (25, 'campus', 'attachments'),
 (23, 'campus', 'attendancemark'),
 (24, 'campus', 'attendancesession'),
+(28, 'campus', 'booking'),
+(29, 'campus', 'cannedresponse'),
 (9, 'campus', 'class_session'),
 (10, 'campus', 'course'),
 (11, 'campus', 'course_enrollment'),
@@ -346,6 +287,7 @@ INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
 (13, 'campus', 'departments'),
 (14, 'campus', 'facilities'),
 (26, 'campus', 'faq'),
+(27, 'campus', 'faqreaction'),
 (15, 'campus', 'lecturer_profiles'),
 (16, 'campus', 'lecturer_subjects'),
 (17, 'campus', 'mapedge'),
@@ -353,14 +295,11 @@ INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
 (19, 'campus', 'session'),
 (22, 'campus', 'student_profiles'),
 (20, 'campus', 'subject'),
+(30, 'campus', 'supportticket'),
+(31, 'campus', 'ticketmessage'),
 (5, 'contenttypes', 'contenttype'),
 (6, 'sessions', 'session');
 
---
--- Truncate table before insert `django_migrations`
---
-
-TRUNCATE TABLE `django_migrations`;
 --
 -- Dumping data for table `django_migrations`
 --
@@ -384,18 +323,21 @@ INSERT INTO `django_migrations` (`id`, `app`, `name`, `applied`) VALUES
 (16, 'auth', '0011_update_proxy_permissions', '2026-02-03 16:04:15.397136'),
 (17, 'auth', '0012_alter_user_first_name_max_length', '2026-02-03 16:04:15.419194'),
 (18, 'sessions', '0001_initial', '2026-02-03 16:04:15.443334'),
-(19, 'campus', '0001_initial', '2026-02-26 11:04:42.287495'),
 (20, 'campus', '0002_mapnode_mapedge', '2026-02-26 11:04:42.366115'),
 (21, 'campus', '0003_lecturer_profiles_lc_id_admin_profiles_and_more', '2026-02-26 11:05:46.432978'),
 (22, 'campus', '0004_departments_head_alter_admin_profiles_user_and_more', '2026-03-07 13:11:04.731816'),
 (23, 'campus', '0005_attendance_models', '2026-03-07 13:12:18.910810'),
-(24, 'campus', '0006_attachments_faq', '2026-03-07 13:12:23.001625');
+(24, 'campus', '0006_attachments_faq', '2026-03-07 13:12:23.001625'),
+(25, 'campus', '0007_alter_faq_author', '2026-03-08 06:17:09.731131'),
+(26, 'campus', '0002_auto_20260308_1731', '2026-03-08 09:32:14.277517'),
+(38, 'campus', '0001_initial', '2026-03-11 15:41:34.693216'),
+(39, 'campus', '0002_faq_is_visitor_visible', '2026-03-11 15:42:16.004637'),
+(40, 'campus', '0003_faqreaction', '2026-03-11 15:42:16.010362'),
+(41, 'campus', '0004_cannedresponse_booking_supportticket_ticketmessage', '2026-03-11 15:42:20.223088'),
+(42, 'campus', '0005_alter_supportticket_category', '2026-03-11 16:49:16.688842'),
+(43, 'campus', '0006_alter_supportticket_category', '2026-03-12 07:48:30.017382'),
+(44, 'campus', '0006_alter_booking_status', '2026-03-12 09:18:25.202101');
 
---
--- Truncate table before insert `django_session`
---
-
-TRUNCATE TABLE `django_session`;
 --
 -- Dumping data for table `django_session`
 --
@@ -408,23 +350,14 @@ INSERT INTO `django_session` (`session_key`, `session_data`, `expire_date`) VALU
 ('a2k6qlax0csynlzwzcu9jqhzhmc53lbb', '.eJxVjEEOwiAQRe_C2hCgjGKX7j0DGZjBogZMaRON8e5a04Vu_3v_PYXHeRr83Hj0mUQvtNj8bgHjhcsC6IzlVGWsZRpzkIsiV9rksRJfD6v7FxiwDUt2q6BTjCkimI4_R-OSJWsTGu3AdojgKNgQolN7grRzgQDIaJs06W-0cWu5Fs_3Wx4folevN6fNP7Y:1vwLiF:WjpPOmMMVTjwIHxrvl4x8ML63EwfwoBvmxHi4yN_t7k', '2026-03-14 14:54:35.917410'),
 ('bvril7urkm3fs1vr1ohim2iowpecay37', '.eJxVjMsOwiAQRf-FtSHlMYou3fcbyMAMUm1KAu3K-O9K7Kbbc869b9F45rgy-Vpm9hOJmzDiJDxua_Zb4_pn6sgCxhcvXdATl0eRsSxrnYLsidxtk2Mhnu97ezjI2HK_PQ9gBsYUEbTh31C7ZMnahFo5sAYRHAUbQnTDlSBdXCAA0somRYrE5wt6BUAg:1vvaIj:N9VnOHG4I3RNEg-joIaMhr9LymjuIPKehkJePJB044c', '2026-03-12 12:17:05.763956'),
 ('j7efu252qdp0l2ooz7ifkau2dp8axwh9', '.eJxVjEEOwiAQRe_C2hCgjGKX7j0DGZjBogZMaRON8e5a04Vu_3v_PYXHeRr83Hj0mUQvtNj8bgHjhcsC6IzlVGWsZRpzkIsiV9rksRJfD6v7FxiwDUt2q6BTjCkimI4_R-OSJWsTGu3AdojgKNgQolN7grRzgQDIaJs06W-0cWu5Fs_3Wx4folevN6fNP7Y:1vxyAZ:mbgTXi5uLlHq3o0TLJXGw7loo3XQxGwD0CskpnYCuwo', '2026-03-19 02:10:31.254448'),
-('l6xr0mahbpsck5vdv419ipsslrde5yf2', '.eJxVjEEOwiAQRe_C2hCgQ8Uu3XsGMjCDRQ2Y0iYa4921xoVu_3v_PYTHZR790njymcQgtNj8bgHjmcsK6ITlWGWsZZ5ykKsiv7TJQyW-7L_uX2DENq7ZXtlOMaaI1nT8PhqXgAASGu0sdIjWUYAQolM7smnrAllLRkPSpD_Rxq3lWjzfrnm6i6FX4JR6vgDoF0C4:1vy8sr:56MMAflO6K5RC7IUsqJineqsao8pmmBk4EwdOpLITkw', '2026-03-12 13:36:57.902859'),
 ('q98838rw2u1sncx32zlnfdkd9d6kvd4v', 'e30:1vvE04:C7wL7f3Ztf990qKraPev_7PW62KL4Bhv1PKSHvQ7zWU', '2026-03-11 12:28:20.932855'),
 ('qpa8mjoflkbl7nmrtu0rrcdf18l095ez', '.eJxVjEEOwiAQRe_C2hCgjGKX7j0DGZjBogZMaRON8e5a04Vu_3v_PYXHeRr83Hj0mUQvtNj8bgHjhcsC6IzlVGWsZRpzkIsiV9rksRJfD6v7FxiwDUt2q6BTjCkimI4_R-OSJWsTGu3AdojgKNgQolN7grRzgQDIaJs06W-0cWu5Fs_3Wx4folevN6fNP7Y:1vy0Ru:RPjpdWnOpzKFbrcGEIYSCCqEwZeJ0utF9GNkyPh_e2o', '2026-03-19 04:36:34.229452'),
+('rr6rhfs497rgpd10o40o33h05wyyv1fw', '.eJxVjE0OwiAYBe_C2pBSoIUu3XsG8v2gRQ00pU00xrtrky50-2bevESAdRnDWuMcEotBKCcOvyMC3WLeCF8hX4qkkpc5odwUudMqT4Xj_bi7f4ER6vh9W-oQPWpyyrIH8r32DrADsK1WrEmjs-gVRq25jcp40_SKyJrOEPN5i9ZYayo5xMeU5qcYmvcHyaY_og:1w0ASl:_UOCnOfaL8zzRnRp-fVqE9T0BNAbCRungcsZVnEpWkk', '2026-03-25 03:42:23.015135'),
 ('sldjyl7w25dl7rbiy8mxg214cyia0t1t', '.eJxVjE0OwiAYBe_C2pBSoIUu3XsG8v2gRQ00pU00xrtrky50-2bevESAdRnDWuMcEotBKCcOvyMC3WLeCF8hX4qkkpc5odwUudMqT4Xj_bi7f4ER6vh9W-oQPWpyyrIH8r32DrADsK1WrEmjs-gVRq25jcp40_SKyJrOEPN5i9ZYayo5xMeU5qcYmvcHyaY_og:1vxMfG:T_c_7_lQP1y5PD4stJC611vFF94j2-W4-tKNMwIs9vY', '2026-03-17 10:07:42.495564'),
+('ssens9l4zzk3q41xouxkt8glc8hxel16', '.eJxVjMsOwiAUBf-FtSFQHgWX7v0Gch9oUUNNaRON8d-1SRe6PTNnXiLBMg9paXlKhcVe6CB2vyMCXXNdCV-gnkdJY52ngnJV5EabPI6cb4fN_QsM0Ibv25FHjGgoaMcRKPYmBkAP4Dqj2ZDB4DBqzMZwl7WNVvWayFlvifm0RlturYw15ce9TE-x98oGpd4fCZtApA:1w0J6M:RAp4Hr86Lpdi_pj4G4p5yyrizQkV2tr_P2xbsNMQw7k', '2026-03-18 12:55:50.159507'),
 ('xh29i1so6px3lu3ifgaoh09j84bya624', '.eJxVjMEOwiAQBf-FsyFLSyn06N1vICxsBTVgSptojP-uJD3o9c28eTHrtjXardJiU2ATE4Ydfkd0_kq5kXBx-Vy4L3ldEvKm8J1WfiqBbsfd_QtEV-P37aEH3WtQ0qCkmbQfAwnR664jNYAxgxylUFIHh0QjUmcABj9LUKg8YYtWqjWVbOlxT8uTTfD-AI6iPu4:1vxL5Q:Jc2NTIe0aSBtlMi2PJEyPkFufOZaPeFto-p5ViB8Jm4', '2026-03-17 08:26:36.338148'),
 ('z1ah4u2vmgfr6mxw6xrwr208ze73gn5c', '.eJxVjE0OwiAYBe_C2pBSoIUu3XsG8v2gRQ00pU00xrtrky50-2bevESAdRnDWuMcEotBKCcOvyMC3WLeCF8hX4qkkpc5odwUudMqT4Xj_bi7f4ER6vh9W-oQPWpyyrIH8r32DrADsK1WrEmjs-gVRq25jcp40_SKyJrOEPN5i9ZYayo5xMeU5qcYmvcHyaY_og:1vxRIa:vrqOpMF8VG2qqBr2IycN6HZ-xqyp34nvedp8ZzY1-zw', '2026-03-17 15:04:36.949528');
 
---
--- Truncate table before insert `facilities`
---
-
-TRUNCATE TABLE `facilities`;
---
--- Truncate table before insert `lecturer_profiles`
---
-
-TRUNCATE TABLE `lecturer_profiles`;
 --
 -- Dumping data for table `lecturer_profiles`
 --
@@ -433,32 +366,11 @@ INSERT INTO `lecturer_profiles` (`id`, `user_id`, `lc_id`, `dept_id`, `specializ
 (14, 18, 'LC262996', NULL, NULL, 0);
 
 --
--- Truncate table before insert `lecturer_subjects`
---
-
-TRUNCATE TABLE `lecturer_subjects`;
---
--- Truncate table before insert `session`
---
-
-TRUNCATE TABLE `session`;
---
--- Truncate table before insert `student_profiles`
---
-
-TRUNCATE TABLE `student_profiles`;
---
 -- Dumping data for table `student_profiles`
 --
 
 INSERT INTO `student_profiles` (`id`, `user_id`, `tp_id`) VALUES
 (5, 19, 'TP262993');
-
---
--- Truncate table before insert `subject`
---
-
-TRUNCATE TABLE `subject`;SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
