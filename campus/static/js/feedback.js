@@ -1,6 +1,3 @@
-let isSubmitting = false;
-let initialData = {};
-
 document.addEventListener("DOMContentLoaded", async function() {
     const quill = new Quill('#editor', {
         theme: 'snow',
@@ -263,7 +260,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 card.className = 'fileCard';
                 card.innerHTML = `
                     <span class="fileIcon">
-                        <img src="/media/file_icons/${extension}.svg" onerror="this.src='/media/file_icons/GENERIC.svg'">
+                        <img src="/media/file_icons/${extension}.svg" onerror="this.src='/media/file_icons/FILE.svg'">
                     </span>
                     <div class="fileDetailWrapper">
                         <p class="fileName">${file.name}</p>

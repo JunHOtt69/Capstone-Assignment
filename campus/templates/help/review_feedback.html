@@ -1,16 +1,161 @@
 {% extends "base.html" %} 
 {% load static %}  
-{% block title %} Help {% endblock %}
+{% block title %} {{ ticket.title }} {% endblock %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/faq.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.bubble.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/review_fb.css' %}">
 {% endblock %}
 
 {% block content %}
-    <h2>Feedback Interface</h2>
-    <p>User submit feedback ticket here.</p>
-    <p>under construction...</p>
+    <div class="pageTitleWrapper">
+        <p>Ticket Details T{{ ticket.id }}</p>
+        <div class="titleCat">
+            <h2>{{ ticket.title }}</h2>
+            <span class="cat">{{ ticket.get_category_display }}</span>
+            <span class="stat {{ ticket.status }}">{{ ticket.get_status_display }}</span>
+        </div>
+    </div>
+    <div class="reviewPage">
+        <section class="ticketDetails">
+            <div class="userTimeWrapper">
+                <div class="profileIcon">
+                    <?xml version="1.0" ?>
+                    <svg viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <desc/>
+                        <g>
+                            <circle cx="16" cy="16"  r="15"  />
+                            <path d="M26,27L26,27   c0-5.523-4.477-10-10-10h0c-5.523,0-10,4.477-10,10v0"/>
+                            <circle cx="16" cy="11"  r="6"/>
+                        </g>
+                    </svg>
+                </div>
+                <span class="user">{{ ticket.creator_name }}</span>
+                <span class="time">{{ ticket.created_at }}</span>
+            </div>
+            <div class="descContainer">
+                <div class="desc">{{ ticket.description|safe }}</div>
+                {% if ticket_attachments %}
+                    <hr>
+                    <p class="attTitle">Attachments:</p>
+                    <div class="attList">
+                        {% for att in ticket_attachments %}
+                            <a href="{{ att.file.url }}" download="{{ att.filename }}" class="fileCard">
+                                <span class="fileIcon">
+                                    {% if att.is_supported_icon %}
+                                        <img src="/media/file_icons/{{ att.extension }}.svg" 
+                                            onerror="this.src='/media/file_icons/FILE.svg'">
+                                    {% else %}
+                                        <img src="/media/file_icons/FILE.svg">
+                                    {% endif %}
+                                </span>
+                                <div class="fileDetailWrapper">
+                                    <p class="fileName">{{ att.filename }}</p>
+                                    <p class="fileSize">{{ att.filesize }}</p>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+        </section>
+        <section class="chatContainer">
+            <p class="configTitle">Activity</p>
+            <div class="commentContainer">
+                <div class="messageWrapper">
+                    <div class="comment">
+                        <div class="userTimeWrapper">
+                            <div class="profileIcon">
+                                <?xml version="1.0" ?>
+                                <svg viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                    <desc/>
+                                    <g>
+                                        <circle cx="16" cy="16"  r="15"  />
+                                        <path d="M26,27L26,27   c0-5.523-4.477-10-10-10h0c-5.523,0-10,4.477-10,10v0"/>
+                                        <circle cx="16" cy="11"  r="6"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <span class="user">Sender</span>
+                            <span class="time">Timestamp</span>
+                        </div>
+                        <span class="commentContent">
+                            <p>Content</p>
+                            <div class="attList">
+                                <a href="{{ att.file.url }}" target="_blank" class="fileCard">
+                                    <span class="fileIcon">
+                                        <img src="/media/file_icons/FILE.svg">
+                                    </span>
+                                    <div class="fileDetailWrapper">
+                                        <p class="fileName">filename</p>
+                                        <p class="fileSize">filesize</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+                {% if conversation %}
+                    <div class="messageWrapper">
+                        {% for message in conversation %}
+                            <div class="comment">
+                                <div class="userTimeWrapper">
+                                    <div class="profileIcon">
+                                        <?xml version="1.0" ?>
+                                        <svg viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                            <desc/>
+                                            <g>
+                                                <circle cx="16" cy="16"  r="15"  />
+                                                <path d="M26,27L26,27   c0-5.523-4.477-10-10-10h0c-5.523,0-10,4.477-10,10v0"/>
+                                                <circle cx="16" cy="11"  r="6"/>
+                                            </g>
+                                        </svg>
+                                    </div>
+                                    <span class="user">{{ message.sender }}</span>
+                                    <span class="time">{{ message.timestamp }}</span>
+                                </div>
+                                <span class="commentContent">
+                                    <p>{{ message.content }}</p>
+                                </span>
+                                {% if message.all_attachments.all %}
+                                    <div class="attList">
+                                        {% for att in message.all_attachments.all %}
+                                            <a href="{{ att.file.url }}" target="_blank" class="fileCard">
+                                                <span class="fileIcon">
+                                                    {% if att.is_supported_icon %}
+                                                        <img src="/media/file_icons/{{ att.extension }}.svg" 
+                                                            onerror="this.src='/media/file_icons/FILE.svg'">
+                                                    {% else %}
+                                                        <img src="/media/file_icons/FILE.svg">
+                                                    {% endif %}
+                                                </span>
+                                                <div class="fileDetailWrapper">
+                                                    <p class="fileName">{{ att.filename }}</p>
+                                                    <p class="fileSize">{{ att.filesize }}</p>
+                                                </div>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty">
+                        No comment.
+                    </p>
+                {% endif %}
+            </div>
+            <div id="commentEditor"></div>
+        </section>
+    </div>
 {% endblock %}
 
 {% block extra_scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="{% static 'js/review_fb.js' %}"></script>
+{% endblock %} 
+
+{% block extra_template %}
 {% endblock %} 
