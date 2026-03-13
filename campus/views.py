@@ -1031,20 +1031,15 @@ def review_feedback(request, ticket_id):
 
     return render(request, "help/review_feedback.html", context)
 
-def send_ticket_update_email(recipient, ticket):
+def send_ticket_update_email(recipient, ticket, context, template):
     subject = f"Update on your Ticket: {ticket.title}"
-    from_email = None
+    from_email = settings.DEFAULT_FROM_EMAIL
     
     ticket_url = f"http://localhost:8000/support/tickets/{ticket.id}/"
 
-    context = {
-        "first_name": recipient.first_name or recipient.username,
-        "ticket_title": ticket.title,
-        "ticketId": ticket.id,
-        "ticket_URL": ticket_url,
-    }
+    context['ticket_URL'] = ticket_url
 
-    html_content = render_to_string("emails/ticket_update.html", context)
+    html_content = render_to_string(f"emails/{template}", context)
     text_content = strip_tags(html_content) 
 
     msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
@@ -1078,10 +1073,28 @@ def post_reply_ajax(request, ticket_id):
             else:
                 recipient = ticket.assigned_to
 
-        if recipient and recipient.email:
-            try:
-                send_ticket_update_email(recipient, ticket)
-            except Exception as e:
+        
+        try:
+            if is_admin:
+                template = 'ticket_update_admin.html'
+                full_name = f"{recipient.first_name} {recipient.last_name}".strip()
+                context = {
+                    "sender_name": full_name or recipient.username,
+                    "ticket_title": ticket.title,
+                    "ticketId": ticket.id,
+                }
+            else: 
+                template = 'ticket_update.html'
+                context = {
+                    "first_name": recipient.first_name or recipient.username,
+                    "ticket_title": ticket.title,
+                    "ticketId": ticket.id,
+                }
+
+            if recipient and recipient.email:
+                send_ticket_update_email(recipient, ticket, context, template)
+
+        except Exception as e:
                 print(f"SMTP Error: {e}")
 
         for f in files:

@@ -72,10 +72,6 @@
                     <div class="messageWrapper">
                         {% if grouped_messages %}
                             {% for cluster in grouped_messages %}
-                                {% comment %} <span class="chatTimeStamp">
-                                    {{ cluster.messages.0.sent_at|smart_date }}
-                                </span> {% endcomment %}
-
                                 {% include "partials/messages.html" %}
                             {% endfor %}
                         {% else %}
