@@ -6,10 +6,14 @@ register = template.Library()
 
 @register.filter
 def smart_date(value):
-    now = timezone.now().date()
-    if value.date() == now:
+    now = timezone.now()
+    diff = now - value
+    if diff < timedelta(days=1) and value.date() == now.date():
+        hours = diff.seconds // 3600
+        return f"{hours} hours ago" if hours > 0 else "Just now"
+    elif value.date() == now.date():
         return "Today"
-    elif value.date() == now - timedelta(days=1):
+    elif value.date() == (now - timedelta(days=1)).date():
         return "Yesterday"
     else:
         return value.strftime("%d %b %Y")

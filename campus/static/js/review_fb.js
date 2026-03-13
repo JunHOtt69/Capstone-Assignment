@@ -80,6 +80,12 @@ document.addEventListener("DOMContentLoaded", async function() {
         quill.setContents([]);
         const attComList = document.querySelector('.attComList'); 
         if (attComList) attComList.innerHTML = '';
+        masterFileList = [];
+        
+        const fileInput = document.querySelector('#attachmentsField'); 
+        if (fileInput) {
+            fileInput.value = ''; 
+        }
 
         const commentContainer = document.querySelector('.commentContainer');
         commentContainer.scrollTo({
@@ -111,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     ['dragenter', 'dragover'].forEach(eventName => {
         chatContainer.addEventListener(eventName, () => {
-            chatContainer.classList.add('drag-active');
+            chatContainer.classList.toggle('drag-active', true);
         }, false);
     });
 

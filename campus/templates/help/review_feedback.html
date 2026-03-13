@@ -61,44 +61,58 @@
             </div>
             
         </section>
-        <section class="chatContainer">
-            <p class="configTitle">Activity</p>
-            <div class="commentContainer">
-                <div class="messageWrapper">
-                    {% if grouped_messages %}
-                        {% for cluster in grouped_messages %}
-                            <span class="chatTimeStamp">
-                                {{ cluster.messages.0.sent_at|smart_date }}
-                            </span>
+        <section class="rightCt">
+            <div class="requestActions">
+                <button>Request Escalation</button>
+                <button>Request to Close </button>
+            </div>
+            <div class="chatContainer">
+                <p class="configTitle">Activity</p>
+                <div class="commentContainer">
+                    <div class="messageWrapper">
+                        {% if grouped_messages %}
+                            {% for cluster in grouped_messages %}
+                                <span class="chatTimeStamp">
+                                    {{ cluster.messages.0.sent_at|smart_date }}
+                                </span>
 
-                            {% include "partials/messages.html" %}
-                        {% endfor %}
-                    {% else %}
-                        <p class="chatTimeStamp empty">No comment.</p>
+                                {% include "partials/messages.html" %}
+                            {% endfor %}
+                        {% else %}
+                            <p class="chatTimeStamp empty">No comment.</p>
+                        {% endif %}
+                        {% if ticket.is_inactive %}
+                            <p class="chatTimeStamp empty">This ticket is {{ ticket.get_status_display }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="commentInputWrapper 
+                    {% if ticket.is_inactive %}
+                        disabled
                     {% endif %}
-                </div>
-            </div>
-            <div class="commentInputWrapper">
-                <div id="commentEditor"></div>
+                ">
+                    <div id="commentEditor"></div>
 
-                <input type="file" name="attachments" accept=".pdf, .docx, .xlsx, .png, .jpg, .jpeg, .mp4, .mov, .rar" id="attachmentsField" hidden multiple>
+                    <input type="file" name="attachments" accept=".pdf, .docx, .xlsx, .png, .jpg, .jpeg, .mp4, .mov, .rar" id="attachmentsField" hidden multiple>
 
-                <div class="controlWrapper">
-                    <div class="attComList"></div>
-                    <span class="attachmentIcon">
-                        <svg viewBox="0 0 167 175" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M42.5461 170.512L147.588 69.5704C186.029 26.5124 140.486 -20.1315 99.9501 18.2553L20.2441 88.8194C-16.0413 121.523 14.3942 160.488 54.3819 125.072L123.324 60.1278C139.6 43.6313 120.529 28.0125 104.684 41.8608L38.4036 102.646"/>
-                        </svg>
-                    </span>
-                    <span class="sendIcon">
-                        <svg viewBox="0 0 175 156"  xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.4487 64.6462L5.55422 6.8835L164.939 79.0869L5.55231 148.883L17.4487 93.5276C17.4487 93.5276 45.996 81.4937 55.5116 79.0869C43.6171 74.2733 17.4487 64.6462 17.4487 64.6462Z" />
-                        </svg>
-                    </span>
+                    <div class="controlWrapper">
+                        <div class="attComList"></div>
+                        <span class="attachmentIcon">
+                            <svg viewBox="0 0 167 175" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M42.5461 170.512L147.588 69.5704C186.029 26.5124 140.486 -20.1315 99.9501 18.2553L20.2441 88.8194C-16.0413 121.523 14.3942 160.488 54.3819 125.072L123.324 60.1278C139.6 43.6313 120.529 28.0125 104.684 41.8608L38.4036 102.646"/>
+                            </svg>
+                        </span>
+                        <span class="sendIcon">
+                            <svg viewBox="0 0 175 156"  xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.4487 64.6462L5.55422 6.8835L164.939 79.0869L5.55231 148.883L17.4487 93.5276C17.4487 93.5276 45.996 81.4937 55.5116 79.0869C43.6171 74.2733 17.4487 64.6462 17.4487 64.6462Z" />
+                            </svg>
+                        </span>
+                    </div>
                 </div>
+                <div class="errorMessage"></div>
             </div>
-            <div class="errorMessage"></div>
         </section>
+            
     </div>
 {% endblock %}
 

@@ -9,6 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.encoding import force_bytes
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
+from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.urls import reverse
 #from django.utils.decorators import method_decorator
@@ -1005,14 +1006,12 @@ def review_feedback(request, ticket_id):
             msg = raw_messages[i]
             prev_msg = raw_messages[i-1]
             
-            # Logic: Same sender AND less than 10 mins apart
             time_diff = msg.sent_at - prev_msg.sent_at
             
             if msg.sender == current_cluster['sender'] and time_diff < timedelta(minutes=10):
                 current_cluster['messages'].append(msg)
                 current_cluster['last_sent'] = msg.sent_at
             else:
-                # Close current cluster and start a new one
                 grouped_messages.append(current_cluster)
                 current_cluster = {
                     'sender': msg.sender,
@@ -1032,6 +1031,26 @@ def review_feedback(request, ticket_id):
 
     return render(request, "help/review_feedback.html", context)
 
+def send_ticket_update_email(recipient, ticket):
+    subject = f"Update on your Ticket: {ticket.title}"
+    from_email = None
+    
+    ticket_url = f"http://localhost:8000/support/tickets/{ticket.id}/"
+
+    context = {
+        "first_name": recipient.first_name or recipient.username,
+        "ticket_title": ticket.title,
+        "ticketId": ticket.id,
+        "ticket_URL": ticket_url,
+    }
+
+    html_content = render_to_string("emails/ticket_update.html", context)
+    text_content = strip_tags(html_content) 
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
 @login_required
 def post_reply_ajax(request, ticket_id):
     if request.method == "POST":
@@ -1042,12 +1061,28 @@ def post_reply_ajax(request, ticket_id):
         if (not content or content == "<p><br></p>") and not files:
             return JsonResponse({"status": "error", "message": "Empty content"}, status=400)
 
+        is_admin = request.user.groups.filter(name='admin').exists()
+
         message = TicketMessage.objects.create(
             ticket=ticket,
             sender=request.user,
             content=content,
-            is_admin_reply=request.user.groups.filter(name='admin').exists()
+            is_admin_reply=is_admin
         )
+
+        recipient = None
+        
+        if ticket.assigned_to:
+            if ticket.assigned_to == request.user:
+                recipient = ticket.created_by
+            else:
+                recipient = ticket.assigned_to
+
+        if recipient and recipient.email:
+            try:
+                send_ticket_update_email(recipient, ticket)
+            except Exception as e:
+                print(f"SMTP Error: {e}")
 
         for f in files:
             save_manual_attachment(message, f)
@@ -1359,6 +1394,15 @@ def extract_and_save_images(instance):
         instance.save(update_fields=[field_name])
 
 def save_manual_attachment(instance, file_obj):
+    original_name = file_obj.name
+    _, ext = os.path.splitext(original_name)
+    
+    model_name = instance._meta.model_name
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+    new_filename = f"{model_name}_{instance.id}_{timestamp}{ext}"
+
+    file_obj.name = new_filename
+
     return attachments.objects.create(
         content_type=ContentType.objects.get_for_model(instance),
         object_id=instance.id,
