@@ -450,6 +450,23 @@ class TicketMessage(models.Model):
     
     all_attachments = GenericRelation(attachments)
 
+class TicketActivity(models.Model):
+    ACTION_CHOICES = [
+        ('status_change', 'Status Changed'),
+        ('escalation', 'Ticket Escalated'),
+        ('closure_request', 'Closure Requested'),
+    ]
+
+    ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='activities')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    old_value = models.CharField(max_length=255, null=True, blank=True)
+    new_value = models.CharField(max_length=255, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
 class CannedResponse(models.Model):
     title = models.CharField(max_length=100) # e.g., "General Acknowledgment"
     message = models.TextField()

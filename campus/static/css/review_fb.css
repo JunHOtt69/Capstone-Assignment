@@ -240,6 +240,45 @@ main{
 .requestActions{
     height: 3vw;
     width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1vw;
+}
+
+.requestActions button{
+    outline: none;
+    border: none;
+    padding: 0.2vw 0.5vw;
+    color: rgba(var(--black), 1);
+    background-color: transparent;
+    transition: background-color .2s, border .2s,  color .2s;
+    font-size: var(--xs-fontsize);
+    cursor: pointer;
+}
+
+.requestActions .escalate{
+    color: red;
+    background-color: transparent;
+    border: 0.01vw solid rgba(var(--black), 1);
+}
+
+.requestActions .escalate:hover{
+    color: white;
+    background-color: red;
+    border: 0.01vw solid rgba(var(--black), 0);
+}
+
+.requestActions .close{
+    color: white;
+    background-color: rgba(var(--black), 1);
+    border: 0.01vw solid rgba(var(--black), 1);
+}
+
+.requestActions .close:hover{
+    color: rgba(var(--black), 1);
+    background-color: greenyellow;
+    border: 0.01vw solid rgba(var(--black), 0);
 }
 
 .chatContainer{
