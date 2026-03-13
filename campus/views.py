@@ -10,6 +10,7 @@ from django.utils.encoding import force_bytes
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.http import urlsafe_base64_encode
+from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.urls import reverse
 #from django.utils.decorators import method_decorator
@@ -34,7 +35,7 @@ import json
 import base64
 import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage
 from .decorators import role_required
 from .models import facilities, booking
 from .models import (
@@ -963,6 +964,30 @@ def submit_feedback(request):
 def review_feedback(request, ticket_id): 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
+    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        content = request.POST.get('content', '').strip()
+        
+        if content and content != "<p><br></p>":
+            message = TicketMessage.objects.create(
+                ticket=ticket,
+                sender=request.user,
+                content=content,
+                is_admin_reply=request.user.groups.filter(name='admin').exists()
+            )
+            
+            cluster = {
+                'is_self': True,
+                'messages': [message],
+            }
+
+            html = render_to_string('partials/messages.html', {
+                'cluster': cluster,
+            })
+
+            return JsonResponse({'status': 'success', 'html': html})
+        
+        return JsonResponse({'status': 'error', 'message': 'Invalid content'}, status=400)
+
     is_admin = request.user.groups.filter(name='admin').exists()
 
     ticket.check_expiry()
@@ -970,17 +995,140 @@ def review_feedback(request, ticket_id):
     if not is_admin and ticket.created_by != request.user:
         raise PermissionDenied("You do not have permission to view this ticket.")
     
-    conversation = ticket.messages.all().order_by('sent_at').prefetch_related('all_attachments')
-    ticket_attachments = ticket.all_attachments.all()
+    raw_messages = ticket.messages.all().order_by('sent_at').prefetch_related('all_attachments')
+    grouped_messages = []
+
+    if raw_messages.exists():
+        current_cluster = {
+            'sender': raw_messages[0].sender,
+            'is_admin': raw_messages[0].is_admin_reply,
+            'is_self': raw_messages[0].sender == request.user,
+            'messages': [raw_messages[0]],
+            'last_sent': raw_messages[0].sent_at
+        }
+
+        for i in range(1, len(raw_messages)):
+            msg = raw_messages[i]
+            prev_msg = raw_messages[i-1]
+            
+            time_diff = msg.sent_at - prev_msg.sent_at
+            
+            if msg.sender == current_cluster['sender'] and time_diff < timedelta(minutes=10):
+                current_cluster['messages'].append(msg)
+                current_cluster['last_sent'] = msg.sent_at
+            else:
+                grouped_messages.append(current_cluster)
+                current_cluster = {
+                    'sender': msg.sender,
+                    'is_admin': msg.is_admin_reply,
+                    'is_self': msg.sender == request.user,
+                    'messages': [msg],
+                    'last_sent': msg.sent_at
+                }
+        grouped_messages.append(current_cluster)
 
     context = {
         "ticket": ticket,
-        "conversation": conversation,
-        "ticket_attachments": ticket_attachments,
-
+        "grouped_messages": grouped_messages,
+        "ticket_attachments": ticket.all_attachments.all(),
+        'is_admin': is_admin,
     }
 
     return render(request, "help/review_feedback.html", context)
+
+def send_ticket_update_email(recipient, ticket, context, template):
+    subject = f"Update on your Ticket: {ticket.title}"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    
+    ticket_url = f"http://localhost:8000/support/tickets/{ticket.id}/"
+
+    context['ticket_URL'] = ticket_url
+
+    html_content = render_to_string(f"emails/{template}", context)
+    text_content = strip_tags(html_content) 
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+@login_required
+def post_reply_ajax(request, ticket_id):
+    if request.method == "POST":
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        content = request.POST.get('content', '').strip()
+        files = request.FILES.getlist('attachments')
+
+        if (not content or content == "<p><br></p>") and not files:
+            return JsonResponse({"status": "error", "message": "Empty content"}, status=400)
+
+        is_admin = request.user.groups.filter(name='admin').exists()
+
+        message = TicketMessage.objects.create(
+            ticket=ticket,
+            sender=request.user,
+            content=content,
+            is_admin_reply=is_admin
+        )
+
+        recipient = None
+        
+        if ticket.assigned_to:
+            if ticket.assigned_to == request.user:
+                recipient = ticket.created_by
+            else:
+                recipient = ticket.assigned_to
+
+        
+        try:
+            if is_admin:
+                template = 'ticket_update_admin.html'
+                full_name = f"{recipient.first_name} {recipient.last_name}".strip()
+                context = {
+                    "sender_name": full_name or recipient.username,
+                    "ticket_title": ticket.title,
+                    "ticketId": ticket.id,
+                }
+            else: 
+                template = 'ticket_update.html'
+                context = {
+                    "first_name": recipient.first_name or recipient.username,
+                    "ticket_title": ticket.title,
+                    "ticketId": ticket.id,
+                }
+
+            if recipient and recipient.email:
+                send_ticket_update_email(recipient, ticket, context, template)
+
+        except Exception as e:
+                print(f"SMTP Error: {e}")
+
+        for f in files:
+            save_manual_attachment(message, f)
+
+        extract_and_save_images(message)
+
+        cluster_data = {
+            'is_self': True,
+            'messages': [message],
+        }
+
+        cluster_html = render_to_string('partials/messages.html', {
+            'cluster': cluster_data,
+            'just_now': True
+        })
+
+        bubble_html = render_to_string('partials/single_bubble.html', {
+            'msg': message,
+            'just_now': True
+        })
+
+        return JsonResponse({
+            'status': 'success',
+            'cluster_html': cluster_html,  
+            'bubble_html': bubble_html
+        })
+    
+    return JsonResponse({"status": "error"}, status=400)
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
@@ -1264,6 +1412,15 @@ def extract_and_save_images(instance):
         instance.save(update_fields=[field_name])
 
 def save_manual_attachment(instance, file_obj):
+    original_name = file_obj.name
+    _, ext = os.path.splitext(original_name)
+    
+    model_name = instance._meta.model_name
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+    new_filename = f"{model_name}_{instance.id}_{timestamp}{ext}"
+
+    file_obj.name = new_filename
+
     return attachments.objects.create(
         content_type=ContentType.objects.get_for_model(instance),
         object_id=instance.id,
@@ -1323,6 +1480,7 @@ def booking_form(request, facility_id):
             status="Pending"
         )
 
+        messages.success(request, "Booking request submitted successfully! Waiting for admin approval.")
         return redirect("my_bookings")
 
     return render(request, "facility/booking_form.html", {"facility": facility})
@@ -1337,11 +1495,37 @@ def cancel_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id, user=request.user)
     selected_booking.status = "Cancelled"
     selected_booking.save()
+
+    messages.success(request, "Booking cancelled successfully!")
     return redirect("my_bookings")
 
 def review_booking_request(request):
     bookings = booking.objects.all().order_by("-booking_date", "-start_time")
-    return render(request, "facility/review_booking_request.html", {"bookings": bookings})
+
+    booking_data = []
+
+    for b in bookings:
+        name = b.user.get_full_name() or b.user.username
+        role = "User"
+        code = "-"
+
+        if hasattr(b.user, "student_profile"):
+            role = "Student"
+            code = b.user.student_profile.tp_id
+        elif hasattr(b.user, "lecturer_profile"):
+            role = "Lecturer"
+            code = b.user.lecturer_profile.lc_id
+
+        booking_data.append({
+            "booking": b,
+            "name": name,
+            "role": role,
+            "code": code,
+        })
+
+    return render(request, "facility/review_booking_request.html", {
+        "booking_data": booking_data
+    })
 
 def approve_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id)

@@ -165,7 +165,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const uploadPrompt = uploadBox.querySelector('p');
     const fileError = document.getElementById('fileerr');
     let masterFileList = [];
-
+    fileCardList.innerHTML = ''; 
+    
     uploadBox.addEventListener('click', () => fileInput.click());
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {

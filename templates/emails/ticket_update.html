@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Nunito Sans', sans-serif; 
+                background: white;  box-sizing: border-box;">
+    <table align="center" width="100%" style="box-sizing: border-box; border-collapse: collapse; width:100% !important; margin-right: auto; margin-left: auto">
+        <tbody>
+            <tr style="box-sizing: border-box;">
+                <td align="center" valign="top" style="box-sizing: border-box;">
+                    <div class="contentWrapper" style="background: white; 
+                                padding: 20px 40px 40px; 
+                                border: none;
+                                width: 500px; 
+                                height: auto;">
+                        <div class="imageWrappeer" style="width: 100%; text-align: center; margin-bottom: 20px;">
+                            <img src="https://www.apu.edu.my/themes/custom/apu/images/navbar/navbar-logo--scrolled.png" alt="University Logo" width: 200 style=" display: inline-block; vertical-align: middle;">
+                        </div>
+                        
+                        <h2 style="text-align: center;
+                        width: 100%;">Update on your support ticket #{{ ticketId }}</h2>
+                        <table align="center" width="100%" style="box-sizing: border-box; border-collapse: collapse; width:100% !important; margin-right: auto; margin-left: auto ; border: 0.05vw solid rgba(0, 0, 0, 0.6);">
+                            <tbody >
+                                <tr style="box-sizing: border-box;">
+                                    <td align="left" valign="top" style="box-sizing: border-box; padding: 30px 30px; padding-bottom: 0;">
+                                        <p style=" margin-top: 0;
+                                            margin-bottom: 10px;
+                                            width: 100%;
+                                            height: max-content;
+                                            color: black;
+                                            font-size: 14px;
+                                            text-align: left;
+                                            line-height: 1.5;">Hi {{ first_name }},</p>
+
+                                        <p style="margin-top: 0; margin-bottom: 10px;
+                                                width: 100%;
+                                                height: max-content;
+                                                color: black;
+                                                font-size: 14px;
+                                                text-align: left;
+                                                line-height: 1.6;
+                                                text-align: justify;">
+                                                There is a new reply on your support ticket <strong>#{{ ticketId }} – {{ ticket_title }}</strong> .</p>
+
+                                        <p style="margin: 0;
+                                                width: 100%;
+                                                height: max-content;
+                                                text-align: left;
+                                                color: black;
+                                                font-size: 14px;
+                                                margin-bottom: 10px;
+                                                font-weight: normal;
+                                                text-align: justify;">
+                                            A new message has been added to the conversation. Please review the latest update and continue the discussion if further clarification is needed.
+                                        </p>
+                                        <p style="margin: 0;
+                                                width: 100%;
+                                                height: max-content;
+                                                text-align: left;
+                                                color: black;
+                                                font-size: 14px;
+                                                margin-bottom: 10px;
+                                                font-weight: normal;
+                                                text-align: justify;">
+                                            Click the button below to view the full ticket details.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr style="box-sizing: border-box; height: auto;">
+                                    <td align="center" valign="top" style="box-sizing: border-box; height: auto; padding: 20px 20px;">
+                                        <p style="box-sizing: border-box; margin: 0;
+                                                width: 100%;
+                                                height: auto;
+                                                color: black;
+                                                font-size: 14px;">
+                                            <a href="{{ ticket_URL }}" 
+                                            style="display: inlineblock; background:greenyellow; color:black; padding:10px 15px; text-decoration:none; margin: 0; border: 0.1vw solid black; font-weight: 800; line-height: 3; text-transform: uppercase;">
+                                            View Ticket
+                                            </a>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="left" valign="top" style="box-sizing: border-box; padding: 0px 30px; padding-bottom: 30px;">
+                                        <p style=" margin-top: 0;
+                                            margin-bottom: 10px;
+                                            width: 100%;
+                                            height: max-content;
+                                            color: black;
+                                            font-size: 14px;
+                                            text-align: left;
+                                            line-height: 1.5;">
+                                            If the button does not work, you may copy and paste the following link into your browser: <br>
+                                            {{ ticket_URL }}
+                                        </p>
+                                        
+                                        </p>
+                                        <p style=" margin-top: 0;
+                                            margin-bottom: 10px;
+                                            width: 100%;
+                                            height: max-content;
+                                            color: black;
+                                            font-size: 14px;
+                                            text-align: left;
+                                            line-height: 1.5;">
+                                            Thank you, <br>
+                                            Smart Campus Support Team
+                                        </p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p style="margin: 50px 0;
+                                width: 100%;
+                                height: max-content;
+                                text-align: center;
+                                color: rgba(0, 0, 0, 0.6);
+                                font-size: 14px;">
+                            SENT BY CAPSTONE GROUP 17<br>
+                            Asia Pacific University of Technology & Innovation (APU)
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+</body>
+</html>
