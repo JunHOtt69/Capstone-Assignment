@@ -1,0 +1,351 @@
+/* ============================================================
+   TIMETABLE MODULE STYLES
+   ============================================================ */
+
+.timetableContainer {
+    width: 100%;
+    padding: 10px 0;
+}
+
+/* Controls */
+.timetableControls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.controlGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.controlGroup label {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.ttSelect {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 250px;
+    background: #fff;
+}
+
+.ttInput {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+}
+
+/* Buttons */
+.ttBtn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+.ttBtn:hover { opacity: 0.85; }
+.ttBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ttBtnSm { padding: 6px 12px; font-size: 12px; }
+
+.ttBtnPrimary { background: #4361ee; color: #fff; }
+.ttBtnSuccess { background: #2ec4b6; color: #fff; }
+.ttBtnInfo    { background: #3a86ff; color: #fff; }
+.ttBtnWarning { background: #ff9f1c; color: #fff; }
+.ttBtnDanger  { background: #e63946; color: #fff; }
+
+.actionBtns {
+    flex-wrap: wrap;
+}
+
+/* Week Navigation */
+.weekNav {
+    background: #f0f0f0;
+    padding: 6px 14px;
+    border-radius: 8px;
+}
+
+.weekLabel {
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 180px;
+    text-align: center;
+}
+
+/* Info Bar */
+.infoBar {
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.infoBar.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.infoBar.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.infoBar.error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.infoBar.info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+/* Timetable Grid */
+.timetableGrid {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+.ttTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+    table-layout: fixed;
+}
+
+.ttTable th,
+.ttTable td {
+    border: 1px solid #dee2e6;
+    padding: 8px 10px;
+    text-align: center;
+    vertical-align: top;
+    font-size: 13px;
+}
+
+.ttTable th {
+    background: #343a40;
+    color: #fff;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.ttTable th:first-child {
+    width: 100px;
+}
+
+.ttTable tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* Session Cell */
+.sessionCell {
+    background: #e8f4fd;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin: 2px 0;
+    text-align: left;
+    border-left: 3px solid #4361ee;
+}
+
+.sessionCell.lab {
+    border-left-color: #e63946;
+    background: #fce8ea;
+}
+
+.sessionCell.tutorial {
+    border-left-color: #ff9f1c;
+    background: #fff7e6;
+}
+
+.sessionCell .subjectCode {
+    font-weight: 700;
+    font-size: 13px;
+    color: #333;
+}
+
+.sessionCell .subjectName {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.sessionCell .lecturerName {
+    font-size: 11px;
+    color: #444;
+    margin-top: 3px;
+    font-style: italic;
+}
+
+.sessionCell .facilityName {
+    font-size: 10px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.sessionCell .sessionStatus {
+    font-size: 10px;
+    font-weight: 600;
+    margin-top: 3px;
+    text-transform: uppercase;
+}
+
+.sessionCell .sessionStatus.cancelled {
+    color: #e63946;
+}
+
+.sessionCell .sessionStatus.rearranged {
+    color: #ff9f1c;
+}
+
+.emptySlot {
+    color: #ccc;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Skipped Dates Section */
+.skippedDatesSection {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff8e1;
+    border-radius: 8px;
+    border: 1px solid #ffe082;
+}
+
+.skippedDatesSection h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #856404;
+}
+
+.skippedDatesSection ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.skippedDatesSection li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-bottom: 1px solid #ffe082;
+    font-size: 13px;
+}
+
+.skippedDatesSection li:last-child {
+    border-bottom: none;
+}
+
+.skipRemoveBtn {
+    background: none;
+    border: none;
+    color: #e63946;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* Modal */
+.ttModal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ttModalContent {
+    background: #fff;
+    border-radius: 10px;
+    min-width: 400px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.ttModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.ttModalHeader h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.ttModalClose {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+}
+
+.ttModalClose:hover { color: #333; }
+
+.ttModalBody {
+    padding: 20px;
+}
+
+.formGroup {
+    margin-bottom: 14px;
+}
+
+.formGroup label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+/* Missing class items */
+.missingItem {
+    padding: 10px 14px;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #fff;
+}
+
+.missingItem .missingInfo {
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.missingItem .missingInfo strong {
+    color: #333;
+}
+
+.rearrangeBtn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 4px;
+    background: #2ec4b6;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.rearrangeBtn:hover { opacity: 0.85; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .timetableControls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .ttSelect {
+        min-width: 100%;
+    }
+    .ttModalContent {
+        min-width: 90%;
+    }
+}

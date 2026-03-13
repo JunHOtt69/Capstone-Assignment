@@ -27,7 +27,7 @@
             </a>
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_rules' %}active{% endif %}" href="">Academic Rules</a>
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_subjects' %}active{% endif %}" href="">Subjects</a>
-            <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_timetable' %}active{% endif %}" href="">TimeTable</a>
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_timetable' %}active{% endif %}" href="{% url 'manage_timetable' %}">Timetable Scheduling</a>
         </div>
         <div class="rightContent">
             {% block function_window %}
