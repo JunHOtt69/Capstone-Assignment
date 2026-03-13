@@ -8,6 +8,7 @@ from datetime import date
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
+import os
 # Create your models here.
 
 class academic_rules(models.Model):
@@ -311,6 +312,34 @@ class attachments(models.Model):
     file = models.FileField(upload_to='attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def filename(self):
+        return os.path.basename(self.file.name)
+
+    @property
+    def extension(self):
+        ext = os.path.splitext(self.file.name)[1].replace('.', '').upper()
+        if ext == 'JPEG':
+            return 'JPG'
+        return ext
+
+    @property
+    def filesize(self):
+        try:
+            size = self.file.size
+            for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+                if size < 1024.0:
+                    return f"{size:.0f} {unit}" if unit == 'B' else f"{size:.1f} {unit}"
+                size /= 1024.0
+            return f"{size:.1f} PB"
+        except (ValueError, OSError, AttributeError):
+            return "Unknown"
+
+    @property
+    def is_supported_icon(self):
+        supported = ['PDF', 'DOCX', 'XLSX', 'PNG', 'JPG', 'MP4', 'MOV', 'RAR']
+        return self.extension in supported
+
 class AttendanceSession(models.Model):
     otp = models.CharField(max_length=4)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_attendance_sessions")
@@ -400,6 +429,11 @@ class SupportTicket(models.Model):
 
     def __str__(self):
         return f"[{self.status.upper()}] {self.title}"
+    
+    @property
+    def creator_name(self):
+        full_name = self.created_by.get_full_name()
+        return full_name if full_name else self.created_by.username
 
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')

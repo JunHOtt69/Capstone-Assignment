@@ -136,7 +136,8 @@ main{
     margin-top: 2vw;
 }
 
-.descContainer .attList{
+.descContainer .attList,
+.comment .attList{
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -147,7 +148,12 @@ main{
     width: 100%;
 }
 
-.descContainer .fileCard{
+.comment .attList{
+    background-color: transparent;
+}
+
+.descContainer .fileCard,
+.comment .fileCard{
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -167,11 +173,13 @@ main{
     text-decoration: none;
 }
 
-.descContainer .fileCard:hover{
+.descContainer .fileCard:hover,
+.comment .fileCard:hover{
     filter: brightness(97%);
 }
 
-.descContainer .fileCard .fileDetailWrapper{
+.descContainer .fileCard .fileDetailWrapper,
+.comment .fileCard .fileDetailWrapper{
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -181,6 +189,8 @@ main{
 }
 
 .descContainer .fileCard .fileName, 
+.comment .fileCard .fileName, 
+.comment .fileCard .fileSize,
 .descContainer .fileCard .fileSize{
     width: 5vw;
     
@@ -200,7 +210,8 @@ main{
     word-break: break-all;
 }
 
-.descContainer .fileCard .fileIcon{
+.descContainer .fileCard .fileIcon,
+.comment .fileCard .fileIcon{
     width: 2vw;
     height: 2vw;
     overflow: hidden;
@@ -208,7 +219,8 @@ main{
     flex:0; 
 }
 
-.descContainer .fileCard .fileIcon img{
+.descContainer .fileCard .fileIcon img,
+.comment .fileCard .fileIcon img{
     width: 2vw;
     height: 2vw;
 }
@@ -223,6 +235,7 @@ main{
     flex-direction: column;
     background-color: transparent;
     gap: 0;
+    margin-top: 3vw;
 }
 
 .chatContainer .configTitle{
@@ -238,11 +251,11 @@ main{
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: column;
-    background-color: rgba(var(--green-yellow), 0.1);
+    background-color: rgba(var(--black), 0.1);
     border: 0.01vw solid rgba(var(--black), 0.4);
     width: 100%;
-    height: 60vh !important;
-    padding: 1vw;
+    height: 80vh !important;
+    flex-shrink: 0;
     overflow: hidden;
     overflow-y: auto;
 }
@@ -253,36 +266,188 @@ main{
     align-items: flex-start;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    height: max-content;
     gap: 1vw;
+    padding: 1vw;
+}
+
+.messageWrapper .chatTimeStamp{
+    width: auto;
+    font-size: var(--xs-fontsize);
+    padding: 0.2vw 0.5vw;
+    background-color: white;
+    border-radius: 0.2vw;
+    align-self: center;
+    max-width: 7vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+.messageWrapper .chatTimeStamp.empty{
+    color: rgba(var(--black), 0.4);
+    font-size: var(--xs-fontsize);
+    user-select: none;
 }
 
 .messageWrapper .comment{
     display: flex;
     justify-content: flex-start;
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: flex-end;
+    flex-direction: row;
     gap: 0.5vw;
     position: relative;
-    background-color: transparent;
+    width: 100%;
+}
+
+.messageWrapper .comment.self{
+    justify-content: flex-end;
+}
+
+.messageWrapper .comment .profileIcon{
+    width: 1.75vw;
+    height: 1.75vw;
+    flex-shrink: 0;
 }
 
 .messageWrapper .comment .commentContent{
-    background-color: white;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2vw;
+    margin-bottom: calc(1.75vw / 2);
+    padding-left: 0.2vw;
+    overflow: visible;
 }
 
-#commentEditor{
+.messageWrapper .comment.self .commentContent{
+    align-items: flex-end;
+    padding-left: 0;
+    padding-right: 0.2vw;
+}
+
+.messageWrapper .comment .commentContent .bubble{
+    padding: 0.5vw;
+    position: relative;
+    z-index: 1;
+    min-width: 7vw;
+    max-width: 33vw;
+    border-radius: 0.2vw 0.2vw 0.2vw 0;
+    background-color: #CFCFCF;
+}
+
+.messageWrapper .comment.self .commentContent .bubble{
+    background-color: #C2D5A3;
+    border-radius: 0.2vw 0.2vw 0 0.2vw;
+}
+
+.messageWrapper .comment.admin .commentContent .bubble{
+    background-color: orange;
+}
+
+.comment .commentContent .bubble:last-child::before{
+    content: '';
+    position: absolute;
+    left: -0.5vw;
+    bottom: 0vw;
+    display: block;
+    transform: scaleY(-1) skew(50deg) translateX(0.3vw);
+    border: none;
+    background-color: inherit;
+    width: 0.6vw;
+    height: 0.3vw;
+    z-index: 1;
+}
+
+.comment.self .commentContent .bubble:last-child::before{
+    right: 0.5vw !important;
+    left: auto;
+    transform: scaleY(1) skew(50deg) translateX(0.7vw);
+}
+
+.bubble p{
+    text-align: justify;
+}
+
+.commentContent .bubble .user{
+    display: none;
+}
+
+.commentContent .bubble:first-child .user{
+    display: block;
+    font-size: var(--p-fontsize);
+}
+
+.comment.self .commentContent .bubble:first-child .user{
+    display: none;
+}
+
+.bubble p:has(img) img{
+    width: auto;
+    max-width: 10vw;
+    height: auto;
+}
+
+.commentContent .bubble .time{
+    display: block;
     width: 100%;
-    border: 0.01vw solid rgba(var(--black), 0.4);
-    min-height: 10vh;
-    max-height: 20vh;
-    font-size: var(--xs-fontsize);
+    text-align: right;
+    margin-top: 0.5vw;
 }
 
-.commentContainer .empty{
-    color: rgba(var(--black), 0.4);
+.commentInputWrapper{
+    width: 100%;
+    min-height: 10vh;
+    max-height: 25vh;
+    border: 0.01vw solid rgba(var(--black), 0.4);
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    flex-direction: column;
+    background-color: rgba(var(--black), 0);
+    transition: background-color 0.2s;
+}
+
+.commentInputWrapper:has(.ql-editor:focus){
+    background-color: rgba(var(--green-yellow), 0.05);
+}
+
+.commentInputWrapper #commentEditor{
     font-size: var(--xs-fontsize);
-    user-select: none;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.commentInputWrapper #commentEditor img{
+    border: 0.01vw solid rgba(var(--black), 1);
+    max-width: 10vw;
+    height: auto;
+}
+
+.commentInputWrapper .sendIcon{
+    width: 1vw;
+    height: 1vw; 
+    object-fit: contain;
+    flex-shrink: 0;
+    margin: 0.5vw;
+    cursor: pointer;
+}
+
+.commentInputWrapper .sendIcon svg{
+    fill: none;
+    width: 100%;
+    height: auto;
+}
+
+.commentInputWrapper .sendIcon svg path{
+    stroke: rgba(var(--black), 1);
+    stroke-width: 8;
 }
 
 .configContent .commentContainer .comment .userComment{
@@ -302,47 +467,4 @@ main{
 
 .comment .time{
     color: rgba(var(--black), 0.2);
-}
-
-.comment .commentContent{
-    width: 100%;
-    padding-left: 2vw;
-    margin-top: 0;
-    line-height: 1.5;
-    overflow: hidden;
-    position: relative;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    text-align: justify;
-    font-size: var(--xs-fontsize);
-}
-
-.comment .commentContent::after{
-    content: '';
-    width: 4vw; 
-    height: calc(var(--xs-fontsize) * 1.5 );
-    position: relative;
-    background-color: blue;
-}
-
-.comment .commentContent p{
-    position: relative;
-    font-size: var(--xs-fontsize);
-    width: 100%;
-    /* overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal; */
-    padding: 0;
-    margin: 0;
-    height: auto;
-    line-height: 1.5;
-}
-
-.configContent .commentContainer .comment .profileIcon{
-    flex-shrink: 0;
-    width: 1.5vw;
-    height: 1.5vw;
-    aspect-ratio: 1/1;
-    z-index: -1;
 }
