@@ -12,6 +12,73 @@ document.addEventListener("DOMContentLoaded", async function() {
         ]
     });
 
+    function formatChatDate(dateValue) {
+        const now = new Date();
+        const messageDate = new Date(dateValue);
+        
+        const diffMs = now - messageDate;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+        const isSameDay = now.toDateString() === messageDate.toDateString();
+        
+        const yesterday = new Date();
+        yesterday.setDate(now.getDate() - 1);
+        const isYesterday = yesterday.toDateString() === messageDate.toDateString();
+
+        if (diffMs < 86400000 && isSameDay) {
+            if (diffHours > 0) {
+                return `${diffHours} hours ago`;
+            }
+            return "Just now";
+        } else if (isSameDay) {
+            return "Today";
+        } else if (isYesterday) {
+            return "Yesterday";
+        } else {
+            const options = { day: '2-digit', month: 'short', year: 'numeric' };
+            return messageDate.toLocaleDateString('en-MY', options);
+        }
+    }
+
+    function updateChatTimeStamps() {
+        document.querySelectorAll('.chatTimeStamp:not(.empty)').forEach(el => el.remove());
+
+        const comments = document.querySelectorAll('.comment');
+        let lastProcessedTime = null;
+
+        comments.forEach((comment, index) => {
+            const firstBubble = comment.querySelector('.bubble:first-child');
+            const currentTimeStr = firstBubble.getAttribute('data-timestamp');
+            const currentTime = new Date(currentTimeStr);
+
+            let shouldShowStamp = false;
+
+            if (index === 0) {
+                shouldShowStamp = true;
+            } else if (lastProcessedTime) {
+                const diffMs = currentTime - lastProcessedTime;
+                const diffHours = diffMs / (1000 * 60 * 60);
+                if (diffHours >= 1) {
+                    shouldShowStamp = true;
+                }
+            }
+
+            if (shouldShowStamp) {
+                const stamp = document.createElement('span');
+                stamp.className = 'chatTimeStamp';
+                
+                stamp.innerText = formatChatDate(currentTime);
+                
+                comment.parentNode.insertBefore(stamp, comment);
+            }
+
+            const lastBubble = comment.querySelector('.bubble:last-child');
+            lastProcessedTime = new Date(lastBubble.getAttribute('data-timestamp'));
+        });
+    }
+
+    updateChatTimeStamps();
     const sendBtn = document.querySelector('.sendIcon');
     const messageWrapper = document.querySelector('.messageWrapper');
     
@@ -70,6 +137,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 }
 
                 messageWrapper.insertAdjacentHTML('beforeend', data.cluster_html);
+                updateChatTimeStamps();
                 finalizeMessageSend();
             }
         })
@@ -77,6 +145,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 
     function finalizeMessageSend() {
+        const emptyMessage = document.querySelector('.chatTimeStamp.empty');
+        if(emptyMessage) emptyMessage.remove();
+        
         quill.setContents([]);
         const attComList = document.querySelector('.attComList'); 
         if (attComList) attComList.innerHTML = '';
