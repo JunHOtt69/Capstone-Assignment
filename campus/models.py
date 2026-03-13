@@ -452,8 +452,8 @@ class TicketMessage(models.Model):
 
 class TicketActivity(models.Model):
     ACTION_CHOICES = [
-        ('status_change', 'Status Changed'),
-        ('escalation', 'Ticket Escalated'),
+        ('status_change', 'Updated Status'),
+        ('escalation', 'Escalated Ticket '),
         ('closure_request', 'Closure Requested'),
     ]
 
@@ -466,6 +466,11 @@ class TicketActivity(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+
+    @property
+    def creator_name(self):
+        full_name = self.user.get_full_name()
+        return full_name if full_name else self.user.username
 
 class CannedResponse(models.Model):
     title = models.CharField(max_length=100) # e.g., "General Acknowledgment"

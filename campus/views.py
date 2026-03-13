@@ -35,7 +35,7 @@ import json
 import base64
 import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage, TicketActivity
 from .decorators import role_required
 from .models import facilities, booking
 from .models import (
@@ -963,6 +963,7 @@ def submit_feedback(request):
 @login_required
 def review_feedback(request, ticket_id): 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
+    activities = ticket.activities.all().order_by('timestamp')
 
     if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         content = request.POST.get('content', '').strip()
@@ -1027,11 +1028,15 @@ def review_feedback(request, ticket_id):
                 }
         grouped_messages.append(current_cluster)
 
+    has_escalated = activities.filter(action='escalation').exists()
+
     context = {
         "ticket": ticket,
         "grouped_messages": grouped_messages,
         "ticket_attachments": ticket.all_attachments.all(),
         'is_admin': is_admin,
+        'activities': activities,
+        'has_escalated': has_escalated,
     }
 
     return render(request, "help/review_feedback.html", context)
@@ -1131,7 +1136,56 @@ def post_reply_ajax(request, ticket_id):
     return JsonResponse({"status": "error"}, status=400)
 
 @login_required
+def ticket_action_ajax(request, ticket_id):
+    if request.method == "POST":
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        action_type = request.POST.get('action')
+        
+        old_status = ticket.get_status_display()
+        
+        if action_type == 'escalate':
+            TicketActivity.objects.create(
+                ticket=ticket,
+                user=request.user,
+                action='escalation',
+            )
+            messages.success(request, "Escalation request sent successfully!")
+            return JsonResponse({"status": "success", "message": "Escalation request sent successfully."})
 
+        elif action_type == 'close':
+            ticket.status = 'closed'
+            ticket.save()
+            
+            TicketActivity.objects.create(
+                ticket=ticket,
+                user=request.user,
+                action='status_change',
+                old_value=old_status,
+                new_value='Closed',
+            )
+            if request.user.groups.filter(name="admin").exists():
+                messages.success(request, "Ticket has been closed!")
+                return JsonResponse({"status": "success", "message": "Ticket has been closed."})
+            else:
+                messages.success(request, "Close ticket request has been sent!")
+                return JsonResponse({"status": "success", "message": "Close ticket request has been sent."})
+            
+        
+        elif action_type == 'resolved':
+            ticket.status = 'resolved'
+            ticket.save()
+            
+            TicketActivity.objects.create(
+                ticket=ticket,
+                user=request.user,
+                action='status_change',
+                old_value=old_status,
+                new_value='Resolved',
+            )
+            messages.success(request, "Ticket has been marked as resolved.")
+            return JsonResponse({"status": "success", "message": "Ticket has been resolved."})
+
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic

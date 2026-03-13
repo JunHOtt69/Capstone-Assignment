@@ -62,12 +62,13 @@
             
         </section>
         <section class="rightCt">
-            {% if if user_role == 'admin' %}
-            
+            {% if user_role == 'admin' %}
+                abc
             {% else %}
                 <div class="requestActions">
-                    <button class="escalate">Request Escalation</button>
-                    <button class="close">Request to Close </button>
+                    <button class="escalate {% if has_escalated %}disabled{% endif %}">Request Escalation</button>
+                    <button class="close {% if ticket.is_inactive %}disabled{% endif %}">Request to Close </button>
+                    <button class="resolved {% if ticket.is_inactive %}disabled{% endif %}">Mark as Resolved</button>
                 </div>
             {% endif %}
             
@@ -76,6 +77,27 @@
                 <div class="commentContainer">
                     <div class="messageWrapper">
                         {% if grouped_messages %}
+                            {% for activity in activities %}
+                            <p class="system-activity {{ activity.action }}" data-timestamp="{{ activity.timestamp|date:'c' }}">
+                                {% if user_role == 'admin' %}
+                                    {{ activity.creator_name }} 
+                                    {{ activity.get_action_display }} 
+                                    {% if activity.action == 'status_change' %} 
+                                        {% if activity.new_value %}({{ activity.new_value }}){% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    {% if activity.action == 'status_change' %}
+                                        {{ activity.creator_name }} 
+                                        {% if activity.new_value == 'Closed' %}requested{% endif %}
+                                        {{ activity.get_action_display }} 
+                                        {% if activity.new_value %}({{ activity.new_value }}){% endif %}
+                                    {% else %}
+                                        {{ activity.creator_name }} 
+                                        {{ activity.get_action_display }}
+                                    {% endif %}
+                                {% endif %}
+                            </p>
+                            {% endfor %}
                             {% for cluster in grouped_messages %}
                                 {% include "partials/messages.html" %}
                             {% endfor %}
