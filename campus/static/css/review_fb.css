@@ -369,6 +369,38 @@ main{
 
 .bubble p{
     text-align: justify;
+    width: auto;
+}
+
+.bubble ol,
+.bubble ol li{
+    width: auto;
+    list-style-position: inside;
+}
+
+.bubble ol li .ql-ui,
+.bubble ol li{
+    font-size: var(--p-fontsize);
+}
+
+.bubble ol li:has(.ql-size-huge) .ql-ui{
+    font-size: 2.5em;
+}
+
+.bubble ol li:has(.ql-size-large) .ql-ui{
+    font-size: 1.5em;
+}
+
+.bubble ol li:has(.ql-size-small) .ql-ui{
+    font-size: .75em;
+}
+
+.bubble ol li[data-list="bullet"] {
+    list-style-type: disc;
+}
+
+.bubble ol li[data-list="ordered"] {
+  list-style-type: decimal;
 }
 
 .commentContent .bubble .user{

@@ -958,6 +958,30 @@ def submit_feedback(request):
 def review_feedback(request, ticket_id): 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
+    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        content = request.POST.get('content', '').strip()
+        
+        if content and content != "<p><br></p>":
+            message = TicketMessage.objects.create(
+                ticket=ticket,
+                sender=request.user,
+                content=content,
+                is_admin_reply=request.user.groups.filter(name='admin').exists()
+            )
+            
+            cluster = {
+                'is_self': True,
+                'messages': [message],
+            }
+
+            html = render_to_string('partials/messages.html', {
+                'cluster': cluster,
+            })
+
+            return JsonResponse({'status': 'success', 'html': html})
+        
+        return JsonResponse({'status': 'error', 'message': 'Invalid content'}, status=400)
+
     is_admin = request.user.groups.filter(name='admin').exists()
 
     ticket.check_expiry()
@@ -1003,7 +1027,7 @@ def review_feedback(request, ticket_id):
         "ticket": ticket,
         "grouped_messages": grouped_messages,
         "ticket_attachments": ticket.all_attachments.all(),
-
+        'is_admin': is_admin,
     }
 
     return render(request, "help/review_feedback.html", context)
@@ -1028,10 +1052,11 @@ def post_reply_ajax(request, ticket_id):
 
         cluster = {
             'is_self': True,
+            'is_admin': request.user.groups.filter(name='admin').exists(),
             'messages': [message],
         }
         
-        html = render_to_string('help/includes/partial_message.html', {
+        html = render_to_string('help/includes/message.html', {
             'cluster': cluster,
             'request': request
         })

@@ -1,0 +1,31 @@
+{% load chat_extras %}
+<div class="bubble" data-timestamp="{{ msg.sent_at|date:'c' }}">
+    <span class="user">{{ msg.sender.username }}</span>
+    <div class="message">
+        {{ msg.content|safe }}
+    </div>
+
+    {% if msg.all_attachments.all %}
+    <div class="attList">
+        {% for att in msg.all_attachments.all %}
+            
+        <a href="{{ att.file.url }}" target="_blank" class="fileCard">
+            <span class="fileIcon">
+                {% if att.is_supported_icon %}
+                    <img src="/media/file_icons/{{ att.extension }}.svg" 
+                        onerror="this.src='/media/file_icons/FILE.svg'">
+                {% else %}
+                    <img src="/media/file_icons/FILE.svg">
+                {% endif %}
+            </span>
+            <div class="fileDetailWrapper">
+                <p class="fileName">{{ att.filename }}</p>
+                <p class="fileSize">{{ att.filesize_display }}</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <span class="time">Just now</span>
+</div>
