@@ -1,4 +1,5 @@
 {% extends "base.html" %} 
+{% load chat_extras %}
 {% load static %}  
 {% block title %} {{ ticket.title }} {% endblock %}
 
@@ -64,97 +65,41 @@
             <p class="configTitle">Activity</p>
             <div class="commentContainer">
                 <div class="messageWrapper">
-                    <div class="comment">
-                        <div class="userTimeWrapper">
-                            <div class="profileIcon">
-                                <?xml version="1.0" ?>
-                                <svg viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                    <desc/>
-                                    <g>
-                                        <circle cx="16" cy="16"  r="15"  />
-                                        <path d="M26,27L26,27   c0-5.523-4.477-10-10-10h0c-5.523,0-10,4.477-10,10v0"/>
-                                        <circle cx="16" cy="11"  r="6"/>
-                                    </g>
-                                </svg>
-                            </div>
-                            <span class="user">Sender</span>
-                            <span class="time">Timestamp</span>
-                        </div>
-                        <span class="commentContent">
-                            <p>Content</p>
-                            <div class="attList">
-                                <a href="{{ att.file.url }}" target="_blank" class="fileCard">
-                                    <span class="fileIcon">
-                                        <img src="/media/file_icons/FILE.svg">
-                                    </span>
-                                    <div class="fileDetailWrapper">
-                                        <p class="fileName">filename</p>
-                                        <p class="fileSize">filesize</p>
-                                    </div>
-                                </a>
-                            </div>
-                        </span>
-                    </div>
-                </div>
-                {% if conversation %}
-                    <div class="messageWrapper">
-                        {% for message in conversation %}
-                            <div class="comment">
-                                <div class="userTimeWrapper">
-                                    <div class="profileIcon">
-                                        <?xml version="1.0" ?>
-                                        <svg viewBox="0 0 32 32" enable-background="new 0 0 32 32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                            <desc/>
-                                            <g>
-                                                <circle cx="16" cy="16"  r="15"  />
-                                                <path d="M26,27L26,27   c0-5.523-4.477-10-10-10h0c-5.523,0-10,4.477-10,10v0"/>
-                                                <circle cx="16" cy="11"  r="6"/>
-                                            </g>
-                                        </svg>
-                                    </div>
-                                    <span class="user">{{ message.sender }}</span>
-                                    <span class="time">{{ message.timestamp }}</span>
-                                </div>
-                                <span class="commentContent">
-                                    <p>{{ message.content }}</p>
-                                </span>
-                                {% if message.all_attachments.all %}
-                                    <div class="attList">
-                                        {% for att in message.all_attachments.all %}
-                                            <a href="{{ att.file.url }}" target="_blank" class="fileCard">
-                                                <span class="fileIcon">
-                                                    {% if att.is_supported_icon %}
-                                                        <img src="/media/file_icons/{{ att.extension }}.svg" 
-                                                            onerror="this.src='/media/file_icons/FILE.svg'">
-                                                    {% else %}
-                                                        <img src="/media/file_icons/FILE.svg">
-                                                    {% endif %}
-                                                </span>
-                                                <div class="fileDetailWrapper">
-                                                    <p class="fileName">{{ att.filename }}</p>
-                                                    <p class="fileSize">{{ att.filesize }}</p>
-                                                </div>
-                                            </a>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
+                    {% if grouped_messages %}
+                        {% for cluster in grouped_messages %}
+                            <span class="chatTimeStamp">
+                                {{ cluster.messages.0.sent_at|smart_date }}
+                            </span>
+
+                            {% include "partials/messages.html" %}
                         {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="empty">
-                        No comment.
-                    </p>
-                {% endif %}
+                    {% else %}
+                        <p class="chatTimeStamp empty">No comment.</p>
+                    {% endif %}
+                </div>
             </div>
-            <div id="commentEditor"></div>
+            <div class="commentInputWrapper">
+                <div id="commentEditor"></div>
+                <span class="sendIcon">
+                    <svg viewBox="0 0 175 156"  xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.4487 64.6462L5.55422 6.8835L164.939 79.0869L5.55231 148.883L17.4487 93.5276C17.4487 93.5276 45.996 81.4937 55.5116 79.0869C43.6171 74.2733 17.4487 64.6462 17.4487 64.6462Z" />
+                    </svg>
+                </span>
+            </div>
+            
         </section>
     </div>
 {% endblock %}
 
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script>
+        const TICKET_ID = "{{ ticket.id }}";
+        const POST_REPLY_URL = "{% url 'post_reply_ajax' ticket.id %}";
+        const CSRF_TOKEN = "{{ csrf_token }}";
+    </script>
     <script src="{% static 'js/review_fb.js' %}"></script>
+    
 {% endblock %} 
 
 {% block extra_template %}

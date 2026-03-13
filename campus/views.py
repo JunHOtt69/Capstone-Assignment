@@ -33,7 +33,7 @@ import json
 import base64
 import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage
 from .decorators import role_required
 from .models import facilities, booking
 
@@ -958,6 +958,30 @@ def submit_feedback(request):
 def review_feedback(request, ticket_id): 
     ticket = get_object_or_404(SupportTicket, id=ticket_id)
 
+    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        content = request.POST.get('content', '').strip()
+        
+        if content and content != "<p><br></p>":
+            message = TicketMessage.objects.create(
+                ticket=ticket,
+                sender=request.user,
+                content=content,
+                is_admin_reply=request.user.groups.filter(name='admin').exists()
+            )
+            
+            cluster = {
+                'is_self': True,
+                'messages': [message],
+            }
+
+            html = render_to_string('partials/messages.html', {
+                'cluster': cluster,
+            })
+
+            return JsonResponse({'status': 'success', 'html': html})
+        
+        return JsonResponse({'status': 'error', 'message': 'Invalid content'}, status=400)
+
     is_admin = request.user.groups.filter(name='admin').exists()
 
     ticket.check_expiry()
@@ -965,17 +989,89 @@ def review_feedback(request, ticket_id):
     if not is_admin and ticket.created_by != request.user:
         raise PermissionDenied("You do not have permission to view this ticket.")
     
-    conversation = ticket.messages.all().order_by('sent_at').prefetch_related('all_attachments')
-    ticket_attachments = ticket.all_attachments.all()
+    raw_messages = ticket.messages.all().order_by('sent_at').prefetch_related('all_attachments')
+    grouped_messages = []
+
+    if raw_messages.exists():
+        current_cluster = {
+            'sender': raw_messages[0].sender,
+            'is_admin': raw_messages[0].is_admin_reply,
+            'is_self': raw_messages[0].sender == request.user,
+            'messages': [raw_messages[0]],
+            'last_sent': raw_messages[0].sent_at
+        }
+
+        for i in range(1, len(raw_messages)):
+            msg = raw_messages[i]
+            prev_msg = raw_messages[i-1]
+            
+            # Logic: Same sender AND less than 10 mins apart
+            time_diff = msg.sent_at - prev_msg.sent_at
+            
+            if msg.sender == current_cluster['sender'] and time_diff < timedelta(minutes=10):
+                current_cluster['messages'].append(msg)
+                current_cluster['last_sent'] = msg.sent_at
+            else:
+                # Close current cluster and start a new one
+                grouped_messages.append(current_cluster)
+                current_cluster = {
+                    'sender': msg.sender,
+                    'is_admin': msg.is_admin_reply,
+                    'is_self': msg.sender == request.user,
+                    'messages': [msg],
+                    'last_sent': msg.sent_at
+                }
+        grouped_messages.append(current_cluster)
 
     context = {
         "ticket": ticket,
-        "conversation": conversation,
-        "ticket_attachments": ticket_attachments,
-
+        "grouped_messages": grouped_messages,
+        "ticket_attachments": ticket.all_attachments.all(),
+        'is_admin': is_admin,
     }
 
     return render(request, "help/review_feedback.html", context)
+
+@login_required
+def post_reply_ajax(request, ticket_id):
+    if request.method == "POST":
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        content = request.POST.get('content', '').strip()
+        
+        if not content or content == "<p><br></p>":
+            return JsonResponse({"status": "error", "message": "Empty content"}, status=400)
+
+        message = TicketMessage.objects.create(
+            ticket=ticket,
+            sender=request.user,
+            content=content,
+            is_admin_reply=request.user.groups.filter(name='admin').exists()
+        )
+
+        extract_and_save_images(message)
+
+        cluster_data = {
+            'is_self': True,
+            'messages': [message],
+        }
+
+        cluster_html = render_to_string('partials/messages.html', {
+            'cluster': cluster_data,
+            'just_now': True
+        })
+
+        bubble_html = render_to_string('partials/single_bubble.html', {
+            'msg': message,
+            'just_now': True
+        })
+
+        return JsonResponse({
+            'status': 'success',
+            'cluster_html': cluster_html,  
+            'bubble_html': bubble_html
+        })
+    
+    return JsonResponse({"status": "error"}, status=400)
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
