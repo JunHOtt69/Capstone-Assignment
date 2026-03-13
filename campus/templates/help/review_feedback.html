@@ -62,10 +62,15 @@
             
         </section>
         <section class="rightCt">
-            <div class="requestActions">
-                <button class="escalate">Request Escalation</button>
-                <button class="close">Request to Close </button>
-            </div>
+            {% if if user_role == 'admin' %}
+            
+            {% else %}
+                <div class="requestActions">
+                    <button class="escalate">Request Escalation</button>
+                    <button class="close">Request to Close </button>
+                </div>
+            {% endif %}
+            
             <div class="chatContainer">
                 <p class="configTitle">Activity</p>
                 <div class="commentContainer">

@@ -12,6 +12,39 @@ document.addEventListener("DOMContentLoaded", async function() {
         ]
     });
 
+    const escalateBtn = document.querySelector('.requestActions .escalate');
+    const closeBtn = document.querySelector('.requestActions .close');
+
+    if (escalateBtn) {
+        escalateBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const confirmEscalation = confirm(
+                "Are you sure you want to escalate this ticket?\n\n" +
+                "This will notify a senior administrator to review your request."
+            );
+
+            if (confirmEscalation) {
+                performTicketAction('escalate');
+            }
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const confirmClose = confirm(
+                "Are you sure you want to request to close this ticket?\n\n" +
+                "Only do this if your issue has been fully resolved."
+            );
+
+            if (confirmClose) {
+                performTicketAction('close');
+            }
+        });
+    }
+
     function formatChatDate(dateValue) {
         const now = new Date();
         const messageDate = new Date(dateValue);

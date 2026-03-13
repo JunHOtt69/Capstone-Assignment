@@ -1125,6 +1125,9 @@ def post_reply_ajax(request, ticket_id):
     
     return JsonResponse({"status": "error"}, status=400)
 
+@login_required
+
+
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
 def edit_faq(request, slug=None): 
