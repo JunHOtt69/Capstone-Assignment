@@ -45,6 +45,17 @@ urlpatterns = [
     path("get-terms/", views.get_terms, name="get_terms"),
     path("check-email/", views.check_email_exists, name="check_email"),
 
+    # Timetable scheduling
+    path("academic/timetable/", views.manage_timetable, name="manage_timetable"),
+    path("academic/timetable/data/", views.get_timetable_data, name="get_timetable_data"),
+    path("academic/timetable/generate/", views.generate_timetable, name="generate_timetable"),
+    path("academic/timetable/save-preference/", views.save_preference, name="save_preference"),
+    path("academic/timetable/replicate/", views.replicate_preference, name="replicate_preference"),
+    path("academic/timetable/skip-date/add/", views.add_skipped_date, name="add_skipped_date"),
+    path("academic/timetable/skip-date/remove/", views.remove_skipped_date, name="remove_skipped_date"),
+    path("academic/timetable/missing/", views.get_missing_classes, name="get_missing_classes"),
+    path("academic/timetable/rearrange/", views.rearrange_missing_class, name="rearrange_missing_class"),
+
     #announcement function
     path('announcements/', views.announcements, name='announcements'),
 

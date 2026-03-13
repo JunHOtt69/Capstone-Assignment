@@ -8,6 +8,7 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import PermissionDenied
 from django.utils.encoding import force_bytes
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.utils.http import urlsafe_base64_encode
 from django.utils.html import strip_tags
 from django.urls import reverse_lazy
@@ -24,7 +25,7 @@ from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from datetime import timedelta
+from datetime import timedelta, date
 from bs4 import BeautifulSoup
 import os
 import uuid
@@ -37,6 +38,10 @@ from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage
 from .decorators import role_required
 from .models import facilities, booking
+from .models import (
+    class_session, session, subject, course_subject, lecturer_subjects, 
+    timetable_preference, lecturer_assignment, skipped_date
+)
 
 #playground
 def testing(request):
@@ -1536,3 +1541,598 @@ def reject_booking(request, booking_id):
     selected_booking.status = "Rejected"
     selected_booking.save()
     return redirect("review_booking_request")
+
+
+# ============================================================
+# TIMETABLE MODULE
+# ============================================================
+
+DAY_ORDER = {'MON': 0, 'TUE': 1, 'WED': 2, 'THU': 3, 'FRI': 4}
+DAY_NAMES = {'MON': 'Monday', 'TUE': 'Tuesday', 'WED': 'Wednesday', 'THU': 'Thursday', 'FRI': 'Friday'}
+
+def _get_teaching_cutoff(term_obj):
+    """Calculate the last teaching date before study/exam weeks."""
+    study_rule = academic_rules.objects.filter(rule_name='Study Weeks').first()
+    exam_rule = academic_rules.objects.filter(rule_name='Examination Period').first()
+    study_days = study_rule.value_days if study_rule else 0
+    exam_days = exam_rule.value_days if exam_rule else 0
+    return term_obj.end_date - timedelta(days=study_days + exam_days)
+
+def _is_teaching_date(term_obj, target_date):
+    """Check if a date is within the valid teaching period."""
+    cutoff = _get_teaching_cutoff(term_obj)
+    return term_obj.start_date <= target_date < cutoff
+
+def _get_monday_of_week(target_date):
+    """Return the Monday of the week containing target_date."""
+    return target_date - timedelta(days=target_date.weekday())
+
+def _day_code_to_weekday_offset(day_code):
+    """Convert DAY_CHOICES code to weekday offset (MON=0, FRI=4)."""
+    return DAY_ORDER.get(day_code, 0)
+
+def _get_lecturer_week_hours(lecturer_user, week_monday):
+    """Get total scheduled hours for a lecturer in a given week."""
+    week_end = week_monday + timedelta(days=5)
+    sessions = class_session.objects.filter(
+        lecturer=lecturer_user,
+        date__gte=week_monday,
+        date__lt=week_end,
+        status='scheduled'
+    ).select_related('session')
+    total_hours = 0
+    for cs in sessions:
+        delta = datetime.datetime.combine(datetime.date.today(), cs.session.end_time) - \
+                datetime.datetime.combine(datetime.date.today(), cs.session.start_time)
+        total_hours += delta.total_seconds() / 3600
+    return total_hours
+
+def _get_session_duration_hours(sess):
+    """Calculate duration of a session in hours."""
+    delta = datetime.datetime.combine(datetime.date.today(), sess.end_time) - \
+            datetime.datetime.combine(datetime.date.today(), sess.start_time)
+    return delta.total_seconds() / 3600
+
+def _find_or_create_assignment(term_obj, subj, available_lecturers):
+    """Find existing lecturer assignment or pick one from available lecturers."""
+    existing = lecturer_assignment.objects.filter(term=term_obj, subject=subj).first()
+    if existing:
+        return existing.lecturer
+
+    for lec_sub in available_lecturers:
+        lecturer_assignment.objects.create(
+            term=term_obj, subject=subj, lecturer=lec_sub.user
+        )
+        return lec_sub.user
+    return None
+
+
+@role_required(allowed_roles=['admin'])
+def manage_timetable(request):
+    """Main timetable management page."""
+    terms = academic_term.objects.filter(is_active=True).select_related('course').order_by('-start_date')
+    context = {'terms': terms}
+    return render(request, "partials/manage_timetable.html", context)
+
+
+@role_required(allowed_roles=['admin'])
+def get_timetable_data(request):
+    """Return timetable data as JSON for a given term and week."""
+    term_id = request.GET.get('term_id')
+    week_start = request.GET.get('week_start')  # YYYY-MM-DD
+
+    if not term_id:
+        return JsonResponse({'error': 'term_id required'}, status=400)
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+
+    if week_start:
+        monday = parse_date(week_start)
+        if monday is None:
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+    else:
+        monday = _get_monday_of_week(date.today())
+
+    friday = monday + timedelta(days=4)
+
+    sessions_qs = class_session.objects.filter(
+        term=term_obj,
+        date__gte=monday,
+        date__lte=friday
+    ).select_related('session', 'session__facility', 'subject', 'lecturer').order_by('date', 'session__start_time')
+
+    timetable = []
+    for cs in sessions_qs:
+        timetable.append({
+            'id': cs.id,
+            'date': cs.date.isoformat(),
+            'day': cs.session.day_of_week,
+            'day_name': DAY_NAMES.get(cs.session.day_of_week, ''),
+            'start_time': cs.session.start_time.strftime('%H:%M'),
+            'end_time': cs.session.end_time.strftime('%H:%M'),
+            'subject_code': cs.subject.subject_code,
+            'subject_name': cs.subject.subject_name,
+            'class_type': cs.subject.class_type,
+            'lecturer': cs.lecturer.get_full_name(),
+            'facility': cs.session.facility.facility_name,
+            'status': cs.status,
+        })
+
+    has_preference = timetable_preference.objects.filter(term=term_obj, is_active=True).exists()
+
+    skipped = list(skipped_date.objects.filter(term=term_obj).values('date', 'reason'))
+
+    cutoff = _get_teaching_cutoff(term_obj)
+
+    return JsonResponse({
+        'timetable': timetable,
+        'has_preference': has_preference,
+        'skipped_dates': skipped,
+        'teaching_cutoff': cutoff.isoformat(),
+        'term_start': term_obj.start_date.isoformat(),
+        'term_end': term_obj.end_date.isoformat(),
+        'week_start': monday.isoformat(),
+    })
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def generate_timetable(request):
+    """Generate a full one-week timetable for an intake."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    term_id = data.get('term_id')
+    week_start_str = data.get('week_start')
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+
+    if week_start_str:
+        week_monday = parse_date(week_start_str)
+        if week_monday is None:
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+    else:
+        week_monday = _get_monday_of_week(term_obj.start_date)
+
+    if not _is_teaching_date(term_obj, week_monday):
+        return JsonResponse({'error': 'Target week falls outside the teaching period (study/exam week).'}, status=400)
+
+    # Get all subjects for this intake's current semester
+    cs_entries = course_subject.objects.filter(
+        course=term_obj.course,
+        recommended_semester=term_obj.current_semester
+    ).select_related('subject')
+
+    subjects_to_schedule = []
+    for cs_entry in cs_entries:
+        subjects_to_schedule.append(cs_entry.subject)
+        # Also include child components (labs/tutorials) of this subject
+        children = subject.objects.filter(parent_subject=cs_entry.subject)
+        for child in children:
+            subjects_to_schedule.append(child)
+
+    # Sort: Lectures first, then Labs/Tutorials (enforce lecture before lab)
+    type_order = {'Lecture': 0, 'Tutorial': 1, 'Lab': 2}
+    subjects_to_schedule.sort(key=lambda s: (
+        s.parent_subject_id or s.subject_id,  # group by parent
+        type_order.get(s.class_type, 9)
+    ))
+
+    # Get all available sessions (timeslots)
+    all_sessions = list(session.objects.select_related('facility').order_by(
+        'day_of_week', 'start_time'
+    ))
+
+    # Sort sessions by day order
+    all_sessions.sort(key=lambda s: (DAY_ORDER.get(s.day_of_week, 9), s.start_time))
+
+    # Build clash-check structure
+    existing_qs = class_session.objects.filter(
+        date__gte=week_monday,
+        date__lt=week_monday + timedelta(days=5),
+        status='scheduled'
+    ).select_related('session')
+
+    booked_intake_slots = set()
+    booked_lecturer_slots = set()
+    booked_facility_slots = set()
+    for ex in existing_qs:
+        booked_intake_slots.add((ex.term_id, ex.session_id, ex.date))
+        booked_lecturer_slots.add((ex.lecturer_id, ex.session_id, ex.date))
+        booked_facility_slots.add((ex.session.facility_id, ex.session_id, ex.date))
+
+    created_sessions = []
+    errors = []
+    scheduled_days = {}  # track which day each subject's lecture lands on
+
+    with transaction.atomic():
+        for subj in subjects_to_schedule:
+            # Find or get fixed lecturer
+            qualified = lecturer_subjects.objects.filter(subject=subj).select_related('user__lecturer_profile')
+            assigned_lecturer = _find_or_create_assignment(term_obj, subj, qualified)
+
+            if not assigned_lecturer:
+                errors.append(f"No qualified lecturer found for {subj.subject_code}")
+                continue
+
+            # Check lecturer hours
+            lec_profile = getattr(assigned_lecturer, 'lecturer_profile', None)
+            max_hours = lec_profile.max_hours_per_week if lec_profile else 20
+            current_hours = _get_lecturer_week_hours(assigned_lecturer, week_monday)
+
+            # Determine which days are valid (for labs, must be after lecture day)
+            min_day_order = 0
+            if subj.class_type in ('Lab', 'Tutorial') and subj.parent_subject_id:
+                parent_day = scheduled_days.get(subj.parent_subject_id)
+                if parent_day is not None:
+                    min_day_order = parent_day + 1  # lab must be after lecture day
+
+            placed = False
+            for sess in all_sessions:
+                day_ord = DAY_ORDER.get(sess.day_of_week, 9)
+                if day_ord < min_day_order:
+                    continue
+
+                sess_date = week_monday + timedelta(days=day_ord)
+
+                # Check skipped dates
+                if skipped_date.objects.filter(term=term_obj, date=sess_date).exists():
+                    continue
+
+                # Check teaching date validity
+                if not _is_teaching_date(term_obj, sess_date):
+                    continue
+
+                # Facility type check: Labs need Lab facilities, Lectures need Classroom/Auditorium
+                if subj.class_type == 'Lab' and sess.facility.type not in ('Lab',):
+                    continue
+                if subj.class_type == 'Lecture' and sess.facility.type not in ('Classroom', 'Auditorium'):
+                    continue
+
+                # Check clashes
+                intake_clash = (term_obj.term_id, sess.session_id, sess_date) in booked_intake_slots
+                lecturer_clash = (assigned_lecturer.id, sess.session_id, sess_date) in booked_lecturer_slots
+                facility_clash = (sess.facility_id, sess.session_id, sess_date) in booked_facility_slots
+
+                if intake_clash or lecturer_clash or facility_clash:
+                    continue
+
+                # Check lecturer max hours
+                sess_hours = _get_session_duration_hours(sess)
+                if current_hours + sess_hours > max_hours:
+                    continue
+
+                # Schedule it
+                new_cs = class_session.objects.create(
+                    session=sess,
+                    subject=subj,
+                    lecturer=assigned_lecturer,
+                    term=term_obj,
+                    date=sess_date,
+                    status='scheduled'
+                )
+                created_sessions.append(new_cs)
+
+                # Update tracking
+                booked_intake_slots.add((term_obj.term_id, sess.session_id, sess_date))
+                booked_lecturer_slots.add((assigned_lecturer.id, sess.session_id, sess_date))
+                booked_facility_slots.add((sess.facility_id, sess.session_id, sess_date))
+                current_hours += sess_hours
+
+                # Track which day the lecture was placed for lab ordering
+                if subj.class_type == 'Lecture':
+                    scheduled_days[subj.subject_id] = day_ord
+
+                placed = True
+                break
+
+            if not placed:
+                errors.append(f"Could not find an available slot for {subj.subject_code}")
+
+    return JsonResponse({
+        'success': True,
+        'created': len(created_sessions),
+        'errors': errors,
+    })
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def save_preference(request):
+    """Save the current week's timetable as the active preference."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    term_id = data.get('term_id')
+    week_start_str = data.get('week_start')
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+    monday = parse_date(week_start_str)
+    if monday is None:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+
+    friday = monday + timedelta(days=4)
+
+    current_classes = class_session.objects.filter(
+        term=term_obj,
+        date__gte=monday,
+        date__lte=friday,
+        status='scheduled'
+    ).select_related('session', 'subject')
+
+    if not current_classes.exists():
+        return JsonResponse({'error': 'No scheduled classes found for this week.'}, status=400)
+
+    with transaction.atomic():
+        # Deactivate old preferences
+        timetable_preference.objects.filter(term=term_obj).update(is_active=False)
+        # Delete old inactive ones
+        timetable_preference.objects.filter(term=term_obj, is_active=False).delete()
+
+        # Create new preferences
+        for cs in current_classes:
+            timetable_preference.objects.create(
+                term=term_obj,
+                subject=cs.subject,
+                lecturer=cs.lecturer,
+                session=cs.session,
+                is_active=True
+            )
+
+    return JsonResponse({'success': True, 'message': 'Preference saved successfully.'})
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def replicate_preference(request):
+    """Replicate preference to a target week."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    term_id = data.get('term_id')
+    target_week_str = data.get('target_week')  # YYYY-MM-DD (Monday)
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+    target_monday = parse_date(target_week_str)
+    if target_monday is None:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+
+    if not _is_teaching_date(term_obj, target_monday):
+        return JsonResponse({'error': 'Target week is outside the teaching period.'}, status=400)
+
+    prefs = timetable_preference.objects.filter(term=term_obj, is_active=True).select_related('session', 'subject')
+    if not prefs.exists():
+        return JsonResponse({'error': 'No active preference found. Please save a preference first.'}, status=400)
+
+    # Check for existing classes in target week
+    target_friday = target_monday + timedelta(days=4)
+    existing_count = class_session.objects.filter(
+        term=term_obj,
+        date__gte=target_monday,
+        date__lte=target_friday,
+        status='scheduled'
+    ).count()
+    if existing_count > 0:
+        return JsonResponse({'error': 'Target week already has scheduled classes for this intake.'}, status=400)
+
+    # Get skipped dates for target week
+    skipped_dates = set(
+        skipped_date.objects.filter(
+            term=term_obj,
+            date__gte=target_monday,
+            date__lte=target_friday
+        ).values_list('date', flat=True)
+    )
+
+    created = 0
+    skipped_classes = []
+
+    with transaction.atomic():
+        for pref in prefs:
+            day_offset = _day_code_to_weekday_offset(pref.session.day_of_week)
+            target_date = target_monday + timedelta(days=day_offset)
+
+            if target_date in skipped_dates:
+                skipped_classes.append({
+                    'subject': pref.subject.subject_code,
+                    'day': DAY_NAMES.get(pref.session.day_of_week, ''),
+                    'date': target_date.isoformat(),
+                    'reason': 'Skipped date / Public holiday',
+                })
+                continue
+
+            if not _is_teaching_date(term_obj, target_date):
+                skipped_classes.append({
+                    'subject': pref.subject.subject_code,
+                    'day': DAY_NAMES.get(pref.session.day_of_week, ''),
+                    'date': target_date.isoformat(),
+                    'reason': 'Outside teaching period',
+                })
+                continue
+
+            class_session.objects.create(
+                session=pref.session,
+                subject=pref.subject,
+                lecturer=pref.lecturer,
+                term=term_obj,
+                date=target_date,
+                status='scheduled'
+            )
+            created += 1
+
+    return JsonResponse({
+        'success': True,
+        'created': created,
+        'skipped_classes': skipped_classes,
+    })
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def add_skipped_date(request):
+    """Add a skipped date (public holiday) for an intake."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    term_id = data.get('term_id')
+    skip_date_str = data.get('date')
+    reason = data.get('reason', 'Public Holiday')
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+    skip_dt = parse_date(skip_date_str)
+    if skip_dt is None:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+
+    if skipped_date.objects.filter(term=term_obj, date=skip_dt).exists():
+        return JsonResponse({'error': 'This date is already marked as skipped.'}, status=400)
+
+    skipped_date.objects.create(term=term_obj, date=skip_dt, reason=reason)
+
+    # Cancel any existing classes on that date
+    cancelled = class_session.objects.filter(
+        term=term_obj, date=skip_dt, status='scheduled'
+    ).update(status='cancelled')
+
+    return JsonResponse({
+        'success': True,
+        'message': f'Date {skip_dt} marked as skipped. {cancelled} class(es) cancelled.',
+    })
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def remove_skipped_date(request):
+    """Remove a skipped date."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    term_id = data.get('term_id')
+    skip_date_str = data.get('date')
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+    skip_dt = parse_date(skip_date_str)
+    if skip_dt is None:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+
+    deleted, _ = skipped_date.objects.filter(term=term_obj, date=skip_dt).delete()
+    if deleted == 0:
+        return JsonResponse({'error': 'Skipped date not found.'}, status=400)
+
+    return JsonResponse({'success': True, 'message': 'Skipped date removed.'})
+
+
+@role_required(allowed_roles=['admin'])
+def get_missing_classes(request):
+    """Get cancelled/missing classes for a term that can be rearranged."""
+    term_id = request.GET.get('term_id')
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+
+    missing = class_session.objects.filter(
+        term=term_obj,
+        status='cancelled'
+    ).select_related('session', 'session__facility', 'subject', 'lecturer')
+
+    result = []
+    for cs in missing:
+        result.append({
+            'id': cs.id,
+            'date': cs.date.isoformat(),
+            'day': cs.session.day_of_week,
+            'subject_code': cs.subject.subject_code,
+            'subject_name': cs.subject.subject_name,
+            'lecturer': cs.lecturer.get_full_name(),
+            'start_time': cs.session.start_time.strftime('%H:%M'),
+            'end_time': cs.session.end_time.strftime('%H:%M'),
+        })
+
+    return JsonResponse({'missing_classes': result})
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def rearrange_missing_class(request):
+    """Rearrange a single cancelled class to a new available slot."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    class_session_id = data.get('class_session_id')
+    cs_obj = get_object_or_404(class_session, id=class_session_id, status='cancelled')
+
+    term_obj = cs_obj.term
+    subj = cs_obj.subject
+    lecturer_user = cs_obj.lecturer
+
+    # Search within the same week first, then nearby weeks
+    original_monday = _get_monday_of_week(cs_obj.date)
+    search_weeks = [original_monday]
+    # Also check next week
+    search_weeks.append(original_monday + timedelta(days=7))
+
+    valid_facility_types = ['Lab'] if subj.class_type == 'Lab' else ['Classroom', 'Auditorium']
+
+    all_sessions = session.objects.filter(
+        facility__type__in=valid_facility_types
+    ).select_related('facility').order_by('day_of_week', 'start_time')
+
+    for week_monday in search_weeks:
+        for sess in all_sessions:
+            day_offset = _day_code_to_weekday_offset(sess.day_of_week)
+            target_date = week_monday + timedelta(days=day_offset)
+
+            if not _is_teaching_date(term_obj, target_date):
+                continue
+
+            if skipped_date.objects.filter(term=term_obj, date=target_date).exists():
+                continue
+
+            # Check clashes
+            intake_clash = class_session.objects.filter(
+                term=term_obj, session=sess, date=target_date, status='scheduled'
+            ).exists()
+            lecturer_clash = class_session.objects.filter(
+                lecturer=lecturer_user, session=sess, date=target_date, status='scheduled'
+            ).exists()
+
+            if intake_clash or lecturer_clash:
+                continue
+
+            # Check lecturer hours
+            lec_profile = getattr(lecturer_user, 'lecturer_profile', None)
+            max_hours = lec_profile.max_hours_per_week if lec_profile else 20
+            current_hours = _get_lecturer_week_hours(lecturer_user, week_monday)
+            sess_hours = _get_session_duration_hours(sess)
+
+            if current_hours + sess_hours > max_hours:
+                continue
+
+            # Rearrange
+            cs_obj.session = sess
+            cs_obj.date = target_date
+            cs_obj.status = 'rearranged'
+            cs_obj.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Class rearranged to {DAY_NAMES.get(sess.day_of_week)} {target_date}',
+                'new_date': target_date.isoformat(),
+                'new_day': DAY_NAMES.get(sess.day_of_week, ''),
+                'new_time': f"{sess.start_time.strftime('%H:%M')} - {sess.end_time.strftime('%H:%M')}",
+                'new_facility': sess.facility.facility_name,
+            })
+
+    return JsonResponse({
+        'success': False,
+        'error': 'No available slot found for rearrangement.',
+    })

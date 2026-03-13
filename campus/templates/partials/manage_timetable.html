@@ -1,0 +1,129 @@
+{% extends "academic_management.html" %} 
+
+{% load static %}  
+
+{% block title %} Timetable Management {% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/timetable.css' %}">
+{% endblock %}
+
+{% block function_window %}
+<div class="timetableContainer">
+    <!-- Term Selector -->
+    <div class="timetableControls">
+        <div class="controlGroup">
+            <label for="termSelect">Select Intake:</label>
+            <select id="termSelect" class="ttSelect">
+                <option value="">-- Choose an Intake --</option>
+                {% for term in terms %}
+                <option value="{{ term.term_id }}" 
+                        data-start="{{ term.start_date|date:'Y-m-d' }}"
+                        data-end="{{ term.end_date|date:'Y-m-d' }}">
+                    {{ term.course.course_name }} — {{ term.term_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="controlGroup weekNav" id="weekNav" style="display:none;">
+            <button class="ttBtn ttBtnSm" id="prevWeekBtn">&#9664; Prev</button>
+            <span id="weekLabel" class="weekLabel">Week</span>
+            <button class="ttBtn ttBtnSm" id="nextWeekBtn">Next &#9654;</button>
+        </div>
+
+        <div class="controlGroup actionBtns" id="actionBtns" style="display:none;">
+            <button class="ttBtn ttBtnPrimary" id="generateBtn">Generate Timetable</button>
+            <button class="ttBtn ttBtnSuccess" id="savePreferenceBtn">Save Preference</button>
+            <button class="ttBtn ttBtnInfo" id="replicateBtn">Replicate to Week</button>
+            <button class="ttBtn ttBtnWarning" id="missingBtn">Missing Classes</button>
+            <button class="ttBtn ttBtnDanger" id="addSkipBtn">Add Holiday</button>
+        </div>
+    </div>
+
+    <!-- Preference / Info Bar -->
+    <div id="infoBar" class="infoBar" style="display:none;"></div>
+
+    <!-- Timetable Grid -->
+    <div id="timetableGrid" class="timetableGrid" style="display:none;">
+        <table class="ttTable">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                </tr>
+            </thead>
+            <tbody id="timetableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Skipped Dates List -->
+    <div id="skippedDatesSection" class="skippedDatesSection" style="display:none;">
+        <h3>Public Holidays / Skipped Dates</h3>
+        <ul id="skippedDatesList"></ul>
+    </div>
+
+    <!-- Missing Classes Modal -->
+    <div id="missingModal" class="ttModal" style="display:none;">
+        <div class="ttModalContent">
+            <div class="ttModalHeader">
+                <h3>Missing / Cancelled Classes</h3>
+                <button class="ttModalClose" id="closeMissingModal">&times;</button>
+            </div>
+            <div class="ttModalBody" id="missingModalBody">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Holiday Modal -->
+    <div id="skipModal" class="ttModal" style="display:none;">
+        <div class="ttModalContent">
+            <div class="ttModalHeader">
+                <h3>Add Public Holiday / Skip Date</h3>
+                <button class="ttModalClose" id="closeSkipModal">&times;</button>
+            </div>
+            <div class="ttModalBody">
+                <div class="formGroup">
+                    <label for="skipDateInput">Date:</label>
+                    <input type="date" id="skipDateInput" class="ttInput">
+                </div>
+                <div class="formGroup">
+                    <label for="skipReasonInput">Reason:</label>
+                    <input type="text" id="skipReasonInput" class="ttInput" placeholder="e.g. Public Holiday">
+                </div>
+                <button class="ttBtn ttBtnDanger" id="confirmSkipBtn">Add Skipped Date</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Replicate Modal -->
+    <div id="replicateModal" class="ttModal" style="display:none;">
+        <div class="ttModalContent">
+            <div class="ttModalHeader">
+                <h3>Replicate Preference to Week</h3>
+                <button class="ttModalClose" id="closeReplicateModal">&times;</button>
+            </div>
+            <div class="ttModalBody">
+                <div class="formGroup">
+                    <label for="replicateWeekInput">Target Week (Monday):</label>
+                    <input type="date" id="replicateWeekInput" class="ttInput">
+                </div>
+                <button class="ttBtn ttBtnInfo" id="confirmReplicateBtn">Replicate</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/timetable.js' %}"></script>
+{% endblock %}
