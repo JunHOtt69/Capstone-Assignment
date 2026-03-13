@@ -1037,8 +1037,9 @@ def post_reply_ajax(request, ticket_id):
     if request.method == "POST":
         ticket = get_object_or_404(SupportTicket, id=ticket_id)
         content = request.POST.get('content', '').strip()
-        
-        if not content or content == "<p><br></p>":
+        files = request.FILES.getlist('attachments')
+
+        if (not content or content == "<p><br></p>") and not files:
             return JsonResponse({"status": "error", "message": "Empty content"}, status=400)
 
         message = TicketMessage.objects.create(
@@ -1047,6 +1048,9 @@ def post_reply_ajax(request, ticket_id):
             content=content,
             is_admin_reply=request.user.groups.filter(name='admin').exists()
         )
+
+        for f in files:
+            save_manual_attachment(message, f)
 
         extract_and_save_images(message)
 
