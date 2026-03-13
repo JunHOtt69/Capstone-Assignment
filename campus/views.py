@@ -1367,8 +1367,8 @@ def _get_teaching_cutoff(term_obj):
     """Calculate the last teaching date before study/exam weeks."""
     study_rule = academic_rules.objects.filter(rule_name='Study Weeks').first()
     exam_rule = academic_rules.objects.filter(rule_name='Examination Period').first()
-    study_days = study_rule.value_days * 7 if study_rule else 0
-    exam_days = exam_rule.value_days * 7 if exam_rule else 0
+    study_days = study_rule.value_days if study_rule else 0
+    exam_days = exam_rule.value_days if exam_rule else 0
     return term_obj.end_date - timedelta(days=study_days + exam_days)
 
 def _is_teaching_date(term_obj, target_date):
