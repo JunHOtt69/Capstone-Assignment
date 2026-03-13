@@ -1339,7 +1339,31 @@ def cancel_booking(request, booking_id):
 
 def review_booking_request(request):
     bookings = booking.objects.all().order_by("-booking_date", "-start_time")
-    return render(request, "facility/review_booking_request.html", {"bookings": bookings})
+
+    booking_data = []
+
+    for b in bookings:
+        name = b.user.get_full_name() or b.user.username
+        role = "User"
+        code = "-"
+
+        if hasattr(b.user, "student_profile"):
+            role = "Student"
+            code = b.user.student_profile.tp_id
+        elif hasattr(b.user, "lecturer_profile"):
+            role = "Lecturer"
+            code = b.user.lecturer_profile.lc_id
+
+        booking_data.append({
+            "booking": b,
+            "name": name,
+            "role": role,
+            "code": code,
+        })
+
+    return render(request, "facility/review_booking_request.html", {
+        "booking_data": booking_data
+    })
 
 def approve_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id)
