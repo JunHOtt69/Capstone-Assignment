@@ -945,12 +945,33 @@ def feedbacks(request):
         query = Q(created_by=request.user)
     my_tickets = tickets.filter(query).distinct()
 
+    category_counts = dict(SupportTicket.objects.values_list('category').annotate(total=Count('id')))
+
+    status_counts = dict(SupportTicket.objects.values_list('status').annotate(total=Count('id')))
+
+    my_category_counts = dict(
+        SupportTicket.objects.filter(query)
+            .values_list('category')
+            .annotate(total=Count('id'))
+    )
+
+    my_status_counts = dict(
+        SupportTicket.objects.filter(query)
+            .values_list('status')
+            .annotate(total=Count('id'))
+    )
+
     context = {
         'tickets': tickets,
         'categories': categories,
         'status': status,
-        'my_tickets': my_tickets 
+        'my_tickets': my_tickets,
+        'category_counts': category_counts,
+        'status_counts': status_counts,
+        'my_category_counts': my_category_counts,
+        'my_status_counts': my_status_counts 
     }
+    
     return render(request, "help/ticket_list.html", context)
 
 @role_required(allowed_roles=['lecturer', 'student'])

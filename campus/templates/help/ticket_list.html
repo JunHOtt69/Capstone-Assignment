@@ -1,4 +1,5 @@
 {% extends "base.html" %} 
+{% load faq_extras %}
 {% load static %}  
 {% block title %} Feedback Tickets  {% endblock %}
 
@@ -7,57 +8,64 @@
 {% endblock %}
 
 {% block content %}
-    <h2 class="pageTitle">Feedback Tickets</h2>
+    <div class="pageTitleWrapper">
+        <h2>Feedback Tickets</h2>
+    </div>
+    
     {% if user_role == 'admin' %}
-    <section class="ticketListPage">
+    <section class="availableTicketList">
         <div class="sectionTitle">Available Tickets</div>
-        <div class="tableWrapper">
-            <table class="ticketTable">
-                <thead>
-                    <tr>
-                        <th><label class="itemLabel">ID</label></th>
-                        <th>
-                            <label class="itemLabel" id-="t-Title">Title ▲</label>
-                        </th>
-                        <th>
-                            <label class="itemLabel" id="t-cat">Category</label>
-                            <div class="categoryOption">
-                                {% for value, label in categories %}    
-                                <label class="categoryBox">
-                                    <input type="checkbox" name="category" value="{{ value }}" class="categoryInput">
-                                    <div class="categoryTile">
-                                        <span class="tickIcon">✔</span>
-                                        <span class="categoryLabel">{{ label }}</span>
-                                    </div>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </th>
-                        <th>
-                            <label class="itemLabel" id="t-stat">Status</label>
-                            <div class="categoryOption">
-                                {% for value, label in status %}
-                                <label class="statusBox">
-                                    <input type="checkbox" name="status" value="{{ value }}" class="categoryInput">
-                                    <div class="statusTile">
-                                        <span class="tickIcon">✔</span>
-                                        <span class="statusLabel">{{ label }}</span>
-                                    </div>
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </th>
-                        <th>
-                            <label class="itemLabel" id-="t-CA">Created At ▲</label>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="ticket-table-container">
-                    {% include "partials/ticket_list_partials.html" %}
-                </tbody>
-            </table>
-        </div>
+        <table class="ticketTable">
+            <thead>
+                <tr>
+                    <th><label class=" id">ID</label></th>
+                    <th>
+                        <label class="title" id-="t-Title">Title</label>
+                    </th>
+                    <th>
+                        <label class="cat" id="t-cat">Category</label>
+                        <div class="cbxContainer">
+                            {% for value, label in categories %}    
+                            <label class="cbxWrapper">
+                                <input type="checkbox" name="category-av" value="{{ value }}" class="cbxInput">
+                                <div class="cbxTitle">
+                                    <span class="cbx"></span>
+                                    <span class="categoryLabel">{{ label }} ({{ category_counts|get_item:value|cool_number }})</span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </th>
+                    {% if user.is_superuser %}
+                    <th>
+                        <label class="stat" id="t-stat">Status</label>
+                        <div class="cbxContainer">
+                            {% for value, label in status %}
+                            <label class="cbxWrapper">
+                                <input type="checkbox" name="status-av" value="{{ value }}" class="cbxInput">
+                                <div class="cbxTitle">
+                                    <span class="cbx"></span>
+                                    <span class="statusLabel">{{ label }} ({{ status_counts|get_item:value|cool_number }})</span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </th>
+                    {% endif %}
+                    <th>
+                        <label class="ca" id="t-CA">Created At</label>
+                    </th>
+                    <th>
+                        <label class="act" id="t-act">Action</label>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="ticket-table-container">
+                {% include "partials/ticket_list_partials.html" with tickets=tickets show_action=True show_status=user.is_superuser%}
+            </tbody>
+        </table>
     </section>
+
     {% endif %}
     <section class="myTickets">
         <div class="sectionTitle">
@@ -67,48 +75,48 @@
             My Tickets
             {% endif %}
         </div>
-        <table class="escalatedTicket">
+        <table class="ticketTable">
             <thead>
                 <tr>
-                    <th><label class="itemLabel">ID</label></th>
+                    <th><label class="id">ID</label></th>
                     <th>
-                        <label class="itemLabel" id-="t-Title">Title ▲</label>
+                        <label class="title" id-="my-Title">Title</label>
                     </th>
                     <th>
-                        <label class="itemLabel" id="t-cat">Category</label>
-                        <div class="categoryOption">
+                        <label class="cat" id="my-cat">Category</label>
+                        <div class="cbxContainer">
                             {% for value, label in categories %}    
-                            <label class="categoryBox">
-                                <input type="checkbox" name="category" value="{{ value }}" class="categoryInput">
-                                <div class="categoryTile">
-                                    <span class="tickIcon">✔</span>
-                                    <span class="categoryLabel">{{ label }}</span>
+                            <label class="cbxWrapper">
+                                <input type="checkbox" name="category-my" value="{{ value }}" class="cbxInput">
+                                <div class="cbxTitle">
+                                    <span class="cbx"></span>
+                                    <span class="categoryLabel">{{ label }} ({{ my_category_counts|get_item:value|cool_number }}) ({{ my_category_counts|get_item:value|cool_number }})</span>
                                 </div>
                             </label>
                             {% endfor %}
                         </div>
                     </th>
                     <th>
-                        <label class="itemLabel" id="t-stat">Status</label>
-                        <div class="categoryOption">
+                        <label class="stat" id="my-stat">Status</label>
+                        <div class="cbxContainer">
                             {% for value, label in status %}
-                            <label class="statusBox">
-                                <input type="checkbox" name="status" value="{{ value }}" class="categoryInput">
-                                <div class="statusTile">
-                                    <span class="tickIcon">✔</span>
-                                    <span class="statusLabel">{{ label }}</span>
+                            <label class="cbxWrapper">
+                                <input type="checkbox" name="status-my" value="{{ value }}" class="cbxInput">
+                                <div class="cbxTitle">
+                                    <span class="cbx"></span>
+                                    <span class="statusLabel">{{ label }} ({{ my_status_counts|get_item:value|cool_number }})</span>
                                 </div>
                             </label>
                             {% endfor %}
                         </div>
                     </th>
                     <th>
-                        <label class="itemLabel" id-="t-CA">Created At ▲</label>
+                        <label class=" ca" id="my-CA">Created At</label>
                     </th>
                 </tr>
             </thead>
             <tbody id="my-ticket-table-container">
-                {% include "partials/ticket_list_partials.html" with tickets=my_tickets %}
+                {% include "partials/ticket_list_partials.html" with tickets=my_tickets show_status=True show_action=False%}
             </tbody>
         </table>
     </section>
