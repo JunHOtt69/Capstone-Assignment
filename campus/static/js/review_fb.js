@@ -12,6 +12,55 @@ document.addEventListener("DOMContentLoaded", async function() {
         ]
     });
 
+    const escalateBtn = document.querySelector('.requestActions .escalate');
+    const closeBtn = document.querySelector('.requestActions .close');
+    const resolvedBtn = document.querySelector('.requestActions .resolved');
+
+    if (escalateBtn) {
+        escalateBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const confirmEscalation = confirm(
+                "Are you sure you want to escalate this ticket?\n\n" +
+                "This will notify a senior administrator to review your request."
+            );
+
+            if (confirmEscalation) {
+                performTicketAction('escalate');
+            }
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const confirmClose = confirm(
+                "Are you sure you want to request to close this ticket?\n\n" +
+                "Only do this if your issue has been fully resolved."
+            );
+
+            if (confirmClose) {
+                performTicketAction('close');
+            }
+        });
+    }
+
+    if (resolvedBtn) {
+        resolvedBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const confirmResolved = confirm(
+                "Are you sure you want to mark this ticket as resolved?\n\n" +
+                "This action cannot be revert."
+            );
+
+            if (confirmResolved) {
+                performTicketAction('resolved');
+            }
+        });
+    }
+
     function formatChatDate(dateValue) {
         const now = new Date();
         const messageDate = new Date(dateValue);
@@ -42,14 +91,27 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function updateChatTimeStamps() {
-        document.querySelectorAll('.chatTimeStamp:not(.empty)').forEach(el => el.remove());
+        const messageWrapper = document.querySelector('.messageWrapper');
+        if (!messageWrapper) return;
 
-        const comments = document.querySelectorAll('.comment');
+        const items = Array.from(messageWrapper.querySelectorAll('.comment, .system-activity'));
+        document.querySelectorAll('.chatTimeStamp:not(.empty)').forEach(el => el.remove());
+        // document.querySelectorAll('.system-activity').forEach(el => el.remove());
+
+        items.sort((a, b) => {
+            const timeA = new Date(a.querySelector('.bubble:first-child')?.getAttribute('data-timestamp') || a.getAttribute('data-timestamp'));
+            const timeB = new Date(b.querySelector('.bubble:first-child')?.getAttribute('data-timestamp') || b.getAttribute('data-timestamp'));
+            return timeA - timeB;
+        });
+
+        console.log(items);
+
         let lastProcessedTime = null;
 
-        comments.forEach((comment, index) => {
-            const firstBubble = comment.querySelector('.bubble:first-child');
-            const currentTimeStr = firstBubble.getAttribute('data-timestamp');
+        items.forEach((item, index) => {
+            messageWrapper.appendChild(item);
+            const firstBubble = item.querySelector('.bubble:first-child');
+            const currentTimeStr = firstBubble? firstBubble.getAttribute('data-timestamp') : item.getAttribute('data-timestamp');
             const currentTime = new Date(currentTimeStr);
 
             let shouldShowStamp = false;
@@ -63,22 +125,20 @@ document.addEventListener("DOMContentLoaded", async function() {
                     shouldShowStamp = true;
                 }
             }
-
+            
             if (shouldShowStamp) {
                 const stamp = document.createElement('span');
                 stamp.className = 'chatTimeStamp';
-                
                 stamp.innerText = formatChatDate(currentTime);
-                
-                comment.parentNode.insertBefore(stamp, comment);
+                messageWrapper.insertBefore(stamp, item);
             }
 
-            const lastBubble = comment.querySelector('.bubble:last-child');
-            lastProcessedTime = new Date(lastBubble.getAttribute('data-timestamp'));
+            const lastBubble = item.querySelector('.bubble:last-child');
+            const lastTimeStr = lastBubble? lastBubble.getAttribute('data-timestamp') : item.getAttribute('data-timestamp');
+            lastProcessedTime = new Date(lastTimeStr);
         });
     }
-
-    updateChatTimeStamps();
+    
     const sendBtn = document.querySelector('.sendIcon');
     const messageWrapper = document.querySelector('.messageWrapper');
     
@@ -164,7 +224,8 @@ document.addEventListener("DOMContentLoaded", async function() {
             behavior: 'smooth'
         });
     }
-
+    
+    updateChatTimeStamps();
     const commentContainer = document.querySelector('.commentContainer');
     commentContainer.scrollTo({
         top: commentContainer.scrollHeight,
@@ -288,3 +349,32 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 });
 
+function performTicketAction(actionType) {
+    console.log(`Processing ${actionType} request...`);
+    
+    const actionUrl = `/support/tickets/${TICKET_ID}/action/`;
+
+    const formData = new FormData();
+    formData.append('action', actionType);
+    formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+    fetch(actionUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload(); 
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("An unexpected error occurred.");
+    });
+}

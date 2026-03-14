@@ -67,11 +67,7 @@
                     
                     <li class="{% if request.resolver_match.url_name in 'support_center, viewFAQ' %}active{% endif %}">
                         <a href="
-                            {% if user.is_authenticated %}
-                                {% url 'viewFAQ' %}
-                            {% else %}
-                                {% url "help" %}
-                            {% endif %}
+                            {% url 'viewFAQ' %}
                         "  id="i-Help">Help</a>
                     </li>
                 </ul>
@@ -204,7 +200,7 @@
 
         <div class="functionG2">
             <span class="title">System Support</span>
-            {% comment %} <span class="item"><a href="{% url "review_feedback" %}">Support Tickets</a></span> {% endcomment %}
+            <span class="item"><a href="{% url "feedbacks" %}">Support Tickets</a></span>
             <span class="item"><a href="{% url "system_log" %}">System Logs</a></span>
         </div>
         {% elif user_role == 'student' or user_role == 'lecturer' %}
@@ -217,7 +213,7 @@
             <span class="title">Interactive Support</span>
             <span class="item"><a href="{% url 'smart_assistant' %}">Campus AI Assistant</a></span>
             <span class="item"><a href="{% url "submit_feedback" %}">Submit Ticket</a></span>
-            <span class="item"><a href="{% url "feedback_history" %}">View Feedback Ticket History</a></span>
+            <span class="item"><a href="{% url "feedbacks" %}">My Tickets</a></span>
         </div>
         {% endif %}
     {% else %}

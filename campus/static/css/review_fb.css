@@ -259,7 +259,7 @@ main{
 
 .requestActions .escalate{
     color: red;
-    background-color: transparent;
+    background-color: white;
     border: 0.01vw solid rgba(var(--black), 1);
 }
 
@@ -276,6 +276,18 @@ main{
 }
 
 .requestActions .close:hover{
+    color: white;
+    background-color: darkgreen;
+    border: 0.01vw solid rgba(var(--black), 0);
+}
+
+.requestActions .resolved{
+    color: rgba(var(--black), 1);
+    background-color: white;
+    border: 0.01vw solid rgba(var(--black), 1);
+}
+
+.requestActions .resolved:hover{
     color: rgba(var(--black), 1);
     background-color: greenyellow;
     border: 0.01vw solid rgba(var(--black), 0);
@@ -360,6 +372,7 @@ main{
     padding: 1vw;
 }
 
+.messageWrapper .system-activity,
 .messageWrapper .chatTimeStamp{
     width: auto;
     font-size: var(--xs-fontsize);
@@ -367,7 +380,7 @@ main{
     background-color: white;
     border-radius: 0.2vw;
     align-self: center;
-    max-width: 7vw;
+    max-width: 20vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -378,6 +391,14 @@ main{
     color: rgba(var(--black), 0.4);
     font-size: var(--xs-fontsize);
     user-select: none;
+}
+
+.messageWrapper .system-activity.escalation{
+    background-color: red;
+}
+
+.messageWrapper .system-activity.status_change{
+    background-color: greenyellow;
 }
 
 .messageWrapper .comment{
@@ -532,7 +553,7 @@ main{
     transition: background-color 0.2s;
 }
 
-.commentInputWrapper.disabled{
+.disabled{
     pointer-events: none;
     filter: brightness(70%);
 }
