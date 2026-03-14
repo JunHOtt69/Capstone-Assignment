@@ -933,10 +933,28 @@ def smart_assistant(request):
     return render(request, 'help/smart_assistant.html')
 
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
-def feedback_history(request): 
-    return render(request, "help/feedback_history.html")
+def feedbacks(request):
+    sort_by = '-created_at'
+    tickets = SupportTicket.objects.all().order_by(sort_by)
+    categories = SupportTicket.CATEGORY_CHOICES
+    status = SupportTicket.STATUS_CHOICES
+
+    if request.user.groups.filter(name='admin').exists():
+        query = Q(assigned_to=request.user)
+    else:
+        query = Q(created_by=request.user)
+    my_tickets = tickets.filter(query).distinct()
+
+    context = {
+        'tickets': tickets,
+        'categories': categories,
+        'status': status,
+        'my_tickets': my_tickets 
+    }
+    return render(request, "help/ticket_list.html", context)
 
 @role_required(allowed_roles=['lecturer', 'student'])
+@transaction.atomic
 def submit_feedback(request): 
     if request.method == 'POST':
         form = SupportTicketForm(request.POST, request.FILES)
@@ -1055,6 +1073,19 @@ def send_ticket_update_email(recipient, ticket, context, template):
     msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
+
+@login_required
+def ticket_list_ajax(request):
+    sort_by = request.GET.get('sort', '-created_at')
+
+    if request.user.groups.filter(name='admin').exists():
+        tickets = SupportTicket.objects.all().order_by(sort_by)
+    else: 
+        tickets = SupportTicket.objects.filter(created_by=request.user).order_by(sort_by)
+    
+    html = render_to_string('partials/ticket_list_partials.html', {'tickets': tickets}, request=request)
+    
+    return JsonResponse({'html': html})
 
 @login_required
 def post_reply_ajax(request, ticket_id):
@@ -1254,7 +1285,6 @@ def edit_faq(request, slug=None):
     }
 
     return render(request, "help/edit_faq.html", context)
-
 
 def faq_suggestions(request):
     query = request.GET.get('q', '').strip()

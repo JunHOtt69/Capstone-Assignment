@@ -1,0 +1,13 @@
+{% for ticket in tickets %}
+    <tr onclick="window.location.href='{% url 'review_feedback' ticket.id %}'" class="clickableRow">
+        <td>{{ ticket.id }}</td>
+        <td>{{ ticket.title }}</td>
+        <td>{{ ticket.get_category_display }}</td>
+        <td><span class="stat {{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+        <td>{{ ticket.created_at }}</td>
+    </tr>
+{% empty %}
+    <tr>
+        <td colspan="5">No feedback tickets found.</td>
+    </tr>
+{% endfor %}

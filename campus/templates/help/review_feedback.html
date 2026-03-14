@@ -64,14 +64,14 @@
         <section class="rightCt">
             {% if user_role == 'admin' %}
                 abc
-            {% else %}
+            {% else %} 
                 <div class="requestActions">
                     <button class="escalate {% if has_escalated %}disabled{% endif %}">Request Escalation</button>
                     <button class="close {% if ticket.is_inactive %}disabled{% endif %}">Request to Close </button>
                     <button class="resolved {% if ticket.is_inactive %}disabled{% endif %}">Mark as Resolved</button>
                 </div>
             {% endif %}
-            
+            {{user_role}}
             <div class="chatContainer">
                 <p class="configTitle">Activity</p>
                 <div class="commentContainer">

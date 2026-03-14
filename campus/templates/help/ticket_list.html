@@ -1,0 +1,122 @@
+{% extends "base.html" %} 
+{% load static %}  
+{% block title %} Feedback Tickets  {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/ticket_list.css' %}">
+{% endblock %}
+
+{% block content %}
+    <h2 class="pageTitle">Feedback Tickets</h2>
+    {% if user_role == 'admin' %}
+    <section class="ticketListPage">
+        <div class="sectionTitle">Available Tickets</div>
+        <div class="tableWrapper">
+            <table class="ticketTable">
+                <thead>
+                    <tr>
+                        <th><label class="itemLabel">ID</label></th>
+                        <th>
+                            <label class="itemLabel" id-="t-Title">Title ▲</label>
+                        </th>
+                        <th>
+                            <label class="itemLabel" id="t-cat">Category</label>
+                            <div class="categoryOption">
+                                {% for value, label in categories %}    
+                                <label class="categoryBox">
+                                    <input type="checkbox" name="category" value="{{ value }}" class="categoryInput">
+                                    <div class="categoryTile">
+                                        <span class="tickIcon">✔</span>
+                                        <span class="categoryLabel">{{ label }}</span>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </th>
+                        <th>
+                            <label class="itemLabel" id="t-stat">Status</label>
+                            <div class="categoryOption">
+                                {% for value, label in status %}
+                                <label class="statusBox">
+                                    <input type="checkbox" name="status" value="{{ value }}" class="categoryInput">
+                                    <div class="statusTile">
+                                        <span class="tickIcon">✔</span>
+                                        <span class="statusLabel">{{ label }}</span>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </th>
+                        <th>
+                            <label class="itemLabel" id-="t-CA">Created At ▲</label>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="ticket-table-container">
+                    {% include "partials/ticket_list_partials.html" %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+    <section class="myTickets">
+        <div class="sectionTitle">
+            {% if user_role == 'admin' %}
+            Ticket Handling
+            {% else %}
+            My Tickets
+            {% endif %}
+        </div>
+        <table class="escalatedTicket">
+            <thead>
+                <tr>
+                    <th><label class="itemLabel">ID</label></th>
+                    <th>
+                        <label class="itemLabel" id-="t-Title">Title ▲</label>
+                    </th>
+                    <th>
+                        <label class="itemLabel" id="t-cat">Category</label>
+                        <div class="categoryOption">
+                            {% for value, label in categories %}    
+                            <label class="categoryBox">
+                                <input type="checkbox" name="category" value="{{ value }}" class="categoryInput">
+                                <div class="categoryTile">
+                                    <span class="tickIcon">✔</span>
+                                    <span class="categoryLabel">{{ label }}</span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </th>
+                    <th>
+                        <label class="itemLabel" id="t-stat">Status</label>
+                        <div class="categoryOption">
+                            {% for value, label in status %}
+                            <label class="statusBox">
+                                <input type="checkbox" name="status" value="{{ value }}" class="categoryInput">
+                                <div class="statusTile">
+                                    <span class="tickIcon">✔</span>
+                                    <span class="statusLabel">{{ label }}</span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </th>
+                    <th>
+                        <label class="itemLabel" id-="t-CA">Created At ▲</label>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="my-ticket-table-container">
+                {% include "partials/ticket_list_partials.html" with tickets=my_tickets %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/ticket_list.js' %}"></script>
+{% endblock %} 
+
+{% block extra_template %}
+{% endblock %} 
