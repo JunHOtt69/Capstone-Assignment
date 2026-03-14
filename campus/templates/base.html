@@ -67,11 +67,7 @@
                     
                     <li class="{% if request.resolver_match.url_name in 'support_center, viewFAQ' %}active{% endif %}">
                         <a href="
-                            {% if user.is_authenticated %}
-                                {% url 'viewFAQ' %}
-                            {% else %}
-                                {% url "help" %}
-                            {% endif %}
+                            {% url 'viewFAQ' %}
                         "  id="i-Help">Help</a>
                     </li>
                 </ul>

@@ -439,6 +439,10 @@ class SupportTicket(models.Model):
     def is_inactive(self):
         return self.status in ['closed', 'resolved', 'expired']
 
+    @property
+    def is_escalated(self):
+        return self.activities.filter(action='escalation').exists()
+
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)

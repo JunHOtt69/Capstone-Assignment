@@ -818,8 +818,6 @@ def announcements(request):
 
 
 #FAQ function
-def help(request): 
-    return render(request, "help/help.html")
 
 def _infer_attachment_count_from_content(html_content):
     if not html_content:
@@ -971,7 +969,7 @@ def feedbacks(request):
         'my_category_counts': my_category_counts,
         'my_status_counts': my_status_counts 
     }
-    
+
     return render(request, "help/ticket_list.html", context)
 
 @role_required(allowed_roles=['lecturer', 'student'])
