@@ -457,6 +457,7 @@ class TicketActivity(models.Model):
         ('status_change', 'Updated Status'),
         ('escalation', 'Escalated Ticket '),
         ('closure_request', 'Closure Requested'),
+        ('rejected_closure', 'Rejected Closure Requested'),
     ]
 
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='activities')
@@ -473,6 +474,10 @@ class TicketActivity(models.Model):
     def creator_name(self):
         full_name = self.user.get_full_name()
         return full_name if full_name else self.user.username
+
+    @property 
+    def is_admin(self):
+        return self.user.groups.filter(name="admin").exists()
 
 class CannedResponse(models.Model):
     title = models.CharField(max_length=100) # e.g., "General Acknowledgment"

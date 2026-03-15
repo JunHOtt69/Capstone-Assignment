@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const escalateBtn = document.querySelector('.requestActions .escalate');
     const closeBtn = document.querySelector('.requestActions .close');
     const resolvedBtn = document.querySelector('.requestActions .resolved');
+    const closeRequest = document.querySelector('.requestActions .closeRequest');
 
     if (escalateBtn) {
         escalateBtn.addEventListener('click', function(e) {
@@ -61,6 +62,42 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
+    if(closeRequest){
+        const activityId = closeRequest.getAttribute('data-activity-id');
+        const acceptBtn = closeRequest.querySelector('.accept');
+        const rejectBtn = closeRequest.querySelector('.reject');
+
+        if(acceptBtn){
+            acceptBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const confirmAccept = confirm(
+                    "Confirm Ticket Closure?\n\n" +
+                    "By accepting, you agree that the issue is fully resolved. This will finalize the ticket."
+                );
+
+                if (confirmAccept) {
+                    performTicketAction('close', activityId);
+                }
+            });
+        }
+
+        if(rejectBtn){
+            rejectBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const confirmReject = confirm(
+                    "Reject Closure Request?\n\n" +
+                    "This will keep the ticket active and notify the staff that the issue still requires attentio"
+                );
+
+                if (confirmReject) {
+                    performTicketAction('rejected_closure', activityId);
+                }
+            });
+        }
+    }
+
     function formatChatDate(dateValue) {
         const now = new Date();
         const messageDate = new Date(dateValue);
@@ -102,7 +139,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             const timeB = new Date(b.querySelector('.bubble:first-child')?.getAttribute('data-timestamp') || b.getAttribute('data-timestamp'));
             return timeA - timeB;
         });
-
         let lastProcessedTime = null;
 
         items.forEach((item, index) => {
@@ -134,7 +170,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             const lastTimeStr = lastBubble? lastBubble.getAttribute('data-timestamp') : item.getAttribute('data-timestamp');
             lastProcessedTime = new Date(lastTimeStr);
         });
-        console.log(TICKET_IS_INACTIVE);
+
         if(TICKET_IS_INACTIVE){
             const notice = document.createElement('p');
             notice.classList.add('chatTimeStamp');
@@ -359,7 +395,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 });
 
-function performTicketAction(actionType) {
+function performTicketAction(actionType, activityId = null) {
     console.log(`Processing ${actionType} request...`);
     
     const actionUrl = `/support/tickets/${TICKET_ID}/action/`;
@@ -368,6 +404,12 @@ function performTicketAction(actionType) {
     formData.append('action', actionType);
     formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
 
+    if(activityId){
+        formData.append('activity_id', activityId);
+    }
+
+    const loading = document.querySelector('.loading');
+    loading.classList.add('active');
     fetch(actionUrl, {
         method: 'POST',
         body: formData,
@@ -379,6 +421,7 @@ function performTicketAction(actionType) {
     .then(data => {
         if (data.status === 'success') {
             window.location.reload(); 
+            loading.classList.remove('active');
         } else {
             alert("Error: " + data.message);
         }
@@ -387,4 +430,44 @@ function performTicketAction(actionType) {
         console.error('Error:', error);
         alert("An unexpected error occurred.");
     });
+}
+
+window.takeOwnership = function(ticketId) {
+    if (!confirm("Do you want to take ownership of this ticket?")) return;
+
+    const loading = document.querySelector('.loading');
+    loading.classList.add('active');
+
+    fetch(`/support/tickets/take/${ticketId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'), 
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload(); 
+            loading.classList.remove('active');
+        } else {
+            alert(data.message || "Error taking ownership");
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }

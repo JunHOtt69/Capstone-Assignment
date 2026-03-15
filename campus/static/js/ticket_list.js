@@ -26,15 +26,14 @@ document.addEventListener('DOMContentLoaded', async() => {
         state.categories.forEach(c => params.append('category', c));
         state.statuses.forEach(s => params.append('status', s));
 
-        container.style.opacity = '0.5';
-        container.style.pointerEvents = 'none';
+        const loading = document.querySelector('.loading');
+        loading.classList.add('active');
 
         fetch(`/support/tickets/partial/?${params.toString()}`)
             .then(res => res.text())
             .then(html => {
                 container.innerHTML = html;
-                container.style.opacity = '1';
-                container.style.pointerEvents = 'auto';
+                loading.classList.remove('active');
             });
     }
 
@@ -100,6 +99,9 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     window.takeOwnership = function(ticketId) {
         if (!confirm("Do you want to take ownership of this ticket?")) return;
+        const loading = document.querySelector('.loading');
+        loading.classList.add('active');
+
         fetch(`/support/tickets/take/${ticketId}/`, {
             method: 'POST',
             headers: {
@@ -112,6 +114,7 @@ document.addEventListener('DOMContentLoaded', async() => {
             if (data.status === 'success') {
                 updateTable('t'); 
                 updateTable('my');
+                loading.classList.remove('active');
             } else {
                 alert(data.message || "Error taking ownership");
             }
