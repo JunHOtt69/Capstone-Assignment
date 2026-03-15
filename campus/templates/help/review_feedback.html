@@ -10,8 +10,13 @@
 
 {% block content %}
     <div class="pageTitleWrapper">
-        <p>Ticket Details T{{ ticket.id }}</p>
+        <p class="details">Ticket Details T{{ ticket.id }}</p>
         <div class="titleCat">
+            <span class="returnIcon" onclick="location.href='{% url "feedbacks" %}';">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+                </svg>
+            </span>
             <h2>{{ ticket.title }}</h2>
             <span class="cat">{{ ticket.get_category_display }}</span>
             <span class="stat {{ ticket.status }}">{{ ticket.get_status_display }}</span>
@@ -62,55 +67,74 @@
             
         </section>
         <section class="rightCt">
-            {% if user_role == 'admin' %}
-                abc
-            {% else %} 
-                <div class="requestActions">
-                    <button class="escalate {% if has_escalated %}disabled{% endif %}">Request Escalation</button>
-                    <button class="close {% if ticket.is_inactive %}disabled{% endif %}">Request to Close </button>
-                    <button class="resolved {% if ticket.is_inactive %}disabled{% endif %}">Mark as Resolved</button>
-                </div>
+            <div class="requestActions">
+            {% if ticket.assigned_to.id == user.id and not ticket.is_inactive %}
+                <button class="resolved {% if ticket.is_inactive %}disabled{% endif %}">Mark as Resolved</button>
+                {% for activity in activities %}
+                    {% if activity.action == 'closure_request' and activity.new_value != 'rejected' %}
+                    <div class="closeRequest" data-activity-id="{{ activity.id }}">
+                        <span>User has requested to Close Ticket.</span>
+                        <button class="accept">Accept</button>
+                        <button class="reject">Reject</button>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% elif ticket.created_by.id == user.id and not ticket.is_inactive %} 
+                <button class="escalate">Request Escalation</button>
+
+                <button class="close {% if has_closure_request %}disabled{% endif %}">Request to Close </button>
+                <button class="resolved">Mark as Resolved</button>
+            {% elif user_role == 'admin' and ticket.status == 'open' %}
+                <button type="button" class="takeOwn"
+                    onclick="event.stopPropagation(); takeOwnership({{ ticket.id }})"
+                    >Take Ownership
+                </button>
             {% endif %}
-            {{user_role}}
+            {% if user.is_superuser and ticket.status == "expired" %}
+                <button>Reopen Ticket & Escalate</button>
+            {% endif %}
+            </div>
             <div class="chatContainer">
                 <p class="configTitle">Activity</p>
                 <div class="commentContainer">
                     <div class="messageWrapper">
-                        {% if grouped_messages %}
-                            {% for activity in activities %}
-                            <p class="system-activity {{ activity.action }}" data-timestamp="{{ activity.timestamp|date:'c' }}">
-                                {% if user_role == 'admin' %}
-                                    {{ activity.creator_name }} 
-                                    {{ activity.get_action_display }} 
-                                    {% if activity.action == 'status_change' %} 
-                                        {% if activity.new_value %}({{ activity.new_value }}){% endif %}
-                                    {% endif %}
-                                {% else %}
-                                    {% if activity.action == 'status_change' %}
-                                        {{ activity.creator_name }} 
-                                        {% if activity.new_value == 'Closed' %}requested{% endif %}
-                                        {{ activity.get_action_display }} 
-                                        {% if activity.new_value %}({{ activity.new_value }}){% endif %}
-                                    {% else %}
-                                        {{ activity.creator_name }} 
-                                        {{ activity.get_action_display }}
-                                    {% endif %}
+                        {% for activity in activities %}
+                        <p class="system-activity {{ activity.action }}" data-timestamp="{{ activity.timestamp|date:'c' }}">
+                            {% if activity.is_admin %}
+                                {% if activity.user.id == user.id %}You have
+                                {% else %} {{ activity.creator_name }} 
                                 {% endif %}
-                            </p>
-                            {% endfor %}
+                                {{ activity.get_action_display }} 
+                                {% if activity.action == 'status_change' %}
+                                    {% if activity.new_value %}({{ activity.new_value }}){% endif %}
+                                {% endif %}
+                            {% else %}
+                                {% if activity.action == 'closure_request' %}
+                                    {% if activity.user.id == user.id %}You have
+                                    {% else %} {{ activity.creator_name }} 
+                                    {% endif %}
+                                    requested Ticket Closure.
+                                {% else %}
+                                    {% if activity.user.id == user.id %}You have
+                                    {% else %} {{ activity.creator_name }} 
+                                    {% endif %}
+                                    {{ activity.get_action_display }}
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                        {% endfor %}
+
+                        {% if grouped_messages %}
                             {% for cluster in grouped_messages %}
                                 {% include "partials/messages.html" %}
                             {% endfor %}
-                        {% else %}
+                        {% elif not grouped_messages and not activities %}
                             <p class="chatTimeStamp empty">No comment.</p>
-                        {% endif %}
-                        {% if ticket.is_inactive %}
-                            <p class="chatTimeStamp empty">This ticket is {{ ticket.get_status_display }}</p>
                         {% endif %}
                     </div>
                 </div>
                 <div class="commentInputWrapper 
-                    {% if ticket.is_inactive %}
+                    {% if ticket.is_inactive or ticket.assigned_to.id != user.id and ticket.created_by.id != user.id and not user.is_superuser%}
                         disabled
                     {% endif %}
                 ">
@@ -145,6 +169,9 @@
         const TICKET_ID = "{{ ticket.id }}";
         const POST_REPLY_URL = "{% url 'post_reply_ajax' ticket.id %}";
         const CSRF_TOKEN = "{{ csrf_token }}";
+        const TICKET_IS_INACTIVE = {{ ticket.is_inactive|yesno:"true,false" }};
+        const TICKET_IS_EXPIRED = {% if ticket.status == "expired" %}true {% else %}false{% endif %};
+        const TICKET_STATUS_DISPLAY = '{{ ticket.get_status_display }}';
     </script>
     <script src="{% static 'js/review_fb.js' %}"></script>
     

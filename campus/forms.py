@@ -167,6 +167,7 @@ class SupportTicketForm(forms.ModelForm):
     )
 
     extra_attachments = LimitedMultipleFileField(
+        required=False,
         widget=MultipleFileInput(attrs={
             'style': 'display: none',
             'accept': '.pdf, .docx, .xlsx, .png, .jpg, .jpeg, .mp4, .mov, .rar',

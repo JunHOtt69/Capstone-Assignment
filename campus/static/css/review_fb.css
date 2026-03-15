@@ -14,10 +14,14 @@ main{
     margin-top: 1vw;
 }
 
+.pageTitleWrapper .details{
+    margin-left: calc(1.5vw + 1vw);
+}
+
 .pageTitleWrapper .titleCat{
     display: flex;
     justify-content: flex-start;
-    align-items: flex-end;
+    align-items: center;
     gap: 1vw;
 }
 
@@ -27,8 +31,15 @@ main{
     border-radius: 0.1vw;
     border: 0.01vw solid rgba(var(--black), 0.4);
     background-color: transparent;
-    margin-bottom: 0.8vw;
+    margin-top: 0.8vw;
     font-size: var(--xs-fontsize);
+}
+
+.pageTitleWrapper .returnIcon{
+    object-fit: contain;
+    width: 1.5vw;
+    height: 1.5vw;
+    cursor: pointer;
 }
 
 .pageTitleWrapper .titleCat .stat.open{
@@ -238,12 +249,46 @@ main{
 }
 
 .requestActions{
-    height: 3vw;
+    height: 2vw;
     width: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: 1vw;
+    margin-bottom: 1vw;
+}
+
+.closeRequest{
+    height: 100%;
+    width: auto;
+    right: 0;
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: var(--xs-fontsize);
+    background-color: rgba(var(--black), 1);
+    color: white;
+    padding: 0.5vw;
+    gap: 0.5vw;
+}
+
+.closeRequest .accept{
+    color: greenyellow;
+}
+
+.closeRequest .accept:hover{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+}
+
+.closeRequest .reject{
+    color: red;
+}
+
+.closeRequest .reject:hover{
+    color: white;
+    background-color: red;
 }
 
 .requestActions button{
@@ -255,6 +300,7 @@ main{
     transition: background-color .2s, border .2s,  color .2s;
     font-size: var(--xs-fontsize);
     cursor: pointer;
+    user-select: none;
 }
 
 .requestActions .escalate{
@@ -291,6 +337,16 @@ main{
     color: rgba(var(--black), 1);
     background-color: greenyellow;
     border: 0.01vw solid rgba(var(--black), 0);
+}
+
+.requestActions .takeOwn{
+    border: 0.01vw solid rgba(var(--black), 1);
+    background-color: white;
+}
+
+.requestActions .takeOwn:hover{
+    background-color: orange;
+
 }
 
 .chatContainer{
@@ -389,6 +445,12 @@ main{
 
 .messageWrapper .chatTimeStamp.empty{
     color: rgba(var(--black), 0.4);
+    font-size: var(--xs-fontsize);
+    user-select: none;
+}
+
+.messageWrapper .chatTimeStamp.expired{
+    color: red;
     font-size: var(--xs-fontsize);
     user-select: none;
 }
@@ -549,7 +611,7 @@ main{
     justify-content: flex-start;
     align-items: flex-end;
     flex-direction: column;
-    background-color: rgba(var(--black), 0);
+    background-color: white;
     transition: background-color 0.2s;
 }
 

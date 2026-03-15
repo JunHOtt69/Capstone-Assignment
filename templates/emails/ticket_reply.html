@@ -22,7 +22,7 @@
                         </div>
                         
                         <h2 style="text-align: center;
-                        width: 100%;">Update on your support ticket #{{ ticketId }}</h2>
+                        width: 100%;">Update on your support ticket #T{{ ticketId }}</h2>
                         <table align="center" width="100%" style="box-sizing: border-box; border-collapse: collapse; width:100% !important; margin-right: auto; margin-left: auto ; border: 0.05vw solid rgba(0, 0, 0, 0.6);">
                             <tbody >
                                 <tr style="box-sizing: border-box;">
@@ -34,7 +34,7 @@
                                             color: black;
                                             font-size: 14px;
                                             text-align: left;
-                                            line-height: 1.5;">Hi Admin,</p>
+                                            line-height: 1.5;">Hi {{ first_name }},</p>
 
                                         <p style="margin-top: 0; margin-bottom: 10px;
                                                 width: 100%;
@@ -44,7 +44,7 @@
                                                 text-align: left;
                                                 line-height: 1.6;
                                                 text-align: justify;">
-                                                There is a new reply on ticket <strong>#{{ ticketId }} – {{ ticket_title }}</strong> .</p>
+                                                There is a new reply on your support ticket <strong>#T{{ ticketId }} – {{ ticket_title }}</strong> .</p>
 
                                         <p style="margin: 0;
                                                 width: 100%;
@@ -55,8 +55,7 @@
                                                 margin-bottom: 10px;
                                                 font-weight: normal;
                                                 text-align: justify;">
-                                            Latest reply from: {{ sender_name }} <br>
-                                            Please review the conversation and respond if further assistance is required.
+                                            A new message has been added to the conversation. Please review the latest update and continue the discussion if further clarification is needed.
                                         </p>
                                         <p style="margin: 0;
                                                 width: 100%;
@@ -67,8 +66,7 @@
                                                 margin-bottom: 10px;
                                                 font-weight: normal;
                                                 text-align: justify;">
-                                            
-                                            Click the button below to open the ticket and view the full discussion.
+                                            Click the button below to view the full ticket details.
                                         </p>
                                     </td>
                                 </tr>
@@ -109,7 +107,8 @@
                                             font-size: 14px;
                                             text-align: left;
                                             line-height: 1.5;">
-                                            Smart Campus System
+                                            Thank you, <br>
+                                            Smart Campus Support Team
                                         </p>
                                     </td>
                                 </tr>

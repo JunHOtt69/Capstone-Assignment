@@ -422,11 +422,6 @@ class SupportTicket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     all_attachments = GenericRelation(attachments)
 
-    def check_expiry(self):
-        if self.status == 'open' and self.created_at < timezone.now() - timedelta(days=7):
-            self.status = 'expired'
-            self.save()
-
     def __str__(self):
         return f"[{self.status.upper()}] {self.title}"
     
@@ -443,13 +438,16 @@ class SupportTicket(models.Model):
     def is_escalated(self):
         return self.activities.filter(action='escalation').exists()
 
+    @property 
+    def is_close_requested(self):
+        return self.activities.filter(action="closure_request").exists()
+
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     
-    # Identify if it's an admin reply or user reply
     is_admin_reply = models.BooleanField(default=False)
     
     all_attachments = GenericRelation(attachments)
@@ -459,6 +457,7 @@ class TicketActivity(models.Model):
         ('status_change', 'Updated Status'),
         ('escalation', 'Escalated Ticket '),
         ('closure_request', 'Closure Requested'),
+        ('rejected_closure', 'Rejected Closure Requested'),
     ]
 
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='activities')
@@ -475,6 +474,10 @@ class TicketActivity(models.Model):
     def creator_name(self):
         full_name = self.user.get_full_name()
         return full_name if full_name else self.user.username
+
+    @property 
+    def is_admin(self):
+        return self.user.groups.filter(name="admin").exists()
 
 class CannedResponse(models.Model):
     title = models.CharField(max_length=100) # e.g., "General Acknowledgment"

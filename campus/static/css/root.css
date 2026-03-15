@@ -1038,6 +1038,73 @@ header li a{
     filter: invert(1);
 }
 
+.loading{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--black), 0.5);
+    z-index: 99;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    user-select: none;
+    cursor: wait;
+    gap: 1vw;
+    font-size: var(--p-fontsize);
+    opacity: 0;
+    visibility: hidden;
+    color: white;
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+
+    clip-path: circle(0% at 50% 50%);
+
+    transition: 
+        clip-path .3s ease-out,  
+        opacity .3s ease-in,
+        backdrop-filter .3s,
+        visibility .2s step-start;
+}
+
+.loading.active{
+    opacity: 1;
+    visibility: visible;
+    backdrop-filter: blur(0.5vw);
+    -webkit-backdrop-filter: blur(0.5vw);
+    clip-path: circle(100% at 50% 50%);
+}
+
+.loading .circles{
+    width: auto;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vw;
+    
+}
+
+.loading .circles .loader{
+    background-color: greenyellow;
+    border-radius: 50%;
+    width: 0.5vw;
+    height: 0.5vw;
+    box-shadow: 0 0 0 greenyellow;
+}
+
+.loader:nth-child(1){
+    animation: loader 0.8s ease-in-out alternate infinite;
+}
+
+.loader:nth-child(2){
+    animation: loader 0.8s ease-in-out .3s alternate infinite;
+}
+
+.loader:nth-child(3){
+    animation: loader 0.8s ease-in-out .6s alternate infinite;
+}
+
 :root{
     --h1-fontsize: 4vw;
     --h2-fontsize: 2.5vw;
@@ -1098,6 +1165,13 @@ header li a{
         transform: translateX(0);
         width: 13vw;
         max-height: 15vw;
+    }
+}
+
+@keyframes loader {
+    to {
+        box-shadow: 0 0 0.4vw rgba(var(--green-yellow), 0.5);
+        transform: scale(1.8);
     }
 }
 

@@ -22,6 +22,13 @@ table{
     counter-reset: rowNumber;
 }
 
+
+table td.number-cell::before {
+    content: counter(rowNumber);
+    font-weight: 400; 
+    color: rgba(var(--black), 0.6);
+}
+
 table td.number-cell::before {
     content: counter(rowNumber);
     font-weight: 400; 
@@ -45,7 +52,7 @@ table tbody tr{
     border-bottom: 0.1vw solid rgba(var(--black), 0.4);
     background-color: white;
     transition: background-color 0.2s;
-    
+    counter-increment: rowNumber;
 }
 
 table tbody tr:nth-child(even){
@@ -69,11 +76,30 @@ table tbody tr td{
     line-height: 1.5vw;
 }
 
+table tbody tr.escalated{
+    color: red;
+}
+
 table tbody th{
     text-align: center;
 }
 
-table th:first-child{
+table thead th label{
+    display: block;
+    width: 100%;
+    cursor: pointer;
+}
+
+table thead th.no-col{
+    width: 5%;
+}
+
+table thead th:has(.id) label,
+table thead th:has(.act) label{
+    cursor: default;
+}
+
+table th:has(.id){
     width: 5%;
 }
 
@@ -127,7 +153,6 @@ table td button{
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
     transition: color .2s, background-color 0.2s;
     padding: 0.3vw;
     font-size: var(--p-fontsize);
@@ -260,10 +285,8 @@ table .stat::before{
     cursor: pointer;
 }
 
-table .title.sorted::before, 
-table .cat.sorted::before, 
-table .ca.sorted::before, 
-table .stat.sorted::before{
+table .title.asc::before, 
+table .ca.asc::before{
     transform: rotate(0deg);
 }
 
