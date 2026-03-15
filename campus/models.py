@@ -422,16 +422,6 @@ class SupportTicket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     all_attachments = GenericRelation(attachments)
 
-    # def notify_expiry(self):
-    #     """Dedicated method to handle email notifications for this ticket."""
-    #     send_mail(
-    #         subject=f"Ticket Expired: {self.title}",
-    #         message=f"Hi {self.creator_name}, your ticket has expired.",
-    #         from_email="noreply@smartcampus.com",
-    #         recipient_list=[self.created_by.email],
-    #         fail_silently=True,
-    #     )
-
     def __str__(self):
         return f"[{self.status.upper()}] {self.title}"
     
@@ -447,6 +437,10 @@ class SupportTicket(models.Model):
     @property
     def is_escalated(self):
         return self.activities.filter(action='escalation').exists()
+
+    @property 
+    def is_close_requested(self):
+        return self.activities.filter(action="closure_request").exists()
 
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')

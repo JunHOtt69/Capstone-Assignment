@@ -1332,14 +1332,19 @@ def ticket_action_ajax(request, ticket_id):
                 ticket.status = 'closed'
                 ticket.save()
             
-            TicketActivity.objects.create(
-                ticket=ticket,
-                user=request.user,
-                action='status_change',
-                old_value=old_status,
-                new_value='Closed',
-            )
-
+                TicketActivity.objects.create(
+                    ticket=ticket,
+                    user=request.user,
+                    action='status_change',
+                    old_value=old_status,
+                    new_value='Closed',
+                )
+            else:
+                TicketActivity.objects.create(
+                    ticket=ticket,
+                    user=request.user,
+                    action='closure_request',
+                )
             recipient = None  
 
             try:
