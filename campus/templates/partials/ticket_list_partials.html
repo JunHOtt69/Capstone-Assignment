@@ -1,5 +1,5 @@
 {% for ticket in tickets %}
-    <tr onclick="window.location.href='{% url 'review_feedback' ticket.id %}'" class="{% if ticket.is_escalated %}escalated{% endif %}">
+    <tr onclick="window.location.href='{% url 'review_feedback' ticket.id %}'" class="{% if ticket.is_escalated and not ticket.is_inactive %}escalated{% endif %}">
         <td class="number-cell"></td>
         <td>T{{ ticket.id }}</td>
         <td><p class="titleData">{{ ticket.title }}</p></td>
@@ -11,7 +11,9 @@
         <td>
             {% if show_action and ticket.status == 'open' %}
             <div class="inputWrapper">
-                <button type="button">Take Ownership</button>
+                <button type="button"
+                    onclick="event.stopPropagation(); takeOwnership({{ ticket.id }})"
+                    >Take Ownership</button>
             </div>
             {% endif %}
         </td>

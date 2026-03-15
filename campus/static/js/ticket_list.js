@@ -97,4 +97,40 @@ document.addEventListener('DOMContentLoaded', async() => {
             updateTable(prefix);
         })
     })
+
+    window.takeOwnership = function(ticketId) {
+        if (!confirm("Do you want to take ownership of this ticket?")) return;
+        fetch(`/support/tickets/take/${ticketId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'), 
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateTable('t'); 
+                updateTable('my');
+            } else {
+                alert(data.message || "Error taking ownership");
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 })

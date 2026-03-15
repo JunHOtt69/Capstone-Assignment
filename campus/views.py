@@ -930,19 +930,56 @@ def support_center(request):
 def smart_assistant(request):
     return render(request, 'help/smart_assistant.html')
 
-@role_required(allowed_roles=['admin', 'lecturer', 'student'])
-def feedbacks(request):
+def check_and_notify_expired():
     expiry_threshold = timezone.now() - timedelta(days=7)
     stale_tickets = SupportTicket.objects.filter(
         status='open', 
         created_at__lt=expiry_threshold
     )
-    
-    # if stale_tickets.exists():
-    #     for ticket in stale_tickets:
-    #         ticket.status = 'expired'
-    #         ticket.save()
+    superusers = User.objects.filter(is_superuser=True)
 
+    if stale_tickets.exists():
+        for ticket in stale_tickets:
+            ticket.status = 'expired'
+            ticket.save()  
+
+            try:
+                recipient1 = ticket.created_by
+                template = 'ticket_expired.html'
+                context = {
+                    "first_name": recipient1.first_name or recipient1.username,
+                    "ticket_title": ticket.title,
+                    "ticketId": ticket.id,
+                    "ticket_status": ticket.status,
+                }
+                
+                subject = f"Your support ticket - #{ticket.id} has expired"
+
+                if recipient1 and recipient1.email:
+                    send_ticket_update_email(recipient1, subject, ticket, context, template)
+                
+                if(superusers):
+                    template3 = 'ticket_expired.html'
+                    user_name = f"{ticket.created_by.first_name} {ticket.created_by.last_name}".strip()
+                    context3 = {
+                        "user_name": user_name,
+                        "ticket_title": ticket.title,
+                        "ticketId": ticket.id,
+                    }
+                    
+                    subject = f"Feedback Ticket has expired - #{ticket.id}"
+
+                    for admin in superusers:
+                        if admin.email:
+                            send_ticket_update_email(admin, subject, ticket, context3, template3)
+
+            except Exception as e:
+                print(f"SMTP Error: {e}")  
+
+@role_required(allowed_roles=['admin', 'lecturer', 'student'])
+def feedbacks(request):
+    check_and_notify_expired()
+            
     sort_by = '-created_at'
     tickets = SupportTicket.objects.all().order_by(sort_by)
     categories = SupportTicket.CATEGORY_CHOICES
@@ -1039,8 +1076,6 @@ def review_feedback(request, ticket_id):
 
     is_admin = request.user.groups.filter(name='admin').exists()
 
-    ticket.check_expiry()
-
     if not is_admin and ticket.created_by != request.user:
         raise PermissionDenied("You do not have permission to view this ticket.")
     
@@ -1089,8 +1124,8 @@ def review_feedback(request, ticket_id):
 
     return render(request, "help/review_feedback.html", context)
 
-def send_ticket_update_email(recipient, ticket, context, template):
-    subject = f"Update on your Ticket: {ticket.title}"
+def send_ticket_update_email(recipient, sub, ticket, context, template):
+    subject = sub
     from_email = settings.DEFAULT_FROM_EMAIL
     
     ticket_url = f"http://localhost:8000/support/tickets/{ticket.id}/"
@@ -1123,25 +1158,19 @@ def take_ownership(request, ticket_id):
             new_value='in_progress'
         )
 
-        try:
-            if is_admin:
-                template = 'ticket_reply_admin.html'
-                full_name = f"{recipient.first_name} {recipient.last_name}".strip()
-                context = {
-                    "sender_name": full_name or recipient.username,
-                    "ticket_title": ticket.title,
-                    "ticketId": ticket.id,
-                }
-            else: 
-                template = 'ticket_reply.html'
-                context = {
-                    "first_name": recipient.first_name or recipient.username,
-                    "ticket_title": ticket.title,
-                    "ticketId": ticket.id,
-                }
+        recipient = ticket.created_by
 
+        try:
+            template = 'ticket_update.html'
+            context = {
+                "first_name": recipient.first_name or recipient.username,
+                "ticket_title": ticket.title,
+                "ticketId": ticket.id,
+                "ticket_status": ticket.status
+            }
+            subject = f"Update on your support ticket #{ticket.id}"
             if recipient and recipient.email:
-                send_ticket_update_email(recipient, ticket, context, template)
+                send_ticket_update_email(recipient, subject, ticket, context, template)
 
         except Exception as e:
                 print(f"SMTP Error: {e}")
@@ -1151,6 +1180,7 @@ def take_ownership(request, ticket_id):
 
 @login_required
 def ticket_list_ajax(request):
+    check_and_notify_expired()
     sort_by = request.GET.get('sort', '-created_at')
     categories = request.GET.getlist('category')
     statuses = request.GET.getlist('status')
@@ -1175,7 +1205,7 @@ def ticket_list_ajax(request):
     context = {
         'tickets': tickets,
         'show_action': (table_type == 'available'),
-        'show_status': (table_type == 'available' and request.user.is_superuser)
+        'show_status': (request.user.is_superuser if table_type == 'available' else True)
     }
     
     return render(request, "partials/ticket_list_partials.html", context)
@@ -1223,9 +1253,11 @@ def post_reply_ajax(request, ticket_id):
                     "ticket_title": ticket.title,
                     "ticketId": ticket.id,
                 }
+            
+            subject = f"Update on your Ticket: {ticket.title}"
 
             if recipient and recipient.email:
-                send_ticket_update_email(recipient, ticket, context, template)
+                send_ticket_update_email(recipient, subject, ticket, context, template)
 
         except Exception as e:
                 print(f"SMTP Error: {e}")
@@ -1273,13 +1305,32 @@ def ticket_action_ajax(request, ticket_id):
                 action='escalation',
             )
 
-            #email admin
+            if ticket.assigned_to:
+                recipient = ticket.assigned_to
+                    
+                try:
+                    template = 'ticket_escalated.html'
+                    context = {
+                        "ticket_title": ticket.title,
+                        "ticketId": ticket.id,
+                    }
+                    
+                    subject = f"Ticket Escalated by User - #{ticket.id}"
+
+                    if recipient and recipient.email:
+                        send_ticket_update_email(recipient, subject, ticket, context, template)
+
+                except Exception as e:
+                        print(f"SMTP Error: {e}")
+                        
+
             messages.success(request, "Escalation request sent successfully!")
             return JsonResponse({"status": "success", "message": "Escalation request sent successfully."})
 
         elif action_type == 'close':
-            ticket.status = 'closed'
-            ticket.save()
+            if request.user.groups.filter(name='admin').exists():
+                ticket.status = 'closed'
+                ticket.save()
             
             TicketActivity.objects.create(
                 ticket=ticket,
@@ -1288,6 +1339,41 @@ def ticket_action_ajax(request, ticket_id):
                 old_value=old_status,
                 new_value='Closed',
             )
+
+            recipient = None  
+
+            try:
+                if ticket.assigned_to:
+                    recipient = ticket.assigned_to
+                    template = 'ticket_request_close.html'
+                    context = {
+                        "ticket_title": ticket.title,
+                        "ticketId": ticket.id,
+                    }
+                    
+                    subject = f"User Requested Ticket Closure - #{ticket.id}"
+
+                    if recipient and recipient.email:
+                        send_ticket_update_email(recipient, subject, ticket, context, template)
+
+                if ticket.status == 'closed':
+                    recipient = ticket.created_by
+                    template = 'ticket_update.html'
+                    context = {
+                        "first_name": recipient.first_name or recipient.username,
+                        "ticket_title": ticket.title,
+                        "ticketId": ticket.id,
+                        "ticket_status": ticket.status,
+                    }
+                    
+                    subject = f"Update on your support ticket - #{ticket.id}"
+
+                    if recipient and recipient.email:
+                        send_ticket_update_email(recipient, subject, ticket, context, template)
+                    
+            except Exception as e:
+                    print(f"SMTP Error: {e}")
+
             if request.user.groups.filter(name="admin").exists():
                 messages.success(request, "Ticket has been closed!")
                 return JsonResponse({"status": "success", "message": "Ticket has been closed."})
@@ -1308,7 +1394,24 @@ def ticket_action_ajax(request, ticket_id):
                 new_value='Resolved',
             )
 
-            #email admin
+            if ticket.assigned_to:
+                recipient = ticket.assigned_to
+                    
+                try:
+                    template = 'ticket_resolved.html'
+                    context = {
+                        "ticket_title": ticket.title,
+                        "ticketId": ticket.id,
+                    }
+                    
+                    subject = f"Ticket Marked as Resolved by User - #{ticket.id}"
+
+                    if recipient and recipient.email:
+                        send_ticket_update_email(recipient, subject, ticket, context, template)
+
+                except Exception as e:
+                        print(f"SMTP Error: {e}")
+
             messages.success(request, "Ticket has been marked as resolved.")
             return JsonResponse({"status": "success", "message": "Ticket has been resolved."})
 

@@ -454,7 +454,6 @@ class TicketMessage(models.Model):
     content = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     
-    # Identify if it's an admin reply or user reply
     is_admin_reply = models.BooleanField(default=False)
     
     all_attachments = GenericRelation(attachments)

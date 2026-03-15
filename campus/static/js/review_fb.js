@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             const lastTimeStr = lastBubble? lastBubble.getAttribute('data-timestamp') : item.getAttribute('data-timestamp');
             lastProcessedTime = new Date(lastTimeStr);
         });
-
+        console.log(TICKET_IS_INACTIVE);
         if(TICKET_IS_INACTIVE){
             const notice = document.createElement('p');
             notice.classList.add('chatTimeStamp');
