@@ -96,15 +96,12 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         const items = Array.from(messageWrapper.querySelectorAll('.comment, .system-activity'));
         document.querySelectorAll('.chatTimeStamp:not(.empty)').forEach(el => el.remove());
-        // document.querySelectorAll('.system-activity').forEach(el => el.remove());
-
+        
         items.sort((a, b) => {
             const timeA = new Date(a.querySelector('.bubble:first-child')?.getAttribute('data-timestamp') || a.getAttribute('data-timestamp'));
             const timeB = new Date(b.querySelector('.bubble:first-child')?.getAttribute('data-timestamp') || b.getAttribute('data-timestamp'));
             return timeA - timeB;
         });
-
-        console.log(items);
 
         let lastProcessedTime = null;
 
@@ -137,6 +134,19 @@ document.addEventListener("DOMContentLoaded", async function() {
             const lastTimeStr = lastBubble? lastBubble.getAttribute('data-timestamp') : item.getAttribute('data-timestamp');
             lastProcessedTime = new Date(lastTimeStr);
         });
+
+        if(TICKET_IS_INACTIVE){
+            const notice = document.createElement('p');
+            notice.classList.add('chatTimeStamp');
+            if(TICKET_IS_EXPIRED){
+                notice.classList.add('expired');
+            }else{
+                notice.classList.add('empty');
+            }
+            
+            notice.innerText = `This ticket is ${TICKET_STATUS_DISPLAY}`;
+            messageWrapper.appendChild(notice);
+        }
     }
     
     const sendBtn = document.querySelector('.sendIcon');

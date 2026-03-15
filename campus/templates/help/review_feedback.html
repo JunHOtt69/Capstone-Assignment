@@ -12,6 +12,11 @@
     <div class="pageTitleWrapper">
         <p>Ticket Details T{{ ticket.id }}</p>
         <div class="titleCat">
+            <span class="returnIcon" onclick="location.href='{% url "feedbacks" %}';">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+                </svg>
+            </span>
             <h2>{{ ticket.title }}</h2>
             <span class="cat">{{ ticket.get_category_display }}</span>
             <span class="stat {{ ticket.status }}">{{ ticket.get_status_display }}</span>
@@ -62,16 +67,17 @@
             
         </section>
         <section class="rightCt">
-            {% if user_role == 'admin' %}
+            <div class="requestActions">
+            {% if user_role == 'admin' and not ticket.is_inactive %}
                 abc
-            {% else %} 
-                <div class="requestActions">
+            {% elif not ticket.is_inactive %} 
+                
                     <button class="escalate {% if has_escalated %}disabled{% endif %}">Request Escalation</button>
                     <button class="close {% if ticket.is_inactive %}disabled{% endif %}">Request to Close </button>
                     <button class="resolved {% if ticket.is_inactive %}disabled{% endif %}">Mark as Resolved</button>
-                </div>
+                
             {% endif %}
-            {{user_role}}
+            </div>
             <div class="chatContainer">
                 <p class="configTitle">Activity</p>
                 <div class="commentContainer">
@@ -145,6 +151,9 @@
         const TICKET_ID = "{{ ticket.id }}";
         const POST_REPLY_URL = "{% url 'post_reply_ajax' ticket.id %}";
         const CSRF_TOKEN = "{{ csrf_token }}";
+        const TICKET_IS_INACTIVE = '{{ ticket.is_inactive|yesno:"true,false" }}';
+        const TICKET_IS_EXPIRED = {% if ticket.status == "expired" %}true {% else %}false{% endif %};
+        const TICKET_STATUS_DISPLAY = '{{ ticket.get_status_display }}';
     </script>
     <script src="{% static 'js/review_fb.js' %}"></script>
     

@@ -1096,15 +1096,33 @@ def send_ticket_update_email(recipient, ticket, context, template):
 @login_required
 def ticket_list_ajax(request):
     sort_by = request.GET.get('sort', '-created_at')
+    categories = request.GET.getlist('category')
+    statuses = request.GET.getlist('status')
+    table_type = request.GET.get('table', 'available')
 
-    if request.user.groups.filter(name='admin').exists():
-        tickets = SupportTicket.objects.all().order_by(sort_by)
-    else: 
-        tickets = SupportTicket.objects.filter(created_by=request.user).order_by(sort_by)
+    if table_type == 'my':
+        if request.user.groups.filter(name='admin').exists():
+            query = Q(assigned_to=request.user)
+        else:
+            query = Q(created_by=request.user)
+        tickets = SupportTicket.objects.filter(query)
+
+    else: tickets = SupportTicket.objects.all()
+
+    if categories: 
+        tickets = tickets.filter(category__in= categories)
+    if statuses: 
+        tickets = tickets.filter(status__in=statuses)
+
+    tickets = tickets.order_by(sort_by)
     
-    html = render_to_string('partials/ticket_list_partials.html', {'tickets': tickets}, request=request)
+    context = {
+        'tickets': tickets,
+        'show_action': (table_type == 'available'),
+        'show_status': (table_type == 'available' and request.user.is_superuser)
+    }
     
-    return JsonResponse({'html': html})
+    return render(request, "partials/ticket_list_partials.html", context)
 
 @login_required
 def post_reply_ajax(request, ticket_id):

@@ -17,7 +17,7 @@ main{
 .pageTitleWrapper .titleCat{
     display: flex;
     justify-content: flex-start;
-    align-items: flex-end;
+    align-items: center;
     gap: 1vw;
 }
 
@@ -27,8 +27,15 @@ main{
     border-radius: 0.1vw;
     border: 0.01vw solid rgba(var(--black), 0.4);
     background-color: transparent;
-    margin-bottom: 0.8vw;
+    margin-top: 0.8vw;
     font-size: var(--xs-fontsize);
+}
+
+.pageTitleWrapper .returnIcon{
+    object-fit: contain;
+    width: 1.5vw;
+    height: 1.5vw;
+    cursor: pointer;
 }
 
 .pageTitleWrapper .titleCat .stat.open{
@@ -393,6 +400,12 @@ main{
     user-select: none;
 }
 
+.messageWrapper .chatTimeStamp.expired{
+    color: red;
+    font-size: var(--xs-fontsize);
+    user-select: none;
+}
+
 .messageWrapper .system-activity.escalation{
     background-color: red;
 }
@@ -549,7 +562,7 @@ main{
     justify-content: flex-start;
     align-items: flex-end;
     flex-direction: column;
-    background-color: rgba(var(--black), 0);
+    background-color: white;
     transition: background-color 0.2s;
 }
 

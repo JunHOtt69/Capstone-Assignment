@@ -1,22 +1,23 @@
 {% for ticket in tickets %}
-    <tr onclick="window.location.href='{% url 'review_feedback' ticket.id %}'" class="clickableRow">
-        <td>{{ ticket.id }}</td>
+    <tr onclick="window.location.href='{% url 'review_feedback' ticket.id %}'" class="{% if ticket.is_escalated %}escalated{% endif %}">
+        <td class="number-cell"></td>
+        <td>T{{ ticket.id }}</td>
         <td><p class="titleData">{{ ticket.title }}</p></td>
         <td>{{ ticket.get_category_display }}</td>
         {% if show_status %}
         <td><span class="{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
         {% endif %}
         <td>{{ ticket.created_at }}</td>
-        {% if show_action and ticket.status == 'open' %}
         <td>
+            {% if show_action and ticket.status == 'open' %}
             <div class="inputWrapper">
                 <button type="button">Take Ownership</button>
             </div>
+            {% endif %}
         </td>
-        {% endif %}
     </tr>
 {% empty %}
     <tr>
-        <td colspan="{% if show_status and show_action %}7{% elif show_status or show_action %}6{% else %}5{% endif %}">No feedback tickets found.</td>
+        <td colspan="{% if show_status and show_action %}8{% elif show_status or show_action %}7{% else %}6{% endif %}">No feedback tickets found.</td>
     </tr>
 {% endfor %}
