@@ -422,10 +422,15 @@ class SupportTicket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     all_attachments = GenericRelation(attachments)
 
-    def check_expiry(self):
-        if self.status == 'open' and self.created_at < timezone.now() - timedelta(days=7):
-            self.status = 'expired'
-            self.save()
+    # def notify_expiry(self):
+    #     """Dedicated method to handle email notifications for this ticket."""
+    #     send_mail(
+    #         subject=f"Ticket Expired: {self.title}",
+    #         message=f"Hi {self.creator_name}, your ticket has expired.",
+    #         from_email="noreply@smartcampus.com",
+    #         recipient_list=[self.created_by.email],
+    #         fail_silently=True,
+    #     )
 
     def __str__(self):
         return f"[{self.status.upper()}] {self.title}"

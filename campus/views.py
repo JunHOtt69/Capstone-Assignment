@@ -932,6 +932,17 @@ def smart_assistant(request):
 
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def feedbacks(request):
+    expiry_threshold = timezone.now() - timedelta(days=7)
+    stale_tickets = SupportTicket.objects.filter(
+        status='open', 
+        created_at__lt=expiry_threshold
+    )
+    
+    # if stale_tickets.exists():
+    #     for ticket in stale_tickets:
+    #         ticket.status = 'expired'
+    #         ticket.save()
+
     sort_by = '-created_at'
     tickets = SupportTicket.objects.all().order_by(sort_by)
     categories = SupportTicket.CATEGORY_CHOICES
@@ -1093,6 +1104,51 @@ def send_ticket_update_email(recipient, ticket, context, template):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
+@role_required(allowed_roles=['admin'])
+def take_ownership(request, ticket_id):
+    if request.method == 'POST':
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        
+        if ticket.assigned_to:
+            return JsonResponse({'status': 'error', 'message': 'Ticket already assigned'}, status=400)
+        
+        ticket.assigned_to = request.user
+        ticket.status = 'in_progress'
+        ticket.save()
+
+        TicketActivity.objects.create(
+            ticket=ticket,
+            user=request.user,
+            action='status_change',
+            new_value='in_progress'
+        )
+
+        try:
+            if is_admin:
+                template = 'ticket_reply_admin.html'
+                full_name = f"{recipient.first_name} {recipient.last_name}".strip()
+                context = {
+                    "sender_name": full_name or recipient.username,
+                    "ticket_title": ticket.title,
+                    "ticketId": ticket.id,
+                }
+            else: 
+                template = 'ticket_reply.html'
+                context = {
+                    "first_name": recipient.first_name or recipient.username,
+                    "ticket_title": ticket.title,
+                    "ticketId": ticket.id,
+                }
+
+            if recipient and recipient.email:
+                send_ticket_update_email(recipient, ticket, context, template)
+
+        except Exception as e:
+                print(f"SMTP Error: {e}")
+
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=405)
+
 @login_required
 def ticket_list_ajax(request):
     sort_by = request.GET.get('sort', '-created_at')
@@ -1151,10 +1207,9 @@ def post_reply_ajax(request, ticket_id):
             else:
                 recipient = ticket.assigned_to
 
-        
         try:
             if is_admin:
-                template = 'ticket_update_admin.html'
+                template = 'ticket_reply_admin.html'
                 full_name = f"{recipient.first_name} {recipient.last_name}".strip()
                 context = {
                     "sender_name": full_name or recipient.username,
@@ -1162,7 +1217,7 @@ def post_reply_ajax(request, ticket_id):
                     "ticketId": ticket.id,
                 }
             else: 
-                template = 'ticket_update.html'
+                template = 'ticket_reply.html'
                 context = {
                     "first_name": recipient.first_name or recipient.username,
                     "ticket_title": ticket.title,
@@ -1217,6 +1272,8 @@ def ticket_action_ajax(request, ticket_id):
                 user=request.user,
                 action='escalation',
             )
+
+            #email admin
             messages.success(request, "Escalation request sent successfully!")
             return JsonResponse({"status": "success", "message": "Escalation request sent successfully."})
 
@@ -1250,6 +1307,8 @@ def ticket_action_ajax(request, ticket_id):
                 old_value=old_status,
                 new_value='Resolved',
             )
+
+            #email admin
             messages.success(request, "Ticket has been marked as resolved.")
             return JsonResponse({"status": "success", "message": "Ticket has been resolved."})
 
