@@ -1184,8 +1184,9 @@ def take_ownership(request, ticket_id):
                 send_ticket_update_email(recipient, subject, ticket, context, template)
 
         except Exception as e:
-                print(f"SMTP Error: {e}")
-
+                print(f"SMTP Error: {e}"
+                      )
+        messages.success(request, "You have successfully taken ownership of this support ticket")
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=405)
 
