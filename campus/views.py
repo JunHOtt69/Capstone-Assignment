@@ -1859,6 +1859,77 @@ def save_manual_attachment(instance, file_obj):
         object_id=instance.id,
         file=file_obj
     )
+#Facility Email Ticket
+def send_ticket_update_email(recipient, sub, ticket, context, template):
+    subject = sub
+    from_email = settings.DEFAULT_FROM_EMAIL
+    
+    ticket_url = f"http://localhost:8000/support/tickets/{ticket.id}/"
+
+    context['ticket_URL'] = ticket_url
+
+    html_content = render_to_string(f"emails/{template}", context)
+    text_content = strip_tags(html_content) 
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+@role_required(allowed_roles=['admin'])
+@transaction.atomic
+def take_ownership(request, ticket_id):
+    if request.method == 'POST':
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        
+        if ticket.assigned_to:
+            return JsonResponse({'status': 'error', 'message': 'Ticket already assigned'}, status=400)
+        
+        ticket.assigned_to = request.user
+        ticket.status = 'in_progress'
+        ticket.save()
+
+        TicketActivity.objects.create(
+            ticket=ticket,
+            user=request.user,
+            action='status_change',
+            old_value='Open',
+            new_value='In Pprogress'
+        )
+
+        recipient = ticket.created_by
+
+        try:
+            template = 'ticket_update.html'
+            context = {
+                "first_name": recipient.first_name or recipient.username,
+                "ticket_title": ticket.title,
+                "ticketId": ticket.id,
+                "ticket_status": ticket.status
+            }
+            subject = f"Update on your support ticket #T{ticket.id}"
+            if recipient and recipient.email:
+                send_ticket_update_email(recipient, subject, ticket, context, template)
+
+        except Exception as e:
+                print(f"SMTP Error: {e}")
+                
+        messages.success(request, "You have successfully taken ownership of this support ticket")
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=405)
+
+def send_booking_update_email(recipient, sub, booking_obj, context, template):
+    subject = sub
+    from_email = settings.DEFAULT_FROM_EMAIL
+
+    booking_url = "http://localhost:8000/facility/my/"
+    context["booking_URL"] = booking_url
+
+    html_content = render_to_string(f"emails/{template}", context)
+    text_content = strip_tags(html_content)
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
 
 #Facility Booking
 def facility_list(request):
@@ -1964,12 +2035,56 @@ def approve_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id)
     selected_booking.status = "Approved"
     selected_booking.save()
+
+    recipient = selected_booking.user
+
+    try:
+        template = "booking_update.html"
+        context = {
+            "first_name": recipient.first_name or recipient.username,
+            "facility_name": selected_booking.facility.facility_name,
+            "booking_date": selected_booking.booking_date,
+            "start_time": selected_booking.start_time,
+            "end_time": selected_booking.end_time,
+            "booking_status": selected_booking.status,
+        }
+        subject = f"Your facility booking for {selected_booking.facility.facility_name} has been approved"
+
+        if recipient and recipient.email:
+            send_booking_update_email(recipient, subject, selected_booking, context, template)
+
+    except Exception as e:
+        print(f"SMTP Error: {e}")
+
+    messages.success(request, "Booking approved successfully.")
     return redirect("review_booking_request")
 
 def reject_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id)
     selected_booking.status = "Rejected"
     selected_booking.save()
+
+    recipient = selected_booking.user
+
+    try:
+        template = "booking_update.html"
+        context = {
+            "first_name": recipient.first_name or recipient.username,
+            "facility_name": selected_booking.facility.facility_name,
+            "booking_date": selected_booking.booking_date,
+            "start_time": selected_booking.start_time,
+            "end_time": selected_booking.end_time,
+            "booking_status": selected_booking.status,
+        }
+        subject = f"Your facility booking for {selected_booking.facility.facility_name} has been rejected"
+
+        if recipient and recipient.email:
+            send_booking_update_email(recipient, subject, selected_booking, context, template)
+
+    except Exception as e:
+        print(f"SMTP Error: {e}")
+
+    messages.success(request, "Booking rejected successfully.")
     return redirect("review_booking_request")
 
 

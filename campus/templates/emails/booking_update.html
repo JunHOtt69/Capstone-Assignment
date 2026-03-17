@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Nunito Sans', sans-serif; background: white; box-sizing: border-box;">
+    <table align="center" width="100%" style="box-sizing: border-box; border-collapse: collapse; width:100% !important; margin-right: auto; margin-left: auto;">
+        <tbody>
+            <tr>
+                <td align="center" valign="top">
+                    <div class="contentWrapper" style="background: white; padding: 20px 40px 40px; border: none; width: 500px; height: auto;">
+                        
+                        <div class="imageWrappeer" style="width: 100%; text-align: center; margin-bottom: 20px;">
+                            <img src="https://www.apu.edu.my/themes/custom/apu/images/navbar/navbar-logo--scrolled.png"
+                                 alt="University Logo"
+                                 width="200"
+                                 style="display: inline-block; vertical-align: middle;">
+                        </div>
+
+                        <h2 style="text-align: center; width: 100%;">
+                            Facility Booking Request for {{ facility_name }} has been {{ booking_status }}
+                        </h2>
+
+                        <table align="center" width="100%" style="box-sizing: border-box; border-collapse: collapse; width:100% !important; margin-right: auto; margin-left: auto; border: 0.05vw solid rgba(0, 0, 0, 0.6);">
+                            <tbody>
+                                
+                                <tr>
+                                    <td align="left" valign="top" style="box-sizing: border-box; padding: 30px 30px; padding-bottom: 0;">
+                                        <p style="margin-top: 0; margin-bottom: 10px; width: 100%; color: black; font-size: 14px; text-align: left; line-height: 1.5;">
+                                            Hi {{ first_name }},
+                                        </p>
+
+                                        {% if booking_status == "Approved" %}
+                                        <p style="margin-top: 0; margin-bottom: 10px; width: 100%; color: black; font-size: 14px; line-height: 1.6; text-align: justify;">
+                                            Your facility booking request for <strong>{{ facility_name }}</strong> has been reviewed and <strong>approved</strong>.
+                                        </p>
+
+                                        <p style="margin: 0; width: 100%; color: black; font-size: 14px; margin-bottom: 10px; line-height: 1.6; text-align: justify;">
+                                            You may proceed with your booking according to the approved date and time shown below.
+                                        </p>
+
+                                        {% elif booking_status == "Rejected" %}
+                                        <p style="margin-top: 0; margin-bottom: 10px; width: 100%; color: black; font-size: 14px; line-height: 1.6; text-align: justify;">
+                                            Your facility booking  for <strong>{{ facility_name }}</strong> has been reviewed and <strong>rejected</strong>.
+                                        </p>
+
+                                        <p style="margin: 0; width: 100%; color: black; font-size: 14px; margin-bottom: 10px; line-height: 1.6; text-align: justify;">
+                                            This may be due to a scheduling conflict, administrative decision, or facility restriction. You may review the booking details and submit another request if needed.
+                                        </p>
+                                        {% else %}
+                                        <p style="margin-top: 0; margin-bottom: 10px; width: 100%; color: black; font-size: 14px; line-height: 1.6; text-align: justify;">
+                                            Your facility booking request has been updated.
+                                        </p>
+                                        {% endif %}
+
+                                        <p style="margin: 0; width: 100%; color: black; font-size: 14px; margin-bottom: 10px; font-weight: normal; text-align: justify;">
+                                            Please review the booking details below:
+                                        </p>
+
+                                        <p style="margin: 0; width: 100%; color: black; font-size: 14px; margin-bottom: 10px; line-height: 1.7;">
+                                            <strong>Facility:</strong> {{ facility_name }}<br>
+                                            <strong>Date:</strong> {{ booking_date }}<br>
+                                            <strong>Start Time:</strong> {{ start_time }}<br>
+                                            <strong>End Time:</strong> {{ end_time }}<br>
+                                            <strong>Status:</strong> {{ booking_status }}
+                                        </p>
+
+                                        <p style="margin: 0; width: 100%; color: black; font-size: 14px; margin-bottom: 10px; line-height: 1.6; text-align: justify;">
+                                            Click the button below to view your booking details.
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td align="center" valign="top" style="box-sizing: border-box; padding: 20px 20px;">
+                                        <p style="box-sizing: border-box; margin: 0; width: 100%; color: black; font-size: 14px;">
+                                            <a href="{{ booking_URL }}"
+                                               style="display: inline-block; background: greenyellow; color: black; padding: 10px 15px; text-decoration: none; margin: 0; border: 0.1vw solid black; font-weight: 800; line-height: 1.8; text-transform: uppercase;">
+                                                View Booking
+                                            </a>
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td align="left" valign="top" style="box-sizing: border-box; padding: 0px 30px; padding-bottom: 30px;">
+                                        <p style="margin-top: 0; margin-bottom: 10px; width: 100%; color: black; font-size: 14px; text-align: left; line-height: 1.5;">
+                                            If the button does not work, you may copy and paste the following link into your browser: <br>
+                                            {{ booking_URL }}
+                                        </p>
+
+                                        <p style="margin-top: 0; margin-bottom: 10px; width: 100%; color: black; font-size: 14px; text-align: left; line-height: 1.5;">
+                                            Thank you, <br>
+                                            Smart Campus Management System
+                                        </p>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                        <p style="margin: 50px 0; width: 100%; text-align: center; color: rgba(0, 0, 0, 0.6); font-size: 14px;">
+                            SENT BY CAPSTONE GROUP 17<br>
+                            Asia Pacific University of Technology & Innovation (APU)
+                        </p>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
