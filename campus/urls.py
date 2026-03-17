@@ -92,6 +92,7 @@ urlpatterns = [
     path("dashboard/admin/review-booking/", views.review_booking_request, name="review_booking_request"),
     path("dashboard/admin/approve-booking/<int:booking_id>/", views.approve_booking, name="approve_booking"),
     path("dashboard/admin/reject-booking/<int:booking_id>/", views.reject_booking, name="reject_booking"),
+    path("dashboard/admin/facility-status/", views.facility_status, name="facility_status"),
 
 ]
 

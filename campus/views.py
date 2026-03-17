@@ -2087,6 +2087,41 @@ def reject_booking(request, booking_id):
     messages.success(request, "Booking rejected successfully.")
     return redirect("review_booking_request")
 
+#Facility Status
+def facility_status(request):
+    selected_date = request.GET.get("date")
+
+    if not selected_date:
+        selected_date = date.today().isoformat()
+
+    all_facilities = facilities.objects.all()
+    data = []
+
+    for f in all_facilities:
+        day_bookings = booking.objects.filter(
+            facility=f,
+            booking_date=selected_date,
+            status="Approved"
+        ).order_by("start_time")
+
+        if not f.is_bookable:
+            status = "Unavailable"
+        elif day_bookings.exists():
+            status = "Booked"
+        else:
+            status = "Available"
+
+        data.append({
+            "facility": f,
+            "status": status,
+            "bookings": day_bookings
+        })
+
+    return render(request, "facility/facility_status.html", {
+        "data": data,
+        "selected_date": selected_date
+    })
+
 
 # ============================================================
 # TIMETABLE MODULE
