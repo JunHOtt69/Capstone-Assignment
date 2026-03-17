@@ -44,6 +44,7 @@ urlpatterns = [
     path("get-courses/", views.get_courses_by_level, name="get_courses_by_level"),
     path("get-terms/", views.get_terms, name="get_terms"),
     path("check-email/", views.check_email_exists, name="check_email"),
+    path("user/bulk-user-creation/", views.bulk_user_creation, name="bulk_user_creation"),
 
     # Timetable scheduling
     path("academic/timetable/", views.manage_timetable, name="manage_timetable"),

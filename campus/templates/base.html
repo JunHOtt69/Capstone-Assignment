@@ -49,7 +49,7 @@
                         </li>
                         {% if user_role == 'admin' %}
                             <li class="
-                            {% if request.resolver_match.url_name in 'user_management create_user_manually academic_management manage_academic_term manage_timetable' %}
+                            {% if request.resolver_match.url_name in 'user_management create_user_manually academic_management manage_academic_term manage_timetable bulk_user_creation' %}
                                 active
                             {% endif %}
                             ">
@@ -202,13 +202,13 @@
         <div class="functionG1">
             <span class="title">Knowledge Managemenet</span>
             <span class="item"><a href="{% url "viewFAQ" %}">Manage FAQ</a></span>
-            <span class="item"><a href="{% url "config_bot" %}">Config Chatbot</a></span>
+            {% comment %} <span class="item"><a href="{% url "config_bot" %}">Config Chatbot</a></span> {% endcomment %}
         </div>
 
         <div class="functionG2">
             <span class="title">System Support</span>
             <span class="item"><a href="{% url "feedbacks" %}">Support Tickets</a></span>
-            <span class="item"><a href="{% url "system_log" %}">System Logs</a></span>
+            {% comment %} <span class="item"><a href="{% url "system_log" %}">System Logs</a></span> {% endcomment %}
         </div>
         {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
@@ -218,7 +218,7 @@
 
         <div class="functionG2">
             <span class="title">Interactive Support</span>
-            <span class="item"><a href="{% url 'smart_assistant' %}">Campus AI Assistant</a></span>
+            {% comment %} <span class="item"><a href="{% url 'smart_assistant' %}">Campus AI Assistant</a></span> {% endcomment %}
             <span class="item"><a href="{% url "submit_feedback" %}">Submit Ticket</a></span>
             <span class="item"><a href="{% url "feedbacks" %}">My Tickets</a></span>
         </div>
@@ -293,7 +293,7 @@
     <div class="functionG1">
         <span class="title"><a href="{% url 'user_management' %}">User Management</a></span>
         <span class="item"><a href="">User CRUD</a></span>
-        <span class="item"><a href="">Bulk User Creation</a></span>
+        <span class="item"><a href="{% url "bulk_user_creation" %}">Bulk User Creation</a></span>
         <span class="item"><a href="{% url 'create_user_manually' %}">Create User Manually</a></span>
     </div>
 

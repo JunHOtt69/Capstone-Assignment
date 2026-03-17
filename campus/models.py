@@ -153,8 +153,7 @@ class facilities(models.Model):
     facility_id = models.AutoField(primary_key = True)
     facility_name = models.CharField(max_length=100, unique=True)
     type = models.CharField(max_length=20, choices=FACILITY_TYPES)
-    building = models.CharField(max_length=50)
-    coordinate = models.DecimalField(max_digits=9, decimal_places=6)
+    
     class Meta:
         db_table = 'facilities'
 
@@ -231,7 +230,7 @@ class SubjectComponent(models.Model):
         on_delete=models.CASCADE, 
         related_name='components'
     )
-    hours_per_class = models.IntegerField(default=0)
+    hours_per_class = models.IntegerField(default=2)
     total_required_hours = models.IntegerField(default=0)
     class_type = models.CharField(max_length=20, choices=CLASS_TYPE_CHOICES, default='Lecture')
 
