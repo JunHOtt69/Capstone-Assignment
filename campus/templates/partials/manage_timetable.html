@@ -13,18 +13,23 @@
 <div class="timetableContainer">
     <!-- Term Selector -->
     <div class="timetableControls">
-        <div class="controlGroup">
-            <label for="termSelect">Select Intake:</label>
-            <select id="termSelect" class="ttSelect">
-                <option value="">-- Choose an Intake --</option>
+        <div class="selectInput" id="termDropdown" style="width:22vw;">
+            <div class="selectedLabel">
+                <label>Choose an Intake</label>
+                <span class="arrow">
+                    <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="optionContainer" id="termOptions">
                 {% for term in terms %}
-                <option value="{{ term.term_id }}" 
-                        data-start="{{ term.start_date|date:'Y-m-d' }}"
-                        data-end="{{ term.end_date|date:'Y-m-d' }}">
-                    {{ term.course.course_name }} — {{ term.term_name }}
-                </option>
+                <div class="option">
+                    <input type="radio" name="termRadio" id="term_{{ term.term_id }}" value="{{ term.term_id }}" data-start="{{ term.start_date|date:'Y-m-d' }}" data-end="{{ term.end_date|date:'Y-m-d' }}">
+                    <label for="term_{{ term.term_id }}">{{ term.course.course_name }} — {{ term.term_name }}</label>
+                </div>
                 {% endfor %}
-            </select>
+            </div>
         </div>
 
         <div class="controlGroup weekNav" id="weekNav" style="display:none;">

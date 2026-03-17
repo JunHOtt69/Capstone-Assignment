@@ -19,7 +19,7 @@
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_academic_term' %}active{% endif %}" href="{% url 'manage_academic_term'%}">
                 Academic Term Management
             </a>
-            <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_courses' %}active{% endif %}" href="">
+            <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_courses' %}active{% endif %}" href="{% url 'manage_courses' %}">
                 Courses management
             </a>
             <a class="leftNavItem {% if request.resolver_match.url_name == 'manage_departments' %}active{% endif %}" href="">
