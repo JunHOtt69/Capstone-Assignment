@@ -46,6 +46,13 @@ urlpatterns = [
     path("check-email/", views.check_email_exists, name="check_email"),
     path("user/bulk-user-creation/", views.bulk_user_creation, name="bulk_user_creation"),
 
+    # Courses management
+    path("academic/courses/", views.manage_courses, name="manage_courses"),
+    path("academic/courses/subjects/", views.get_course_subjects, name="get_course_subjects"),
+    path("academic/courses/available/", views.get_available_subjects, name="get_available_subjects"),
+    path("academic/courses/assign/", views.assign_subject_to_course, name="assign_subject_to_course"),
+    path("academic/courses/remove/", views.remove_subject_from_course, name="remove_subject_from_course"),
+
     # Timetable scheduling
     path("academic/timetable/", views.manage_timetable, name="manage_timetable"),
     path("academic/timetable/data/", views.get_timetable_data, name="get_timetable_data"),

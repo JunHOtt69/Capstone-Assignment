@@ -1,0 +1,114 @@
+{% extends "academic_management.html" %} 
+
+{% load static %}  
+
+{% block title %} Courses Management {% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/courses_management.css' %}">
+{% endblock %}
+
+{% block function_window %}
+<div class="coursesContainer">
+    <!-- Course & Semester Selectors -->
+    <div class="coursesControls">
+        <div class="selectInput" id="courseDropdown" style="width:20vw;">
+            <div class="selectedLabel">
+                <label>Choose a Course</label>
+                <span class="arrow">
+                    <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="optionContainer" id="courseOptions">
+                {% for c in courses %}
+                <div class="option">
+                    <input type="radio" name="courseRadio" id="course_{{ c.course_id }}" value="{{ c.course_id }}" data-total-sem="{{ c.total_semester }}">
+                    <label for="course_{{ c.course_id }}">{{ c.course_code }} — {{ c.course_name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="selectInput inactive" id="semesterDropdown" style="width:12vw;">
+            <div class="selectedLabel">
+                <label>Select Course First</label>
+                <span class="arrow">
+                    <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="optionContainer" id="semesterOptions">
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Info -->
+    <div id="courseInfo" class="courseInfo" style="display:none;">
+        <p><strong>Course:</strong> <span id="courseNameLabel"></span></p>
+        <p><strong>Semester:</strong> <span id="semesterLabel"></span> of <span id="totalSemLabel"></span></p>
+    </div>
+
+    <!-- Info Bar -->
+    <div id="infoBar" class="cmInfoBar" style="display:none;"></div>
+
+    <!-- Assigned Subjects Table -->
+    <div id="assignedSection" class="tableWrapper" style="display:none;">
+        <div class="sectionHeader">
+            <h3>Assigned Subjects</h3>
+            <button class="cmBtn" id="addSubjectBtn">+ Add Subject</button>
+        </div>
+        <table class="cmTable" id="assignedTable">
+            <thead>
+                <tr>
+                    <th class="no-col">No.</th>
+                    <th>Code</th>
+                    <th>Subject Name</th>
+                    <th>Components</th>
+                    <th class="action-col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="assignedBody">
+            </tbody>
+        </table>
+        <p id="emptyAssigned" class="emptyMessage" style="display:none;">No subjects assigned to this course/semester yet.</p>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div id="addSubjectModal" class="cmModal" style="display:none;">
+        <div class="cmModalContent">
+            <div class="cmModalHeader">
+                <h3>Add Subject to Course</h3>
+                <button class="cmModalClose" id="closeAddModal">&times;</button>
+            </div>
+            <div class="cmModalBody">
+                <div class="searchGroup">
+                    <input type="text" id="subjectSearch" class="cmInput" placeholder="Search by code or name...">
+                </div>
+                <table class="cmTable" id="availableTable">
+                    <thead>
+                        <tr>
+                            <th class="no-col">No.</th>
+                            <th>Code</th>
+                            <th>Subject Name</th>
+                            <th>Components</th>
+                            <th class="action-col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="availableBody">
+                    </tbody>
+                </table>
+                <p id="emptyAvailable" class="emptyMessage" style="display:none;">No available subjects found.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/courses_management.js' %}"></script>
+{% endblock %}

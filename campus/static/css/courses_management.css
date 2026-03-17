@@ -1,0 +1,330 @@
+/* ============================================================
+   COURSES MANAGEMENT STYLES
+   Matches the academic_management / manage_term styling
+   ============================================================ */
+
+.coursesContainer {
+    width: 100%;
+    padding: 0.5vw;
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+}
+
+/* ---- Controls ---- */
+.coursesControls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1vw;
+    align-items: flex-start;
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+    padding-bottom: 0.5vw;
+}
+
+.coursesControls .selectInput.inactive {
+    user-select: none;
+    pointer-events: none;
+    color: rgba(var(--black), 0.4);
+}
+
+.coursesControls .selectInput.inactive path {
+    stroke: rgba(var(--black), 0.4);
+}
+
+.cmInput {
+    padding: 0.3vw 0.5vw;
+    font-size: var(--p-fontsize);
+    border: 0.1vw solid rgba(var(--black), 0.4);
+    outline: none;
+    font-family: "Nunito Sans", sans-serif;
+    width: 100%;
+}
+
+/* ---- Course Info ---- */
+.courseInfo {
+    display: flex;
+    gap: 2.5vw;
+    font-size: var(--p-fontsize);
+    color: rgba(var(--black), 1);
+}
+
+.courseInfo p {
+    margin: 0;
+}
+
+/* ---- Info Bar ---- */
+.cmInfoBar {
+    padding: 0.3vw 0.7vw;
+    font-size: var(--p-fontsize);
+    font-weight: 500;
+    border: 0.1vw solid rgba(var(--black), 0.2);
+}
+
+.cmInfoBar.success {
+    background-color: rgba(var(--dark-green), 0.15);
+    color: rgba(var(--dark-green), 1);
+    border-color: rgba(var(--dark-green), 0.4);
+}
+
+.cmInfoBar.error {
+    background-color: #fce8ea;
+    color: #c0392b;
+    border-color: #e6a0a8;
+}
+
+/* ---- Section Header ---- */
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.sectionHeader h3 {
+    margin: 0;
+    font-size: var(--h4-fontsize);
+    color: rgba(var(--black), 1);
+}
+
+/* ---- Button ---- */
+.cmBtn {
+    padding: 0.3vw 0.7vw;
+    border: 0.1vw solid rgba(var(--black), 0);
+    background-color: rgba(var(--black), 1);
+    color: white;
+    cursor: pointer;
+    font-size: var(--p-fontsize);
+    font-family: "Nunito Sans", sans-serif;
+    transition: border 0.2s, background-color 0.2s, color 0.2s;
+    outline: none;
+}
+
+.cmBtn:hover {
+    border: 0.1vw solid rgba(var(--black), 1);
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+}
+
+.cmBtnDanger {
+    background-color: #c0392b;
+}
+
+.cmBtnDanger:hover {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+    color: white;
+}
+
+.cmBtnAssign {
+    background-color: rgba(var(--dark-green), 1);
+}
+
+.cmBtnAssign:hover {
+    background-color: greenyellow;
+    border-color: rgba(var(--dark-green), 1);
+    color: rgba(var(--black), 1);
+}
+
+/* ---- Table ---- */
+.tableWrapper {
+    width: 100%;
+}
+
+.cmTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 0.1vw solid rgba(var(--black), 1);
+    counter-reset: rowNumber;
+}
+
+.cmTable thead {
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+.cmTable thead th {
+    padding: 0.3vw 0.5vw;
+    height: 1.3vw;
+    font-size: var(--p-fontsize);
+    font-weight: 600;
+    text-align: center;
+}
+
+.cmTable tbody tr {
+    counter-increment: rowNumber;
+    width: 100%;
+    border-bottom: 0.1vw solid rgba(var(--black), 0.4);
+    background-color: white;
+    transition: background-color 0.2s;
+    height: 1.3vw;
+}
+
+.cmTable tbody tr:nth-child(even) {
+    background-color: rgba(var(--black), 0.05);
+}
+
+.cmTable tbody tr:last-child {
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+.cmTable tbody tr:hover {
+    background-color: rgba(var(--dark-green), 0.1);
+}
+
+.cmTable td {
+    padding: 0.2vw 0.5vw;
+    text-align: center;
+    font-size: var(--p-fontsize);
+}
+
+.cmTable th.no-col,
+.cmTable td.no-col {
+    width: 5%;
+    border-right: 0.1vw solid rgba(var(--black), 1);
+}
+
+.cmTable td.no-col::before {
+    content: counter(rowNumber);
+    font-weight: 400;
+    color: rgba(var(--black), 0.6);
+}
+
+.cmTable th.action-col,
+.cmTable td.action-col {
+    width: 8%;
+}
+
+.cmTable td.action-col {
+    padding: 0;
+}
+
+.cmTable td.action-col button {
+    outline: none;
+    border: none;
+    background-color: rgba(var(--black), 1);
+    color: white;
+    cursor: pointer;
+    padding: 0.2vw 0.5vw;
+    font-size: var(--xs-fontsize);
+    font-family: "Nunito Sans", sans-serif;
+    transition: background-color 0.2s;
+}
+
+.cmTable td.action-col button:hover {
+    background-color: rgba(var(--dark-green), 1);
+}
+
+.cmTable td.action-col button.removeBtn {
+    background-color: #c0392b;
+}
+
+.cmTable td.action-col button.removeBtn:hover {
+    background-color: #e74c3c;
+}
+
+/* ---- Component Tags ---- */
+.componentTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2vw;
+    justify-content: center;
+}
+
+.componentTag {
+    display: inline-block;
+    padding: 0.1vw 0.4vw;
+    font-size: var(--xs-fontsize);
+    font-weight: 600;
+    border: 0.05vw solid rgba(var(--black), 0.3);
+    background-color: rgba(var(--black), 0.05);
+    color: rgba(var(--black), 0.8);
+}
+
+.componentTag.lecture {
+    background-color: rgba(var(--dark-green), 0.1);
+    border-color: rgba(var(--dark-green), 0.4);
+    color: rgba(var(--dark-green), 1);
+}
+
+.componentTag.lab {
+    background-color: #fce8ea;
+    border-color: #e6a0a8;
+    color: #c0392b;
+}
+
+.componentTag.tutorial {
+    background-color: #fef5e7;
+    border-color: #f0c27a;
+    color: #b57d20;
+}
+
+/* ---- Empty Message ---- */
+.emptyMessage {
+    font-size: var(--p-fontsize);
+    color: rgba(var(--black), 0.5);
+    padding: 0.5vw 0;
+}
+
+/* ---- Search ---- */
+.searchGroup {
+    margin-bottom: 0.7vw;
+}
+
+/* ---- Modal ---- */
+.cmModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--black), 0.4);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cmModalContent {
+    background: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+    width: 50vw;
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.cmModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5vw 0.7vw;
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+    background-color: greenyellow;
+}
+
+.cmModalHeader h3 {
+    margin: 0;
+    font-size: var(--h4-fontsize);
+    color: rgba(var(--black), 1);
+}
+
+.cmModalClose {
+    background: none;
+    border: none;
+    font-size: var(--h3-fontsize);
+    cursor: pointer;
+    color: rgba(var(--black), 0.6);
+    transition: color 0.2s;
+}
+
+.cmModalClose:hover {
+    color: rgba(var(--black), 1);
+}
+
+.cmModalBody {
+    padding: 0.7vw;
+    overflow-y: auto;
+    flex: 1;
+}
