@@ -8,9 +8,53 @@
 {% endblock %}
 
 {% block function_window %}
-    
+    <div class="bulk">
+        <div class="functionHeader">
+            <h2>Bulk User Creation</h2>
+        </div>
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Upload <strong>one</strong> CSV file at a time.</li>
+                <li><strong>Required Fields:</strong> <code>first_name</code>, <code>last_name</code>, <code>email</code>, and <code>role</code> ('admin', 'lecturer', or 'student').</li>
+                <li><strong>Students:</strong> Must include the <strong>Intake Code</strong> (e.g., <em>F-ICT-GEN-202601</em>) in the 'intake' column.</li>
+                <li><strong>Lecturers:</strong> Use the <strong>Department Code</strong> (e.g., <em>ICT</em>) in the 'department' column.</li>
+                <li><strong>Note:</strong> Do not type the full Department/Intake names. Only use the official system codes to ensure database matching.</li>
+            </ul>
+        </div>
+        <div class="dropZone">
+            <p>Click or Drag & Drop your CSV here</p>
+            <input type="file" id="file-input" hidden accept=".csv" >
+        </div>
+        <div id="previewSection" class="hidden">
+            <div class="previewTitle">
+                <h3>Preview (First 5 Rows)</h3>
+                <button id="clearFile">Remove File</button>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No.</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td class="number-cell"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button id="submitBtn">
+                Confirm & Create Users
+            </button>
+        </div>
+
+        <div class="errorMessage"></div>
+    </div>
 {% endblock %}
 
 {% block extra_scripts %}
-    {% comment %} <script src="{% static 'js/user_management.js' %}"></script> {% endcomment %}
+    <script src="{% static 'js/bulk_user_creation.js' %}"></script>
+    <script src="{% static 'js/papaparse.min.js' %}"></script>
 {% endblock %} 

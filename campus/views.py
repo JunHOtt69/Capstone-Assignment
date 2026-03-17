@@ -280,6 +280,7 @@ def check_email_exists(request):
         'taken_emails' : taken_details,
     })
 
+
 def generate_user_id(role):
     prefixes = {
         'admin' : 'AD',
@@ -315,7 +316,8 @@ def generate_user_id(role):
         if not exists:
             return new_id
 
-@role_required(allowed_roles=['admin'])  
+@role_required(allowed_roles=['admin'])
+@transaction.atomic 
 def create_user_manually(request):
     groups = {g.name: str(g.id) for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
@@ -422,7 +424,7 @@ def create_user_manually(request):
                 try: 
                     user = invite['user']
                     link = build_set_password_link(request, user)
-
+                    print("To reset password: ", link)
                     subject = "Set your Smart Campus password"
                     from_email=None
                     to = [invite['email']]
@@ -475,6 +477,104 @@ def create_user_manually(request):
         context["selected_role"] = request.session.get('selected_role_id')
 
     return render(request, "partials/create_user_manually.html", context)
+
+
+@role_required(allowed_roles=['admin'])
+@transaction.atomic
+def bulk_user_creation(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            groups = {g.name.lower(): g for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
+            
+            users_to_invite = []
+            skipped_users = []
+            created_count = 0
+
+            for index, row in enumerate(data):
+                email = row.get('email', '').strip()
+                role_name = row.get('role', '').lower().strip()
+                first_name = row.get('first_name', '').strip()
+                last_name = row.get('last_name', '').strip()
+                group = groups.get(role_name)
+
+
+                new_user = User.objects.create_user(
+                    username=email, 
+                    email=email,
+                    first_name=first_name, 
+                    last_name=last_name
+                )
+
+                
+                if group: 
+                    new_user.groups.add(group)
+
+                new_user.set_unusable_password()
+                
+                if role_name in ['admin', 'lecturer']:
+                    new_user.is_staff = True
+                
+                new_user.save()
+                new_user.groups.add(group)
+
+                unique_id = generate_user_id(role_name)
+
+                if role_name == 'admin':
+                    admin_profiles.objects.create(user=new_user, ad_id=unique_id)
+
+                elif role_name == 'lecturer':
+                    dept_code = row.get('department', '').strip()
+                    dept_obj = departments.objects.filter(dept_code=dept_code).first() 
+                    lecturer_profiles.objects.create(
+                        user=new_user, 
+                        lc_id=unique_id, 
+                        dept=dept_obj
+                    )
+
+                elif role_name == 'student':
+                    intake_code = row.get('intake', '').strip()
+                    student_profiles.objects.create(user=new_user, tp_id=unique_id)
+                    
+                    term_obj = academic_term.objects.filter(intake_code=intake_code).first()
+                    if term_obj:
+                        course_enrollment.objects.create(
+                            student=new_user,
+                            term=term_obj,
+                            enrollment_status='Active'
+                        )
+
+                # 4. Queue for Email
+                users_to_invite.append({
+                    'email': email,
+                    'first_name': first_name,
+                    'user': new_user
+                })
+                
+                created_count += 1
+
+            # 5. Handle Emails after DB creation
+            for invite in users_to_invite:
+                try:
+                    link = build_set_password_link(request, invite['user'])
+                    subject = "Set your Smart Campus password"
+                    html_content = render_to_string('emails/set_password_email.html', {
+                        "first_name": invite['first_name'],
+                        "reset_link": link,
+                    })
+                    msg = EmailMultiAlternatives(subject, "Please set your password.", None, [invite['email']])
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send()
+                except Exception as e:
+                    print(f"Mail error for {invite['email']}: {e}")
+
+            return JsonResponse({'success': True, 'count': created_count})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    
+    return render(request, 'partials/bulk_user_creation.html')
+
 
 #manage academic function
 @role_required(allowed_roles=['admin'])  
@@ -2717,5 +2817,3 @@ def rearrange_missing_class(request):
         'error': 'No available slot found for rearrangement.',
     })
 
-def bulk_user_creation(request):
-    return render(request, 'partials/bulk_user_creation.html')
