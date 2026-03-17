@@ -69,12 +69,17 @@
 
     {% endif %}
     <section class="myTickets">
-        <div class="sectionTitle">
-            {% if user_role == 'admin' %}
-            Ticket Handling
-            {% else %}
-            My Tickets
-            {% endif %}
+        <div class="sectionTitleWrapper">
+            <div class="sectionTitle">
+                {% if user_role == 'admin' %}
+                Ticket Handling
+                {% else %}
+                My Tickets
+                {% endif %}
+            </div>
+            <button class="submitnew" onclick="location.href='{% url "submit_feedback" %}';">
+                Submit New Ticket
+            </button>
         </div>
         <table class="ticketTable">
             <thead>

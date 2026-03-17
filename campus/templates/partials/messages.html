@@ -1,5 +1,5 @@
 {% load chat_extras %}
-<div class="comment {% if cluster.is_self %}self{% elif cluster.is_admin %}admin{% endif %}">          
+<div class="comment {% if cluster.is_self %}self{% elif cluster.is_admin %}admin{% endif %}" data-sender-id="{{ cluster.messages.0.sender.id }}">          
     {% if not cluster.is_self %}
     <div class="profileIcon">
         <svg viewBox="0 0 32 32">
@@ -12,8 +12,8 @@
 
     <div class="commentContent">
         {% for msg in cluster.messages %}
-        <div class="bubble" data-timestamp="{{ msg.sent_at|date:'c' }}">
-            <span class="user">{{ msg.sender.username }}</span>
+        <div class="bubble" data-id="{{ msg.id }}" data-timestamp="{{ msg.sent_at|date:'c' }}">
+            <span class="user">{{ msg.sender_name }}</span>
             
             <div class="message">
                 {{ msg.content|safe }}

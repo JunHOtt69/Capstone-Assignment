@@ -1185,7 +1185,8 @@ def take_ownership(request, ticket_id):
 
         except Exception as e:
                 print(f"SMTP Error: {e}")
-
+                
+        messages.success(request, "You have successfully taken ownership of this support ticket")
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=405)
 
@@ -1227,6 +1228,17 @@ def post_reply_ajax(request, ticket_id):
     if request.method == "POST":
         ticket = get_object_or_404(SupportTicket, id=ticket_id)
         content = request.POST.get('content', '').strip()
+
+        if content:
+            soup = BeautifulSoup(content, 'html.parser')
+            for p in soup.find_all('p'):
+                if not p.get_text(strip=True) and not p.find_all(recursive=False):
+                    p.decompose()
+                elif p.get_text(strip=True) == "" and p.find('br'):
+                    p.decompose()
+            
+            content = str(soup)
+        
         files = request.FILES.getlist('attachments')
 
         if (not content or content == "<p><br></p>") and not files:
@@ -1301,6 +1313,66 @@ def post_reply_ajax(request, ticket_id):
         })
     
     return JsonResponse({"status": "error"}, status=400)
+
+def sync_messages(request, ticket_id):
+    ticket = get_object_or_404(SupportTicket, id=ticket_id)
+
+    last_msg_id = request.GET.get('last_msg_id', 0)
+    last_act_id = request.GET.get('last_act_id', 0)
+    client_status = request.GET.get('current_status')
+
+    should_reload = False
+    if client_status and ticket.status != client_status:
+        should_reload = True
+
+    new_messages = TicketMessage.objects.filter(
+        ticket=ticket, id__gt=last_msg_id
+    ).exclude(sender=request.user).order_by('id')
+
+    new_activities = TicketActivity.objects.filter(
+        ticket=ticket, id__gt=last_act_id
+    ).exclude(user=request.user).order_by('id')
+
+    sync_data = []
+
+    activities_html = None
+    for msg in new_messages:
+        cluster_html = render_to_string('partials/messages.html', {
+            'cluster': {
+                'is_self': False, 
+                'is_admin': msg.is_admin_reply,
+                'messages': [msg],
+            },
+            'just_now': True
+        })
+        bubble_html = render_to_string('partials/single_bubble.html', {
+            'msg': msg,
+            'just_now': True
+        })
+        
+        sync_data.append({
+            'id': msg.id,
+            'sender_id': msg.sender.id,
+            'is_admin_reply': msg.is_admin_reply,
+            'timestamp': msg.sent_at.isoformat(),
+            'cluster_html': cluster_html,
+            'bubble_html': bubble_html
+        })
+
+    activities_html = None
+    if new_activities.exists():
+        activities_html = render_to_string('partials/system_activity_partials.html', {
+            'activities': new_activities
+        })
+
+    return JsonResponse({
+        'should_reload': False,
+        'new_messages': sync_data,
+        'activities_html': activities_html,
+        'new_msg_id': new_messages.last().id if new_messages.exists() else last_msg_id,
+        'new_act_id': new_activities.last().id if new_activities.exists() else last_act_id,
+    })
+
 
 @login_required
 @transaction.atomic

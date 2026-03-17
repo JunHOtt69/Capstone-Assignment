@@ -97,32 +97,8 @@
             <div class="chatContainer">
                 <p class="configTitle">Activity</p>
                 <div class="commentContainer">
-                    <div class="messageWrapper">
-                        {% for activity in activities %}
-                        <p class="system-activity {{ activity.action }}" data-timestamp="{{ activity.timestamp|date:'c' }}">
-                            {% if activity.is_admin %}
-                                {% if activity.user.id == user.id %}You have
-                                {% else %} {{ activity.creator_name }} 
-                                {% endif %}
-                                {{ activity.get_action_display }} 
-                                {% if activity.action == 'status_change' %}
-                                    {% if activity.new_value %}({{ activity.new_value }}){% endif %}
-                                {% endif %}
-                            {% else %}
-                                {% if activity.action == 'closure_request' %}
-                                    {% if activity.user.id == user.id %}You have
-                                    {% else %} {{ activity.creator_name }} 
-                                    {% endif %}
-                                    requested Ticket Closure.
-                                {% else %}
-                                    {% if activity.user.id == user.id %}You have
-                                    {% else %} {{ activity.creator_name }} 
-                                    {% endif %}
-                                    {{ activity.get_action_display }}
-                                {% endif %}
-                            {% endif %}
-                        </p>
-                        {% endfor %}
+                    <div class="messageWrapper" data-status="{{ ticket.status }}" data-ticket-id="{{ ticket.id }}">
+                        {% include "partials/system_activity_partials.html" %}
 
                         {% if grouped_messages %}
                             {% for cluster in grouped_messages %}

@@ -471,3 +471,61 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+function checkForNewMessages() {
+    const bubbles = document.querySelectorAll('.bubble');
+    const lastMsgId = bubbles.length > 0 ? bubbles[bubbles.length - 1].dataset.id : 0;
+    const activities = document.querySelectorAll('.system-activity');
+    const lastActId = activities.length > 0 ? (activities[activities.length - 1].dataset.id || 0) : 0;
+    const messageWrapper = document.querySelector('.messageWrapper');
+    const currentStatus = messageWrapper.dataset.status;
+    
+    let params = new URLSearchParams();
+    params.append('last_msg_id', lastMsgId)
+    params.append('last_act_id', lastActId);
+    params.append('current_status', currentStatus);
+
+    fetch(`/support/tickets/${TICKET_ID}/sync/?${params.toString()}`)
+    .then(res => res.json())
+    .then(data => {
+        if (data.should_reload) { window.location.reload(); return; }
+
+        if (data.activities_html) {
+            messageWrapper.insertAdjacentHTML('beforeend', data.activities_html);
+        }
+
+        if (data.new_messages && data.new_messages.length > 0) {
+            data.new_messages.forEach(msg => {
+                const lastComment = messageWrapper.lastElementChild;
+                
+                const lastSenderId = lastComment?.getAttribute('data-sender-id');
+                const isSameSender = lastSenderId == msg.sender_id;
+                const isOther = lastComment.classList.contains('other') || lastComment?.classList.contains('admin');
+
+                if (isSameSender && lastComment && isOther) {
+                    const lastBubble = lastComment.querySelector('.bubble:last-child');
+                    const lastTime = new Date(lastBubble.getAttribute('data-timestamp'));
+                    const currentTime = new Date(msg.timestamp);
+                    const diffMins = Math.floor((currentTime - lastTime) / 60000);
+
+                    if (diffMins < 10) {
+                        const contentDiv = lastComment.querySelector('.commentContent');
+                        contentDiv.insertAdjacentHTML('beforeend', msg.bubble_html);
+                        return;
+                    }
+                }
+
+                messageWrapper.insertAdjacentHTML('beforeend', msg.cluster_html);
+            });
+            
+            const commentContainer = document.querySelector('.commentContainer');
+            commentContainer.scrollTo({
+                top: commentContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+            updateChatTimeStamps();
+        }
+    });
+}
+
+setInterval(checkForNewMessages, 5000);
