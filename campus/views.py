@@ -2716,3 +2716,6 @@ def rearrange_missing_class(request):
         'success': False,
         'error': 'No available slot found for rearrangement.',
     })
+
+def bulk_user_creation(request):
+    return render(request, 'partials/bulk_user_creation.html')
