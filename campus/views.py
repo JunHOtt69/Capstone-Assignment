@@ -40,7 +40,7 @@ from .decorators import role_required
 from .models import facilities, booking
 from .models import (
     class_session, session, subject, course_subject, lecturer_subjects, 
-    timetable_preference, lecturer_assignment, skipped_date
+    timetable_preference, lecturer_assignment, skipped_date, SubjectComponent
 )
 
 #playground
@@ -2121,6 +2121,137 @@ def facility_status(request):
         "data": data,
         "selected_date": selected_date
     })
+
+
+# ============================================================
+# COURSES MANAGEMENT MODULE
+# ============================================================
+
+@role_required(allowed_roles=['admin'])
+def manage_courses(request):
+    """Main courses management page — assign subjects to course semesters."""
+    courses = course.objects.all().order_by('course_code')
+    context = {
+        'courses': courses,
+    }
+    return render(request, 'partials/manage_courses.html', context)
+
+
+@role_required(allowed_roles=['admin'])
+def get_course_subjects(request):
+    """Get subjects assigned to a course for a given semester."""
+    course_id = request.GET.get('course_id')
+    semester = request.GET.get('semester')
+    if not course_id or not semester:
+        return JsonResponse({'error': 'course_id and semester required'}, status=400)
+
+    course_obj = get_object_or_404(course, course_id=course_id)
+    cs_entries = course_subject.objects.filter(
+        course=course_obj,
+        recommended_semester=int(semester)
+    ).select_related('subject')
+
+    assigned = []
+    for cs in cs_entries:
+        components = SubjectComponent.objects.filter(subject=cs.subject)
+        comp_list = [{'type': c.class_type, 'hours_per_class': c.hours_per_class, 'total_hours': c.total_required_hours} for c in components]
+        assigned.append({
+            'cs_id': cs.id,
+            'subject_id': cs.subject.subject_id,
+            'subject_code': cs.subject.subject_code,
+            'subject_name': cs.subject.subject_name,
+            'semester': cs.recommended_semester,
+            'components': comp_list,
+        })
+
+    return JsonResponse({
+        'course_name': course_obj.course_name,
+        'course_code': course_obj.course_code,
+        'semester': int(semester),
+        'total_semesters': course_obj.total_semester,
+        'assigned': assigned,
+    })
+
+
+@role_required(allowed_roles=['admin'])
+def get_available_subjects(request):
+    """Get subjects NOT yet assigned to this course/semester."""
+    course_id = request.GET.get('course_id')
+    semester = request.GET.get('semester')
+    if not course_id or not semester:
+        return JsonResponse({'error': 'course_id and semester required'}, status=400)
+
+    course_obj = get_object_or_404(course, course_id=course_id)
+    already_assigned = course_subject.objects.filter(
+        course=course_obj,
+        recommended_semester=int(semester)
+    ).values_list('subject_id', flat=True)
+
+    available = subject.objects.exclude(subject_id__in=already_assigned).order_by('subject_code')
+    result = []
+    for s in available:
+        components = SubjectComponent.objects.filter(subject=s)
+        comp_list = [{'type': c.class_type, 'hours_per_class': c.hours_per_class, 'total_hours': c.total_required_hours} for c in components]
+        result.append({
+            'subject_id': s.subject_id,
+            'subject_code': s.subject_code,
+            'subject_name': s.subject_name,
+            'components': comp_list,
+        })
+
+    return JsonResponse({'available': result})
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def assign_subject_to_course(request):
+    """Assign a subject to a course semester."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    course_id = data.get('course_id')
+    semester = data.get('semester')
+    subject_id = data.get('subject_id')
+
+    if not course_id or not semester or not subject_id:
+        return JsonResponse({'error': 'course_id, semester and subject_id required'}, status=400)
+
+    course_obj = get_object_or_404(course, course_id=course_id)
+    subj = get_object_or_404(subject, subject_id=subject_id)
+
+    # Check if already assigned
+    if course_subject.objects.filter(course=course_obj, subject=subj, recommended_semester=int(semester)).exists():
+        return JsonResponse({'error': f'{subj.subject_code} is already assigned to this course/semester.'}, status=400)
+
+    course_subject.objects.create(
+        course=course_obj,
+        subject=subj,
+        recommended_semester=int(semester)
+    )
+
+    return JsonResponse({'success': True, 'message': f'{subj.subject_code} assigned successfully.'})
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def remove_subject_from_course(request):
+    """Remove a subject from a course semester."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    cs_id = data.get('cs_id')
+    if not cs_id:
+        return JsonResponse({'error': 'cs_id required'}, status=400)
+
+    cs_entry = get_object_or_404(course_subject, id=cs_id)
+    code = cs_entry.subject.subject_code
+    cs_entry.delete()
+
+    return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
 
 
 # ============================================================

@@ -2,7 +2,9 @@
    TIMETABLE MODULE JS
    ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
-    const termSelect = document.getElementById('termSelect');
+    const termDropdown = document.getElementById('termDropdown');
+    const termOptions  = document.getElementById('termOptions');
+    let selectedTermId = null;
     const weekNav = document.getElementById('weekNav');
     const actionBtns = document.getElementById('actionBtns');
     const prevWeekBtn = document.getElementById('prevWeekBtn');
@@ -75,21 +77,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Term selection
-    termSelect.addEventListener('change', function () {
-        const termId = this.value;
-        if (!termId) {
-            weekNav.style.display = 'none';
-            actionBtns.style.display = 'none';
-            timetableGrid.style.display = 'none';
-            skippedDatesSection.style.display = 'none';
-            return;
-        }
+    // Term selection (custom dropdown)
+    termDropdown.querySelector('.selectedLabel').addEventListener('click', function () {
+        termDropdown.classList.add('active');
+    });
 
-        const opt = this.selectedOptions[0];
-        termStart = opt.dataset.start;
-        termEnd = opt.dataset.end;
+    termOptions.addEventListener('change', function (e) {
+        if (e.target.type !== 'radio') return;
+        var chosenText = e.target.nextElementSibling.innerText;
+        termDropdown.querySelector('.selectedLabel label').innerText = chosenText;
+        termDropdown.classList.remove('active');
 
-        // Start at term's first Monday
+        selectedTermId = e.target.value;
+        termStart = e.target.getAttribute('data-start');
+        termEnd = e.target.getAttribute('data-end');
+
         currentWeekMonday = getMondayOfWeek(termStart);
 
         weekNav.style.display = 'flex';
@@ -112,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load timetable data
     function loadTimetable() {
-        const termId = termSelect.value;
+        const termId = selectedTermId;
         if (!termId || !currentWeekMonday) return;
 
         const friday = addDays(currentWeekMonday, 4);
@@ -223,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Generate timetable
     generateBtn.addEventListener('click', function () {
-        const termId = termSelect.value;
+        const termId = selectedTermId;
         if (!termId) return;
 
         if (!confirm('Generate a timetable for this week? Existing sessions will not be overwritten.')) return;
@@ -252,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Save preference
     savePreferenceBtn.addEventListener('click', function () {
-        const termId = termSelect.value;
+        const termId = selectedTermId;
         if (!termId) return;
 
         if (!confirm('Save the current week as the scheduling preference?')) return;
@@ -275,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
     closeReplicateModal.addEventListener('click', () => { replicateModal.style.display = 'none'; });
 
     confirmReplicateBtn.addEventListener('click', function () {
-        const termId = termSelect.value;
+        const termId = selectedTermId;
         const targetWeek = replicateWeekInput.value;
         if (!termId || !targetWeek) { showInfo('Please select a target week.', 'warning'); return; }
 
@@ -304,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Missing classes modal
     missingBtn.addEventListener('click', function () {
-        const termId = termSelect.value;
+        const termId = selectedTermId;
         if (!termId) return;
 
         missingModalBody.innerHTML = '<p>Loading...</p>';
@@ -348,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function () {
     closeSkipModal.addEventListener('click', () => { skipModal.style.display = 'none'; });
 
     confirmSkipBtn.addEventListener('click', function () {
-        const termId = termSelect.value;
+        const termId = selectedTermId;
         const skipDate = skipDateInput.value;
         const reason = skipReasonInput.value || 'Public Holiday';
 
@@ -373,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Remove skipped date
     function removeSkippedDate(dateStr) {
-        const termId = termSelect.value;
+        const termId = selectedTermId;
         if (!confirm('Remove this skipped date?')) return;
 
         fetch('/academic/timetable/skip-date/remove/', {
