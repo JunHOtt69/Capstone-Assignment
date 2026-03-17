@@ -153,11 +153,8 @@ class facilities(models.Model):
     facility_id = models.AutoField(primary_key = True)
     facility_name = models.CharField(max_length=100, unique=True)
     type = models.CharField(max_length=20, choices=FACILITY_TYPES)
-    capacity = models.IntegerField(default = 0)
     building = models.CharField(max_length=50)
-    level = models.IntegerField(default = 1)
     coordinate = models.DecimalField(max_digits=9, decimal_places=6)
-    is_bookable = models.BooleanField(default=False)
     class Meta:
         db_table = 'facilities'
 
@@ -207,15 +204,12 @@ class student_profiles(models.Model):
 class subject(models.Model):
     CLASS_TYPE_CHOICES = [
         ('Lecture', 'Lecture'),
-        ('Lab', 'Lab'),
         ('Tutorial', 'Tutorial'),
     ]
-    subject_id = models.AutoField(primary_key = True)
+    subject_id = models.AutoField(primary_key=True)
     subject_code = models.CharField(max_length=20, unique=True)
     subject_name = models.CharField(max_length=255)
-    credit_hour = models.IntegerField(default=0)
-    class_type = models.CharField(max_length=20, choices=CLASS_TYPE_CHOICES, default='Lecture')
-    parent_subject = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='child_components')
+    
 
     class Meta:
         db_table = 'subject'
@@ -223,6 +217,27 @@ class subject(models.Model):
     def __str__(self):
         return f"{self.subject_code} - {self.subject_name}"
 
+class SubjectComponent(models.Model):
+    CLASS_TYPE_CHOICES = [
+        ('Lecture', 'Lecture'),
+        ('Tutorial', 'Tutorial'),
+        ('Lab', 'Lab'),
+        ('Practical', 'Practical'),
+        ('Fieldwork', 'Fieldwork'),
+    ]
+    component_id = models.AutoField(primary_key=True)
+    subject = models.ForeignKey(
+        subject, 
+        on_delete=models.CASCADE, 
+        related_name='components'
+    )
+    hours_per_class = models.IntegerField(default=0)
+    total_required_hours = models.IntegerField(default=0)
+    class_type = models.CharField(max_length=20, choices=CLASS_TYPE_CHOICES, default='Lecture')
+
+    def __str__(self):
+        return f"{self.subject.subject_code}-{self.class_type}"
+    
 class MapNode(models.Model):
     NODE_TYPES = [
         ('terminal', 'Terminal (Visible)'),
@@ -283,7 +298,6 @@ class faq(models.Model):
         
         # Call the real save method
         super().save(*args, **kwargs)
-
 
 class FAQReaction(models.Model):
     LIKE = 1
@@ -523,3 +537,28 @@ class skipped_date(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.reason}"
+    
+class Announcement(models.Model):
+    announcement_id = models.AutoField(primary_key=True)
+    subject = models.CharField(max_length=255)
+    content = models.TextField()
+    date_published = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.subject
+
+class AnnouncementTarget(models.Model):
+    target_id = models.AutoField(primary_key=True)
+    announcement = models.ForeignKey(
+        Announcement, 
+        on_delete=models.CASCADE, 
+        related_name='targets'
+    )
+    is_for_students = models.BooleanField(default=False)
+    is_for_lecturer = models.BooleanField(default=False)
+    is_for_admins = models.BooleanField(default=False)
+    academic_term = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"Target for {self.announcement.subject}: {self.user_group}"
