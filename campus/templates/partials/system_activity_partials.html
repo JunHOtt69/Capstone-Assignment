@@ -1,0 +1,25 @@
+{% for activity in activities %}
+<p class="system-activity {{ activity.action }}" data-id="{{ activity.id }}" data-timestamp="{{ activity.timestamp|date:'c' }}">
+    {% if activity.is_admin %}
+        {% if activity.user.id == user.id %}You have
+        {% else %} {{ activity.creator_name }} 
+        {% endif %}
+        {{ activity.get_action_display }} 
+        {% if activity.action == 'status_change' %}
+            {% if activity.new_value %}({{ activity.new_value }}){% endif %}
+        {% endif %}
+    {% else %}
+        {% if activity.action == 'closure_request' %}
+            {% if activity.user.id == user.id %}You have
+            {% else %} {{ activity.creator_name }} 
+            {% endif %}
+            requested Ticket Closure.
+        {% else %}
+            {% if activity.user.id == user.id %}You have
+            {% else %} {{ activity.creator_name }} 
+            {% endif %}
+            {{ activity.get_action_display }}
+        {% endif %}
+    {% endif %}
+</p>
+{% endfor %}

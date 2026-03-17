@@ -582,6 +582,9 @@ main{
 .commentContent .bubble:first-child .user{
     display: block;
     font-size: var(--p-fontsize);
+    color: rgba(var(--black), 0.5);
+    font-weight: bold;
+    margin-bottom: 0.2vw;
 }
 
 .comment.self .commentContent .bubble:first-child .user{
@@ -599,6 +602,7 @@ main{
     width: 100%;
     text-align: right;
     margin-top: 0.5vw;
+    font-size: var(--xs-fontsize);
 }
 
 .commentInputWrapper{

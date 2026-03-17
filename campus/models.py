@@ -452,6 +452,11 @@ class TicketMessage(models.Model):
     
     all_attachments = GenericRelation(attachments)
 
+    @property 
+    def sender_name(self):
+        full_name = self.sender.get_full_name()
+        return full_name if full_name else self.user.username
+
 class TicketActivity(models.Model):
     ACTION_CHOICES = [
         ('status_change', 'Updated Status'),
@@ -478,13 +483,6 @@ class TicketActivity(models.Model):
     @property 
     def is_admin(self):
         return self.user.groups.filter(name="admin").exists()
-
-class CannedResponse(models.Model):
-    title = models.CharField(max_length=100) # e.g., "General Acknowledgment"
-    message = models.TextField()
-
-    def __str__(self):
-        return self.title
 
 class timetable_preference(models.Model):
     id = models.AutoField(primary_key=True)

@@ -294,8 +294,37 @@ table .ca.asc::before{
     width: 100%;
     padding: 0 2vw;
     margin-bottom: 2vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+}
+
+.sectionTitleWrapper{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .sectionTitle{
     font-size: var(--h3-fontsize);
+}
+
+.submitnew{
+    outline: none;
+    border: 0.01vw solid rgba(var(--black), 1);
+    padding: 0.2vw 0.5vw;
+    color: rgba(var(--black), 1);
+    background-color: greenyellow;
+    transition: filter .2s;
+    font-size: var(--p-fontsize);
+    cursor: pointer;
+    user-select: none;
+    filter: brightness(100%);
+}
+
+.submitnew:hover{
+    filter: brightness(90%);
 }

@@ -1,6 +1,6 @@
 {% load chat_extras %}
-<div class="bubble" data-timestamp="{{ msg.sent_at|date:'c' }}">
-    <span class="user">{{ msg.sender.username }}</span>
+<div class="bubble" data-id="{{ msg.id }}" data-timestamp="{{ msg.sent_at|date:'c' }}">
+    <span class="user">{{ msg.sender_name }}</span>
     <div class="message">
         {{ msg.content|safe }}
     </div>
