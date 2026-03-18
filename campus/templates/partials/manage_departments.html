@@ -1,0 +1,100 @@
+{% extends "academic_management.html" %} 
+
+{% load static %}  
+
+{% block title %} Departments Management {% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/courses_management.css' %}">
+    <link rel="stylesheet" href="{% static 'css/departments_management.css' %}">
+{% endblock %}
+
+{% block function_window %}
+<div class="coursesContainer">
+    <!-- Department Selector -->
+    <div class="coursesControls">
+        <div class="selectInput" id="deptDropdown" style="width:20vw;">
+            <div class="selectedLabel">
+                <label>Choose a Department</label>
+                <span class="arrow">
+                    <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="optionContainer" id="deptOptions">
+                {% for d in departments %}
+                <div class="option">
+                    <input type="radio" name="deptRadio" id="dept_{{ d.dept_id }}" value="{{ d.dept_id }}">
+                    <label for="dept_{{ d.dept_id }}">{{ d.dept_code }} — {{ d.dept_name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dept Info -->
+    <div id="deptInfo" class="courseInfo" style="display:none;">
+        <p><strong>Department:</strong> <span id="deptNameLabel"></span></p>
+    </div>
+
+    <!-- Info Bar -->
+    <div id="infoBar" class="cmInfoBar" style="display:none;"></div>
+
+    <!-- Lecturers Section -->
+    <div id="lecturersSection" class="tableWrapper" style="display:none;">
+        <div class="sectionHeader">
+            <h3>Lecturers & Subject Qualifications</h3>
+        </div>
+        <table class="cmTable" id="lecturersTable">
+            <thead>
+                <tr>
+                    <th class="no-col">No.</th>
+                    <th>ID</th>
+                    <th>Lecturer Name</th>
+                    <th>Max Hours/Week</th>
+                    <th>Assigned Subjects</th>
+                    <th class="action-col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="lecturersBody">
+            </tbody>
+        </table>
+        <p id="emptyLecturers" class="emptyMessage" style="display:none;">No lecturers found in this department.</p>
+    </div>
+
+    <!-- Assign Subject Modal -->
+    <div id="assignSubjectModal" class="cmModal" style="display:none;">
+        <div class="cmModalContent">
+            <div class="cmModalHeader">
+                <h3>Assign Subject to <span id="modalLecturerName"></span></h3>
+                <button class="cmModalClose" id="closeAssignModal">&times;</button>
+            </div>
+            <div class="cmModalBody">
+                <div class="searchGroup">
+                    <input type="text" id="subjectSearch" class="cmInput" placeholder="Search by code or name...">
+                </div>
+                <table class="cmTable" id="availableTable">
+                    <thead>
+                        <tr>
+                            <th class="no-col">No.</th>
+                            <th>Code</th>
+                            <th>Subject Name</th>
+                            <th class="action-col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="availableBody">
+                    </tbody>
+                </table>
+                <p id="emptyAvailable" class="emptyMessage" style="display:none;">No available subjects found.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/departments_management.js' %}"></script>
+{% endblock %}

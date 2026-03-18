@@ -5,6 +5,8 @@ let rules = {};
 const form = document.querySelector('form');
 
 document.addEventListener('DOMContentLoaded', async function() {
+    if (!document.getElementById('tableWrapper')) return;
+
     const response = await fetch('/get-terms/');
     const data = await response.json();
 
@@ -80,21 +82,27 @@ document.addEventListener('click', (event) => {
     });
 });
 
-form.addEventListener('submit', (event) => {
-    const level = document.getElementById('id_level').value;
-    const course = document.getElementById('id_course').value;
-    const start = document.getElementById('id_start_date').value;
-    const end = document.getElementById('id_end_date').value;
+if (form) {
+    form.addEventListener('submit', (event) => {
+        const level = document.getElementById('id_level').value;
+        const course = document.getElementById('id_course').value;
+        const start = document.getElementById('id_start_date').value;
+        const end = document.getElementById('id_end_date').value;
 
-    if (!level || !course || !start || !end) {
-        event.preventDefault(); 
-        displayError("Error: Please complete all selections before saving.");
-        return;
-    }
-});
+        if (!level || !course || !start || !end) {
+            event.preventDefault(); 
+            displayError("Error: Please complete all selections before saving.");
+            return;
+        }
+    });
+}
 
 window.addEventListener('load', () => {
-    const errorData = JSON.parse(document.getElementById('server-errors').textContent);
+    const errorEl = document.getElementById('server-errors');
+    if (!errorEl) return;
+    const raw = errorEl.textContent.trim();
+    if (!raw) return;
+    const errorData = JSON.parse(raw);
     if (Object.keys(errorData).length > 0) {
         const firstKey = Object.keys(errorData)[0];
         const errorMsg = errorData[firstKey][0].message;

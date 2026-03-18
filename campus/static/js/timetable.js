@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const nextWeekBtn = document.getElementById('nextWeekBtn');
     const weekLabel = document.getElementById('weekLabel');
     const generateBtn = document.getElementById('generateBtn');
+    const deleteWeekBtn = document.getElementById('deleteWeekBtn');
     const savePreferenceBtn = document.getElementById('savePreferenceBtn');
     const replicateBtn = document.getElementById('replicateBtn');
     const missingBtn = document.getElementById('missingBtn');
@@ -35,13 +36,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const replicateModal = document.getElementById('replicateModal');
     const closeReplicateModal = document.getElementById('closeReplicateModal');
     const confirmReplicateBtn = document.getElementById('confirmReplicateBtn');
-    const replicateWeekInput = document.getElementById('replicateWeekInput');
+    const replicateWeekSelect = document.getElementById('replicateWeekSelect');
 
     let currentWeekMonday = null;
     let termStart = null;
     let termEnd = null;
     let teachingCutoff = null;
     let allTimeSlots = [];
+    let selectedSemester = null;
 
     // CSRF
     function getCSRF() {
@@ -49,31 +51,73 @@ document.addEventListener('DOMContentLoaded', function () {
         return cookie ? cookie.split('=')[1] : '';
     }
 
-    // Helpers
+    // ── Date helpers (pure arithmetic, no Date object timezone issues) ──
+
+    /** Parse 'YYYY-MM-DD' → {y, m, d} */
+    function parseParts(s) {
+        const p = s.split('-');
+        return { y: +p[0], m: +p[1], d: +p[2] };
+    }
+
+    /** Days in a given month (1-indexed). Handles leap years. */
+    function daysInMonth(y, m) {
+        return new Date(y, m, 0).getDate();
+    }
+
+    /** Add `n` days to a YYYY-MM-DD string and return YYYY-MM-DD. */
+    function addDays(dateStr, n) {
+        const p = parseParts(dateStr);
+        let y = p.y, m = p.m, d = p.d + n;
+        while (d > daysInMonth(y, m)) { d -= daysInMonth(y, m); m++; if (m > 12) { m = 1; y++; } }
+        while (d < 1) { m--; if (m < 1) { m = 12; y--; } d += daysInMonth(y, m); }
+        return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    }
+
+    /** Return the Monday (ISO weekday 1) of the week containing dateStr. */
+    function getMondayOfWeek(dateStr) {
+        const dt = new Date(dateStr + 'T12:00:00');   // noon avoids DST edge
+        const dow = dt.getDay();                       // 0=Sun … 6=Sat
+        const offset = dow === 0 ? -6 : 1 - dow;      // shift to Monday
+        return addDays(dateStr, offset);
+    }
+
+    /** Format 'YYYY-MM-DD' → '28 Jan 2026' style. */
     function formatDate(dateStr) {
-        const d = new Date(dateStr + 'T00:00:00');
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const p = parseParts(dateStr);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${p.d} ${months[p.m - 1]} ${p.y}`;
     }
 
-    function getMondayOfWeek(d) {
-        const dt = new Date(d + 'T00:00:00');
-        const day = dt.getDay();
-        const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(dt.setDate(diff));
-        return monday.toISOString().split('T')[0];
+    /** Return 1-based week number within the term. */
+    function getWeekNumber(mondayStr, termStartStr) {
+        const m = new Date(mondayStr + 'T12:00:00');
+        const s = new Date(getMondayOfWeek(termStartStr) + 'T12:00:00');
+        const diff = Math.round((m - s) / (7 * 864e5));
+        return diff + 1;
     }
 
-    function addDays(dateStr, days) {
-        const d = new Date(dateStr + 'T00:00:00');
-        d.setDate(d.getDate() + days);
-        return d.toISOString().split('T')[0];
-    }
+    /** Compare two YYYY-MM-DD strings: <0, 0, >0 */
+    function cmpDate(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 
     function showInfo(msg, type) {
         infoBar.textContent = msg;
         infoBar.className = 'infoBar ' + type;
         infoBar.style.display = 'block';
-        setTimeout(() => { infoBar.style.display = 'none'; }, 5000);
+        setTimeout(() => { infoBar.style.display = 'none'; }, 8000);
+    }
+
+    /** Update week label and disable prev/next when at bounds. */
+    function updateWeekNav() {
+        if (!currentWeekMonday || !termStart || !termEnd) return;
+        const friday = addDays(currentWeekMonday, 4);
+        const weekNum = getWeekNumber(currentWeekMonday, termStart);
+        weekLabel.textContent = `Week ${weekNum}  ·  ${formatDate(currentWeekMonday)} — ${formatDate(friday)}`;
+
+        const termMonday = getMondayOfWeek(termStart);
+        prevWeekBtn.disabled = cmpDate(currentWeekMonday, termMonday) <= 0;
+
+        const lastMonday = getMondayOfWeek(termEnd);
+        nextWeekBtn.disabled = cmpDate(currentWeekMonday, lastMonday) >= 0;
     }
 
     // Term selection
@@ -92,23 +136,35 @@ document.addEventListener('DOMContentLoaded', function () {
         termStart = e.target.getAttribute('data-start');
         termEnd = e.target.getAttribute('data-end');
 
+        // Auto-set semester from the intake's current semester
+        selectedSemester = parseInt(e.target.getAttribute('data-current-semester')) || 1;
+
         currentWeekMonday = getMondayOfWeek(termStart);
 
         weekNav.style.display = 'flex';
         actionBtns.style.display = 'flex';
         timetableGrid.style.display = 'block';
 
+        updateWeekNav();
         loadTimetable();
     });
 
     // Week navigation
     prevWeekBtn.addEventListener('click', function () {
-        currentWeekMonday = addDays(currentWeekMonday, -7);
+        const termMonday = getMondayOfWeek(termStart);
+        const candidate = addDays(currentWeekMonday, -7);
+        if (cmpDate(candidate, termMonday) < 0) return;
+        currentWeekMonday = candidate;
+        updateWeekNav();
         loadTimetable();
     });
 
     nextWeekBtn.addEventListener('click', function () {
-        currentWeekMonday = addDays(currentWeekMonday, 7);
+        const lastMonday = getMondayOfWeek(termEnd);
+        const candidate = addDays(currentWeekMonday, 7);
+        if (cmpDate(candidate, lastMonday) > 0) return;
+        currentWeekMonday = candidate;
+        updateWeekNav();
         loadTimetable();
     });
 
@@ -117,10 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const termId = selectedTermId;
         if (!termId || !currentWeekMonday) return;
 
-        const friday = addDays(currentWeekMonday, 4);
-        weekLabel.textContent = formatDate(currentWeekMonday) + ' — ' + formatDate(friday);
-
-        fetch(`/academic/timetable/data/?term_id=${encodeURIComponent(termId)}&week_start=${encodeURIComponent(currentWeekMonday)}`)
+        fetch(`/academic/timetable/data/?term_id=${encodeURIComponent(termId)}&week_start=${encodeURIComponent(currentWeekMonday)}&semester=${encodeURIComponent(selectedSemester || '')}`)
             .then(r => r.json())
             .then(data => {
                 if (data.error) {
@@ -157,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
         allTimeSlots.forEach(slot => {
             const row = document.createElement('tr');
@@ -170,6 +223,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const td = document.createElement('td');
                 const matching = sessions.filter(s => s.day === day && s.start_time === slot.start && s.end_time === slot.end);
 
+                if (matching.length > 1) {
+                    td.classList.add('conflict');
+                }
+
                 if (matching.length > 0) {
                     matching.forEach(m => {
                         const div = document.createElement('div');
@@ -181,6 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         div.innerHTML = `
                             <div class="subjectCode">${m.subject_code}</div>
                             <div class="subjectName">${m.subject_name}</div>
+                            <div class="classType ${m.class_type.toLowerCase()}">${m.class_type}</div>
                             <div class="lecturerName">${m.lecturer}</div>
                             <div class="facilityName">${m.facility}</div>
                             ${m.status !== 'scheduled' ? `<div class="sessionStatus ${m.status}">${m.status}</div>` : ''}
@@ -234,9 +292,18 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/academic/timetable/generate/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
-            body: JSON.stringify({ term_id: termId, week_start: currentWeekMonday })
+            body: JSON.stringify({ term_id: termId, week_start: currentWeekMonday, semester: selectedSemester })
         })
-        .then(r => r.json())
+        .then(r => {
+            if (r.status === 401) {
+                window.location.href = '/login/';
+                throw new Error('Session expired');
+            }
+            if (!r.ok) {
+                return r.json().then(d => { throw new Error(d.error || 'Server error'); });
+            }
+            return r.json();
+        })
         .then(data => {
             generateBtn.disabled = false;
             if (data.error) {
@@ -252,6 +319,44 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Delete week timetable
+    deleteWeekBtn.addEventListener('click', function () {
+        const termId = selectedTermId;
+        if (!termId) return;
+
+        if (!confirm(`Delete scheduled sessions for Semester ${selectedSemester} this week? This cannot be undone.`)) return;
+
+        deleteWeekBtn.disabled = true;
+        fetch('/academic/timetable/delete-week/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ term_id: termId, week_start: currentWeekMonday, semester: selectedSemester })
+        })
+        .then(r => {
+            if (r.status === 401) {
+                window.location.href = '/login/';
+                throw new Error('Session expired');
+            }
+            if (!r.ok) {
+                return r.json().then(d => { throw new Error(d.error || 'Server error'); });
+            }
+            return r.json();
+        })
+        .then(data => {
+            deleteWeekBtn.disabled = false;
+            if (data.error) {
+                showInfo(data.error, 'error');
+                return;
+            }
+            showInfo(`Deleted ${data.deleted} session(s).`, 'success');
+            loadTimetable();
+        })
+        .catch(err => {
+            deleteWeekBtn.disabled = false;
+            showInfo('Error: ' + err, 'error');
+        });
+    });
+
     // Save preference
     savePreferenceBtn.addEventListener('click', function () {
         const termId = selectedTermId;
@@ -262,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/academic/timetable/save-preference/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
-            body: JSON.stringify({ term_id: termId, week_start: currentWeekMonday })
+            body: JSON.stringify({ term_id: termId, week_start: currentWeekMonday, semester: selectedSemester })
         })
         .then(r => r.json())
         .then(data => {
@@ -272,21 +377,37 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => showInfo('Error: ' + err, 'error'));
     });
 
-    // Replicate modal
-    replicateBtn.addEventListener('click', () => { replicateModal.style.display = 'flex'; });
+    // Replicate modal — populate week dropdown and handle submit
+    replicateBtn.addEventListener('click', () => {
+        if (!termStart || !termEnd) { showInfo('Please select a term first.', 'warning'); return; }
+        // Build week list
+        replicateWeekSelect.innerHTML = '<option value="">— Select a week —</option>';
+        const firstMonday = getMondayOfWeek(termStart);
+        const lastMonday  = getMondayOfWeek(termEnd);
+        let mon = firstMonday;
+        let wk = 1;
+        while (cmpDate(mon, lastMonday) <= 0) {
+            const fri = addDays(mon, 4);
+            const opt = document.createElement('option');
+            opt.value = mon;
+            opt.textContent = `Week ${wk}  (${formatDate(mon)} — ${formatDate(fri)})`;
+            replicateWeekSelect.appendChild(opt);
+            mon = addDays(mon, 7);
+            wk++;
+        }
+        replicateModal.style.display = 'flex';
+    });
     closeReplicateModal.addEventListener('click', () => { replicateModal.style.display = 'none'; });
 
     confirmReplicateBtn.addEventListener('click', function () {
         const termId = selectedTermId;
-        const targetWeek = replicateWeekInput.value;
-        if (!termId || !targetWeek) { showInfo('Please select a target week.', 'warning'); return; }
-
-        const targetMonday = getMondayOfWeek(targetWeek);
+        const targetMonday = replicateWeekSelect.value;
+        if (!termId || !targetMonday) { showInfo('Please select a target week.', 'warning'); return; }
 
         fetch('/academic/timetable/replicate/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
-            body: JSON.stringify({ term_id: termId, target_week: targetMonday })
+            body: JSON.stringify({ term_id: termId, target_week: targetMonday, semester: selectedSemester })
         })
         .then(r => r.json())
         .then(data => {
@@ -299,6 +420,7 @@ document.addEventListener('DOMContentLoaded', function () {
             showInfo(msg, 'success');
             // Navigate to replicated week
             currentWeekMonday = targetMonday;
+            updateWeekNav();
             loadTimetable();
         })
         .catch(err => showInfo('Error: ' + err, 'error'));

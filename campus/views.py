@@ -2255,11 +2255,127 @@ def remove_subject_from_course(request):
 
 
 # ============================================================
+# DEPARTMENTS MANAGEMENT MODULE
+# ============================================================
+
+@role_required(allowed_roles=['admin'])
+def manage_departments(request):
+    """Main departments management page — manage lecturer subject qualifications."""
+    depts = departments.objects.all().order_by('dept_code')
+    context = {'departments': depts}
+    return render(request, 'partials/manage_departments.html', context)
+
+
+@role_required(allowed_roles=['admin'])
+def get_department_lecturers(request):
+    """Get lecturers in a department with their assigned subjects."""
+    dept_id = request.GET.get('dept_id')
+    if not dept_id:
+        return JsonResponse({'error': 'dept_id required'}, status=400)
+
+    dept_obj = get_object_or_404(departments, dept_id=dept_id)
+    profiles = lecturer_profiles.objects.filter(dept=dept_obj).select_related('user')
+
+    lecturers = []
+    for lp in profiles:
+        ls_entries = lecturer_subjects.objects.filter(user=lp.user).select_related('subject')
+        subjects_list = [{
+            'ls_id': ls.id,
+            'subject_id': ls.subject.subject_id,
+            'subject_code': ls.subject.subject_code,
+            'subject_name': ls.subject.subject_name,
+            'is_lead': ls.is_lead,
+        } for ls in ls_entries]
+
+        lecturers.append({
+            'user_id': lp.user.id,
+            'lc_id': lp.lc_id,
+            'name': lp.user.get_full_name() or lp.user.username,
+            'max_hours': lp.max_hours_per_week,
+            'subjects': subjects_list,
+        })
+
+    return JsonResponse({
+        'dept_name': dept_obj.dept_name,
+        'dept_code': dept_obj.dept_code,
+        'lecturers': lecturers,
+    })
+
+
+@role_required(allowed_roles=['admin'])
+def get_available_subjects_for_lecturer(request):
+    """Get subjects NOT yet assigned to a lecturer."""
+    user_id = request.GET.get('user_id')
+    if not user_id:
+        return JsonResponse({'error': 'user_id required'}, status=400)
+
+    already_assigned = lecturer_subjects.objects.filter(
+        user_id=user_id
+    ).values_list('subject_id', flat=True)
+
+    available = subject.objects.exclude(subject_id__in=already_assigned).order_by('subject_code')
+    result = [{
+        'subject_id': s.subject_id,
+        'subject_code': s.subject_code,
+        'subject_name': s.subject_name,
+    } for s in available]
+
+    return JsonResponse({'available': result})
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def assign_subject_to_lecturer(request):
+    """Assign a subject qualification to a lecturer."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    user_id = data.get('user_id')
+    subject_id = data.get('subject_id')
+    is_lead = data.get('is_lead', False)
+
+    if not user_id or not subject_id:
+        return JsonResponse({'error': 'user_id and subject_id required'}, status=400)
+
+    user_obj = get_object_or_404(User, id=user_id)
+    subj = get_object_or_404(subject, subject_id=subject_id)
+
+    if lecturer_subjects.objects.filter(user=user_obj, subject=subj).exists():
+        return JsonResponse({'error': f'{subj.subject_code} is already assigned to this lecturer.'}, status=400)
+
+    lecturer_subjects.objects.create(user=user_obj, subject=subj, is_lead=is_lead)
+
+    return JsonResponse({'success': True, 'message': f'{subj.subject_code} assigned to {user_obj.get_full_name()}.'})
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def remove_subject_from_lecturer(request):
+    """Remove a subject qualification from a lecturer."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    ls_id = data.get('ls_id')
+    if not ls_id:
+        return JsonResponse({'error': 'ls_id required'}, status=400)
+
+    ls_entry = get_object_or_404(lecturer_subjects, id=ls_id)
+    code = ls_entry.subject.subject_code
+    ls_entry.delete()
+
+    return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
+
+
+# ============================================================
 # TIMETABLE MODULE
 # ============================================================
 
-DAY_ORDER = {'MON': 0, 'TUE': 1, 'WED': 2, 'THU': 3, 'FRI': 4}
-DAY_NAMES = {'MON': 'Monday', 'TUE': 'Tuesday', 'WED': 'Wednesday', 'THU': 'Thursday', 'FRI': 'Friday'}
+DAY_ORDER = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4}
+DAY_NAMES = {'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday', 'Thu': 'Thursday', 'Fri': 'Friday'}
 
 def _get_teaching_cutoff(term_obj):
     """Calculate the last teaching date before study/exam weeks."""
@@ -2331,11 +2447,13 @@ def get_timetable_data(request):
     """Return timetable data as JSON for a given term and week."""
     term_id = request.GET.get('term_id')
     week_start = request.GET.get('week_start')  # YYYY-MM-DD
+    semester_param = request.GET.get('semester')  # optional semester filter
 
     if not term_id:
         return JsonResponse({'error': 'term_id required'}, status=400)
 
     term_obj = get_object_or_404(academic_term, term_id=term_id)
+    target_semester = int(semester_param) if semester_param else term_obj.current_semester
 
     if week_start:
         monday = parse_date(week_start)
@@ -2352,8 +2470,50 @@ def get_timetable_data(request):
         date__lte=friday
     ).select_related('session', 'session__facility', 'subject', 'lecturer').order_by('date', 'session__start_time')
 
+    # Filter to only subjects in the selected semester
+    semester_subject_ids = set(
+        course_subject.objects.filter(
+            course=term_obj.course,
+            recommended_semester=target_semester
+        ).values_list('subject_id', flat=True)
+    )
+    sessions_qs = [s for s in sessions_qs if s.subject_id in semester_subject_ids]
+
+    # Pre-fetch SubjectComponent types for all subjects in this week
+    subject_ids = set(s.subject_id for s in sessions_qs)
+    comp_map = {}
+    for comp in SubjectComponent.objects.filter(subject_id__in=subject_ids):
+        comp_map.setdefault(comp.subject_id, []).append(comp.class_type)
+
+    # Pre-compute per-subject session dates (sorted) for Lecture/Tutorial disambiguation
+    subj_dates = {}
+    for cs in sessions_qs:
+        subj_dates.setdefault(cs.subject_id, []).append((cs.date, cs.id))
+    for sid in subj_dates:
+        subj_dates[sid].sort()
+
     timetable = []
     for cs in sessions_qs:
+        fac_type = cs.session.facility.type
+        components = comp_map.get(cs.subject_id, [])
+        # Facility rules: Lab→Lab, Auditorium→Lecture, Classroom→Tutorial/Lecture
+        if fac_type == 'Lab':
+            ct = 'Lab'
+        elif fac_type == 'Auditorium':
+            ct = 'Lecture'
+        elif fac_type == 'Classroom':
+            if 'Tutorial' in components and 'Lecture' in components:
+                # Both exist — first session of the week is Lecture, rest Tutorial
+                dates_for_subj = subj_dates.get(cs.subject_id, [])
+                first_id = dates_for_subj[0][1] if dates_for_subj else None
+                ct = 'Lecture' if cs.id == first_id else 'Tutorial'
+            elif 'Tutorial' in components:
+                ct = 'Tutorial'
+            else:
+                ct = 'Lecture'
+        else:
+            ct = 'Lecture'
+
         timetable.append({
             'id': cs.id,
             'date': cs.date.isoformat(),
@@ -2363,7 +2523,7 @@ def get_timetable_data(request):
             'end_time': cs.session.end_time.strftime('%H:%M'),
             'subject_code': cs.subject.subject_code,
             'subject_name': cs.subject.subject_name,
-            'class_type': cs.subject.class_type,
+            'class_type': ct,
             'lecturer': cs.lecturer.get_full_name(),
             'facility': cs.session.facility.facility_name,
             'status': cs.status,
@@ -2386,10 +2546,118 @@ def get_timetable_data(request):
     })
 
 
+# ── Slot-index helpers (4 timeslots per day: 0-early … 3-late) ──
+_SLOT_INDEX_CACHE = {}
+
+def _slot_index(start_time):
+    """Map a start_time to 0-based slot index within a day."""
+    if start_time not in _SLOT_INDEX_CACHE:
+        distinct = sorted(
+            session.objects.values_list('start_time', flat=True).distinct()
+        )
+        for idx, t in enumerate(distinct):
+            _SLOT_INDEX_CACHE[t] = idx
+    return _SLOT_INDEX_CACHE.get(start_time, 0)
+
+
+def _score_candidate(day_ord, slot_idx, facility, class_type, subj_id,
+                     assignments, day_load, facility_usage, num_items):
+    """Return a numeric score for placing a class into a candidate slot.
+
+    Higher is better.  All weights are relative and tuned for a 5-day,
+    4-slot-per-day university layout with ~10 classes to place.
+    """
+    score = 0.0
+
+    # ── 1. Day-spread: prefer the day with the fewest classes so far ──
+    load = day_load.get(day_ord, 0)
+    ideal_per_day = max(1, num_items / 5)
+    if load < ideal_per_day:
+        score += 20          # under-loaded day is very attractive
+    elif load == 0:
+        score += 25          # empty day gets bonus
+    else:
+        score -= 10 * (load - ideal_per_day)   # overloaded day penalised
+
+    # ── 2. Consecutive-day avoidance for the same subject ──
+    subj_days = {a['day_ord'] for a in assignments if a['subj_id'] == subj_id}
+    if (day_ord - 1) in subj_days or (day_ord + 1) in subj_days:
+        score -= 30          # strong penalty for back-to-back days
+    if day_ord in subj_days:
+        score -= 15          # same day as another component (tutorial after lecture ok but not ideal)
+
+    # ── 3. Same-day same-subject slot adjacency ──
+    subj_slots_today = [
+        a['slot_idx'] for a in assignments
+        if a['subj_id'] == subj_id and a['day_ord'] == day_ord
+    ]
+    for s in subj_slots_today:
+        if abs(slot_idx - s) == 1:
+            score -= 10      # immediately adjacent slots
+
+    # ── 4. Slot-position preferences ──
+    if class_type in ('Lab', 'Practical'):
+        # Labs preferred in afternoon (slots 2-3)
+        if slot_idx >= 2:
+            score += 10
+        else:
+            score -= 5
+    elif class_type == 'Lecture':
+        # Lectures preferred in morning (slots 0-1)
+        if slot_idx <= 1:
+            score += 8
+        else:
+            score -= 3
+    # Tutorials: no strong preference (score += 0)
+
+    # Penalise the last slot of the day slightly (avoid late-only schedules)
+    if slot_idx == 3:
+        score -= 3
+
+    # ── 5. Facility rotation: penalise overuse of one room ──
+    fid = facility.facility_id
+    fu = facility_usage.get(fid, 0)
+    score -= 4 * fu
+
+    # ── 6. Day-order balance: mild penalty for extreme front/back loading ──
+    # Prefer middle days slightly so Mon and Fri aren't always first picks
+    mid_dist = abs(day_ord - 2)            # 0=Wed (centre), 2=Mon/Fri
+    score -= 2 * mid_dist
+
+    # ── 7. Gap avoidance for the intake on this day ──
+    slots_today = sorted(
+        [a['slot_idx'] for a in assignments if a['day_ord'] == day_ord] + [slot_idx]
+    )
+    if len(slots_today) >= 2:
+        for i in range(len(slots_today) - 1):
+            gap = slots_today[i + 1] - slots_today[i]
+            if gap > 1:
+                score -= 6 * (gap - 1)    # penalise each empty-slot gap
+
+    return score
+
+
 @role_required(allowed_roles=['admin'])
 @require_POST
 def generate_timetable(request):
-    """Generate a full one-week timetable for an intake."""
+    """Generate a one-week timetable using score-based constraint scheduling.
+
+    Hard constraints (must satisfy):
+      - One class per intake per timeslot
+      - One class per lecturer per timeslot
+      - One booking per facility per timeslot
+      - Correct facility type for class type
+      - Lecturer weekly-hours cap
+      - Tutorials/Labs on a later day than their Lecture
+
+    Soft constraints (scoring preferences):
+      - Spread classes across all five days
+      - Avoid same-subject on consecutive days
+      - Prefer morning for lectures, afternoon for labs
+      - Rotate facility usage
+      - Minimise gaps within a day
+      - Balanced daily load
+    """
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -2397,8 +2665,12 @@ def generate_timetable(request):
 
     term_id = data.get('term_id')
     week_start_str = data.get('week_start')
+    semester_override = data.get('semester')  # optional semester selection
 
     term_obj = get_object_or_404(academic_term, term_id=term_id)
+
+    # Use the semester from the request if provided, otherwise fall back to term's current_semester
+    target_semester = int(semester_override) if semester_override else term_obj.current_semester
 
     if week_start_str:
         week_monday = parse_date(week_start_str)
@@ -2410,142 +2682,318 @@ def generate_timetable(request):
     if not _is_teaching_date(term_obj, week_monday):
         return JsonResponse({'error': 'Target week falls outside the teaching period (study/exam week).'}, status=400)
 
-    # Get all subjects for this intake's current semester
+    # ── 1. Build items to schedule ──────────────────────────────────
     cs_entries = course_subject.objects.filter(
         course=term_obj.course,
-        recommended_semester=term_obj.current_semester
+        recommended_semester=target_semester
     ).select_related('subject')
 
-    subjects_to_schedule = []
+    items_to_schedule = []
     for cs_entry in cs_entries:
-        subjects_to_schedule.append(cs_entry.subject)
-        # Also include child components (labs/tutorials) of this subject
-        children = subject.objects.filter(parent_subject=cs_entry.subject)
-        for child in children:
-            subjects_to_schedule.append(child)
+        components = SubjectComponent.objects.filter(subject=cs_entry.subject)
+        if components.exists():
+            for comp in components:
+                items_to_schedule.append({
+                    'subject': cs_entry.subject,
+                    'class_type': comp.class_type,
+                    'hours_per_class': comp.hours_per_class,
+                })
+        else:
+            items_to_schedule.append({
+                'subject': cs_entry.subject,
+                'class_type': 'Lecture',
+                'hours_per_class': 2,
+            })
 
-    # Sort: Lectures first, then Labs/Tutorials (enforce lecture before lab)
-    type_order = {'Lecture': 0, 'Tutorial': 1, 'Lab': 2}
-    subjects_to_schedule.sort(key=lambda s: (
-        s.parent_subject_id or s.subject_id,  # group by parent
-        type_order.get(s.class_type, 9)
+    # Lectures first so tutorials/labs can reference their day
+    type_order = {'Lecture': 0, 'Tutorial': 1, 'Lab': 2, 'Practical': 2, 'Fieldwork': 2}
+    items_to_schedule.sort(key=lambda item: (
+        type_order.get(item['class_type'], 9),
+        item['subject'].subject_id,
     ))
+    num_items = len(items_to_schedule)
 
-    # Get all available sessions (timeslots)
-    all_sessions = list(session.objects.select_related('facility').order_by(
-        'day_of_week', 'start_time'
-    ))
+    # ── 2. Prepare session pool ─────────────────────────────────────
+    all_sessions = list(session.objects.select_related('facility'))
+    all_sessions.sort(key=lambda s: (DAY_ORDER.get(s.day_of_week, 9), s.start_time, s.facility_id))
 
-    # Sort sessions by day order
-    all_sessions.sort(key=lambda s: (DAY_ORDER.get(s.day_of_week, 9), s.start_time))
+    # ── 3. Pre-compute valid teaching dates ─────────────────────────
+    week_dates = {}
+    valid_dates = set()
+    skipped_set = set(
+        skipped_date.objects.filter(term=term_obj).values_list('date', flat=True)
+    )
+    for day_ord in range(5):
+        d = week_monday + timedelta(days=day_ord)
+        week_dates[day_ord] = d
+        if d not in skipped_set and _is_teaching_date(term_obj, d):
+            valid_dates.add(d)
 
-    # Build clash-check structure
+    # ── 4. Build occupancy maps from existing sessions ──────────────
     existing_qs = class_session.objects.filter(
         date__gte=week_monday,
         date__lt=week_monday + timedelta(days=5),
         status='scheduled'
     ).select_related('session')
 
-    booked_intake_slots = set()
-    booked_lecturer_slots = set()
-    booked_facility_slots = set()
-    for ex in existing_qs:
-        booked_intake_slots.add((ex.term_id, ex.session_id, ex.date))
-        booked_lecturer_slots.add((ex.lecturer_id, ex.session_id, ex.date))
-        booked_facility_slots.add((ex.session.facility_id, ex.session_id, ex.date))
+    occupied_intake = set()
+    occupied_lecturer = set()
+    occupied_facility = set()
+    lecturer_week_hours = {}
 
+    # Track current state for scoring
+    assignments = []        # list of {'subj_id','day_ord','slot_idx','facility_id','sess'}
+    day_load = {}           # day_ord -> count of classes
+    facility_usage = {}     # facility_id -> count of bookings
+
+    for ex in existing_qs:
+        st = ex.session.start_time
+        d_ord = DAY_ORDER.get(ex.session.day_of_week, 9)
+        occupied_intake.add((ex.term_id, ex.date, st))
+        occupied_lecturer.add((ex.lecturer_id, ex.date, st))
+        occupied_facility.add((ex.session.facility_id, ex.date, st))
+        hrs = _get_session_duration_hours(ex.session)
+        lecturer_week_hours[ex.lecturer_id] = lecturer_week_hours.get(ex.lecturer_id, 0) + hrs
+        # Seed scoring state
+        assignments.append({
+            'subj_id': ex.subject_id,
+            'day_ord': d_ord,
+            'slot_idx': _slot_index(st),
+            'facility_id': ex.session.facility_id,
+        })
+        day_load[d_ord] = day_load.get(d_ord, 0) + 1
+        facility_usage[ex.session.facility_id] = facility_usage.get(ex.session.facility_id, 0) + 1
+
+    # ── 5. Score-based scheduling ───────────────────────────────────
     created_sessions = []
     errors = []
-    scheduled_days = {}  # track which day each subject's lecture lands on
+    scheduled_days = {}     # subject_id -> day_ord of its Lecture
 
     with transaction.atomic():
-        for subj in subjects_to_schedule:
-            # Find or get fixed lecturer
+        for item in items_to_schedule:
+            subj = item['subject']
+            class_type = item['class_type']
+
+            # Resolve lecturer
             qualified = lecturer_subjects.objects.filter(subject=subj).select_related('user__lecturer_profile')
             assigned_lecturer = _find_or_create_assignment(term_obj, subj, qualified)
-
             if not assigned_lecturer:
-                errors.append(f"No qualified lecturer found for {subj.subject_code}")
+                errors.append(f"No qualified lecturer found for {subj.subject_code} ({class_type})")
                 continue
 
-            # Check lecturer hours
             lec_profile = getattr(assigned_lecturer, 'lecturer_profile', None)
             max_hours = lec_profile.max_hours_per_week if lec_profile else 20
-            current_hours = _get_lecturer_week_hours(assigned_lecturer, week_monday)
+            current_hours = lecturer_week_hours.get(assigned_lecturer.id, 0)
 
-            # Determine which days are valid (for labs, must be after lecture day)
             min_day_order = 0
-            if subj.class_type in ('Lab', 'Tutorial') and subj.parent_subject_id:
-                parent_day = scheduled_days.get(subj.parent_subject_id)
+            if class_type in ('Lab', 'Tutorial', 'Practical', 'Fieldwork'):
+                parent_day = scheduled_days.get(subj.subject_id)
                 if parent_day is not None:
-                    min_day_order = parent_day + 1  # lab must be after lecture day
+                    min_day_order = parent_day + 1
 
-            placed = False
+            # Evaluate ALL valid candidates, pick the best score
+            candidates = []
             for sess in all_sessions:
                 day_ord = DAY_ORDER.get(sess.day_of_week, 9)
                 if day_ord < min_day_order:
                     continue
 
-                sess_date = week_monday + timedelta(days=day_ord)
-
-                # Check skipped dates
-                if skipped_date.objects.filter(term=term_obj, date=sess_date).exists():
+                sess_date = week_dates.get(day_ord)
+                if sess_date is None or sess_date not in valid_dates:
                     continue
 
-                # Check teaching date validity
-                if not _is_teaching_date(term_obj, sess_date):
+                # Facility-type hard constraint
+                # Classroom: Lecture / Tutorial
+                # Auditorium: Lecture only
+                # Lab: Lab only
+                ft = sess.facility.type
+                if class_type in ('Lab', 'Practical') and ft != 'Lab':
+                    continue
+                if class_type == 'Lecture' and ft not in ('Classroom', 'Auditorium'):
+                    continue
+                if class_type == 'Tutorial' and ft != 'Classroom':
+                    continue
+                if class_type == 'Fieldwork' and ft not in ('Classroom', 'Auditorium'):
                     continue
 
-                # Facility type check: Labs need Lab facilities, Lectures need Classroom/Auditorium
-                if subj.class_type == 'Lab' and sess.facility.type not in ('Lab',):
-                    continue
-                if subj.class_type == 'Lecture' and sess.facility.type not in ('Classroom', 'Auditorium'):
-                    continue
+                st = sess.start_time
 
-                # Check clashes
-                intake_clash = (term_obj.term_id, sess.session_id, sess_date) in booked_intake_slots
-                lecturer_clash = (assigned_lecturer.id, sess.session_id, sess_date) in booked_lecturer_slots
-                facility_clash = (sess.facility_id, sess.session_id, sess_date) in booked_facility_slots
-
-                if intake_clash or lecturer_clash or facility_clash:
+                # Hard constraint checks
+                if (term_obj.term_id, sess_date, st) in occupied_intake:
+                    continue
+                if (assigned_lecturer.id, sess_date, st) in occupied_lecturer:
+                    continue
+                if (sess.facility_id, sess_date, st) in occupied_facility:
                     continue
 
-                # Check lecturer max hours
                 sess_hours = _get_session_duration_hours(sess)
                 if current_hours + sess_hours > max_hours:
                     continue
 
-                # Schedule it
-                new_cs = class_session.objects.create(
-                    session=sess,
-                    subject=subj,
-                    lecturer=assigned_lecturer,
-                    term=term_obj,
-                    date=sess_date,
-                    status='scheduled'
+                # Candidate passes all hard constraints — score it
+                slot_idx = _slot_index(st)
+                sc = _score_candidate(
+                    day_ord, slot_idx, sess.facility, class_type,
+                    subj.subject_id, assignments, day_load,
+                    facility_usage, num_items
                 )
-                created_sessions.append(new_cs)
+                candidates.append((sc, sess, day_ord, slot_idx, sess_date, sess_hours))
 
-                # Update tracking
-                booked_intake_slots.add((term_obj.term_id, sess.session_id, sess_date))
-                booked_lecturer_slots.add((assigned_lecturer.id, sess.session_id, sess_date))
-                booked_facility_slots.add((sess.facility_id, sess.session_id, sess_date))
-                current_hours += sess_hours
+            if not candidates:
+                errors.append(f"Could not find an available slot for {subj.subject_code} ({class_type})")
+                continue
 
-                # Track which day the lecture was placed for lab ordering
-                if subj.class_type == 'Lecture':
-                    scheduled_days[subj.subject_id] = day_ord
+            # Pick the candidate with the highest score
+            # (tie-break by day_ord then slot_idx for determinism)
+            candidates.sort(key=lambda c: (-c[0], c[2], c[3]))
+            best_score, best_sess, best_day, best_slot, best_date, best_hours = candidates[0]
 
-                placed = True
-                break
+            new_cs = class_session.objects.create(
+                session=best_sess,
+                subject=subj,
+                lecturer=assigned_lecturer,
+                term=term_obj,
+                date=best_date,
+                status='scheduled'
+            )
+            created_sessions.append(new_cs)
 
-            if not placed:
-                errors.append(f"Could not find an available slot for {subj.subject_code}")
+            # Update occupancy & scoring state
+            occupied_intake.add((term_obj.term_id, best_date, best_sess.start_time))
+            occupied_lecturer.add((assigned_lecturer.id, best_date, best_sess.start_time))
+            occupied_facility.add((best_sess.facility_id, best_date, best_sess.start_time))
+            current_hours += best_hours
+            lecturer_week_hours[assigned_lecturer.id] = current_hours
+
+            assignments.append({
+                'subj_id': subj.subject_id,
+                'day_ord': best_day,
+                'slot_idx': best_slot,
+                'facility_id': best_sess.facility_id,
+            })
+            day_load[best_day] = day_load.get(best_day, 0) + 1
+            facility_usage[best_sess.facility_id] = facility_usage.get(best_sess.facility_id, 0) + 1
+
+            if class_type == 'Lecture':
+                scheduled_days[subj.subject_id] = best_day
+
+        # ── 6. Improvement pass: try swapping pairs for better scores ──
+        improved = True
+        max_passes = 3
+        pass_count = 0
+        while improved and pass_count < max_passes:
+            improved = False
+            pass_count += 1
+            for i in range(len(created_sessions)):
+                cs_i = created_sessions[i]
+                sess_i = cs_i.session
+                day_i = DAY_ORDER.get(sess_i.day_of_week, 9)
+                slot_i = _slot_index(sess_i.start_time)
+
+                # Look at other created sessions to try swapping rooms/slots
+                for j in range(i + 1, len(created_sessions)):
+                    cs_j = created_sessions[j]
+                    sess_j = cs_j.session
+
+                    # Only consider swapping if same timeslot (same day+time)
+                    # to swap facilities, or same day different time to swap slots
+                    if sess_i.day_of_week != sess_j.day_of_week:
+                        continue
+                    if sess_i.start_time != sess_j.start_time:
+                        continue
+                    # Same timeslot, different rooms — try swapping rooms
+                    if sess_i.facility_id == sess_j.facility_id:
+                        continue
+
+                    # Check facility-type compatibility after swap
+                    i_type = 'Lab' if sess_i.facility.type == 'Lab' else 'Classroom'
+                    j_type = 'Lab' if sess_j.facility.type == 'Lab' else 'Classroom'
+                    i_needs = 'Lab' if cs_i.session.facility.type == 'Lab' else 'Classroom'
+                    j_needs = 'Lab' if cs_j.session.facility.type == 'Lab' else 'Classroom'
+
+                    if j_type != i_needs or i_type != j_needs:
+                        continue
+
+                    # Score before swap
+                    old_i = _score_candidate(
+                        day_i, slot_i, sess_i.facility, 'Lab' if i_needs == 'Lab' else 'Lecture',
+                        cs_i.subject_id, assignments, day_load, facility_usage, num_items
+                    )
+                    old_j = _score_candidate(
+                        day_i, slot_i, sess_j.facility, 'Lab' if j_needs == 'Lab' else 'Lecture',
+                        cs_j.subject_id, assignments, day_load, facility_usage, num_items
+                    )
+
+                    # Score after swap
+                    new_i = _score_candidate(
+                        day_i, slot_i, sess_j.facility, 'Lab' if i_needs == 'Lab' else 'Lecture',
+                        cs_i.subject_id, assignments, day_load, facility_usage, num_items
+                    )
+                    new_j = _score_candidate(
+                        day_i, slot_i, sess_i.facility, 'Lab' if j_needs == 'Lab' else 'Lecture',
+                        cs_j.subject_id, assignments, day_load, facility_usage, num_items
+                    )
+
+                    if (new_i + new_j) > (old_i + old_j):
+                        # Swap sessions in DB
+                        cs_i.session, cs_j.session = cs_j.session, cs_i.session
+                        cs_i.save()
+                        cs_j.save()
+                        # Update facility_usage
+                        facility_usage[sess_i.facility_id] = facility_usage.get(sess_i.facility_id, 1) - 1
+                        facility_usage[sess_j.facility_id] = facility_usage.get(sess_j.facility_id, 1) - 1
+                        facility_usage[sess_j.facility_id] = facility_usage.get(sess_j.facility_id, 0) + 1
+                        facility_usage[sess_i.facility_id] = facility_usage.get(sess_i.facility_id, 0) + 1
+                        improved = True
 
     return JsonResponse({
         'success': True,
         'created': len(created_sessions),
         'errors': errors,
+    })
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def delete_week_timetable(request):
+    """Delete all scheduled sessions for a given term and week."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    term_id = data.get('term_id')
+    week_start_str = data.get('week_start')
+    semester_param = data.get('semester')
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+    target_semester = int(semester_param) if semester_param else term_obj.current_semester
+
+    monday = parse_date(week_start_str)
+    if monday is None:
+        return JsonResponse({'error': 'Invalid date format'}, status=400)
+
+    friday = monday + timedelta(days=4)
+
+    # Only delete sessions for subjects in the selected semester
+    semester_subject_ids = set(
+        course_subject.objects.filter(
+            course=term_obj.course,
+            recommended_semester=target_semester
+        ).values_list('subject_id', flat=True)
+    )
+
+    deleted_count, _ = class_session.objects.filter(
+        term=term_obj,
+        date__gte=monday,
+        date__lte=friday,
+        status='scheduled',
+        subject_id__in=semester_subject_ids
+    ).delete()
+
+    return JsonResponse({
+        'success': True,
+        'deleted': deleted_count,
     })
 
 
@@ -2560,19 +3008,30 @@ def save_preference(request):
 
     term_id = data.get('term_id')
     week_start_str = data.get('week_start')
+    semester_param = data.get('semester')
 
     term_obj = get_object_or_404(academic_term, term_id=term_id)
+    target_semester = int(semester_param) if semester_param else term_obj.current_semester
     monday = parse_date(week_start_str)
     if monday is None:
         return JsonResponse({'error': 'Invalid date'}, status=400)
 
     friday = monday + timedelta(days=4)
 
+    # Only save preferences for subjects in the selected semester
+    semester_subject_ids = set(
+        course_subject.objects.filter(
+            course=term_obj.course,
+            recommended_semester=target_semester
+        ).values_list('subject_id', flat=True)
+    )
+
     current_classes = class_session.objects.filter(
         term=term_obj,
         date__gte=monday,
         date__lte=friday,
-        status='scheduled'
+        status='scheduled',
+        subject_id__in=semester_subject_ids
     ).select_related('session', 'subject')
 
     if not current_classes.exists():
@@ -2608,8 +3067,10 @@ def replicate_preference(request):
 
     term_id = data.get('term_id')
     target_week_str = data.get('target_week')  # YYYY-MM-DD (Monday)
+    semester_param = data.get('semester')
 
     term_obj = get_object_or_404(academic_term, term_id=term_id)
+    target_semester = int(semester_param) if semester_param else term_obj.current_semester
     target_monday = parse_date(target_week_str)
     if target_monday is None:
         return JsonResponse({'error': 'Invalid date'}, status=400)
@@ -2617,20 +3078,31 @@ def replicate_preference(request):
     if not _is_teaching_date(term_obj, target_monday):
         return JsonResponse({'error': 'Target week is outside the teaching period.'}, status=400)
 
-    prefs = timetable_preference.objects.filter(term=term_obj, is_active=True).select_related('session', 'subject')
-    if not prefs.exists():
-        return JsonResponse({'error': 'No active preference found. Please save a preference first.'}, status=400)
+    # Only replicate preferences for subjects in the selected semester
+    semester_subject_ids = set(
+        course_subject.objects.filter(
+            course=term_obj.course,
+            recommended_semester=target_semester
+        ).values_list('subject_id', flat=True)
+    )
 
-    # Check for existing classes in target week
+    prefs = timetable_preference.objects.filter(
+        term=term_obj, is_active=True, subject_id__in=semester_subject_ids
+    ).select_related('session', 'subject')
+    if not prefs.exists():
+        return JsonResponse({'error': 'No active preference found for this semester. Please save a preference first.'}, status=400)
+
+    # Check for existing classes in target week for this semester
     target_friday = target_monday + timedelta(days=4)
     existing_count = class_session.objects.filter(
         term=term_obj,
         date__gte=target_monday,
         date__lte=target_friday,
-        status='scheduled'
+        status='scheduled',
+        subject_id__in=semester_subject_ids
     ).count()
     if existing_count > 0:
-        return JsonResponse({'error': 'Target week already has scheduled classes for this intake.'}, status=400)
+        return JsonResponse({'error': 'Target week already has scheduled classes for this semester.'}, status=400)
 
     # Get skipped dates for target week
     skipped_dates = set(
@@ -2791,7 +3263,16 @@ def rearrange_missing_class(request):
     # Also check next week
     search_weeks.append(original_monday + timedelta(days=7))
 
-    valid_facility_types = ['Lab'] if subj.class_type == 'Lab' else ['Classroom', 'Auditorium']
+    # Determine valid facility types based on original facility
+    # Rules: Lab→Lab only, Auditorium→Lecture (Auditorium only),
+    #        Classroom→Tutorial/Lecture (Classroom only)
+    original_facility_type = cs_obj.session.facility.type
+    if original_facility_type == 'Lab':
+        valid_facility_types = ['Lab']
+    elif original_facility_type == 'Auditorium':
+        valid_facility_types = ['Auditorium']
+    else:
+        valid_facility_types = ['Classroom']
 
     all_sessions = session.objects.filter(
         facility__type__in=valid_facility_types

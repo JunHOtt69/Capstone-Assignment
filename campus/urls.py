@@ -53,10 +53,18 @@ urlpatterns = [
     path("academic/courses/assign/", views.assign_subject_to_course, name="assign_subject_to_course"),
     path("academic/courses/remove/", views.remove_subject_from_course, name="remove_subject_from_course"),
 
+    # Departments management
+    path("academic/departments/", views.manage_departments, name="manage_departments"),
+    path("academic/departments/lecturers/", views.get_department_lecturers, name="get_department_lecturers"),
+    path("academic/departments/subjects/available/", views.get_available_subjects_for_lecturer, name="get_available_subjects_for_lecturer"),
+    path("academic/departments/subjects/assign/", views.assign_subject_to_lecturer, name="assign_subject_to_lecturer"),
+    path("academic/departments/subjects/remove/", views.remove_subject_from_lecturer, name="remove_subject_from_lecturer"),
+
     # Timetable scheduling
     path("academic/timetable/", views.manage_timetable, name="manage_timetable"),
     path("academic/timetable/data/", views.get_timetable_data, name="get_timetable_data"),
     path("academic/timetable/generate/", views.generate_timetable, name="generate_timetable"),
+    path("academic/timetable/delete-week/", views.delete_week_timetable, name="delete_week_timetable"),
     path("academic/timetable/save-preference/", views.save_preference, name="save_preference"),
     path("academic/timetable/replicate/", views.replicate_preference, name="replicate_preference"),
     path("academic/timetable/skip-date/add/", views.add_skipped_date, name="add_skipped_date"),
