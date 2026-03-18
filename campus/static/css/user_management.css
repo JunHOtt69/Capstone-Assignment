@@ -663,7 +663,7 @@ th.intakeField{
 
 .actionBtns button{
     background-color: transparent;
-    width: 1vw;
+    width: auto;
     height: 1vw;
     outline: none;
     border: none;
@@ -672,6 +672,18 @@ th.intakeField{
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    font: var(--p-fontsize);
+    transition: opacity 0.3s ease;
+}
+
+.actionBtns .resend-btn.sending{
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.actionBtns .resend-btn.sending i, 
+.actionBtns .resend-btn.sending svg {
+    animation: spin 2s ease-in-out infinite;
 }
 
 .fas{

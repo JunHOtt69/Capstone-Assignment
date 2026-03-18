@@ -1201,6 +1201,11 @@ header li a{
     }
 }
 
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 /* @media screen and (max-width: 1920px) {
     .studentCard{
         width: 360px;

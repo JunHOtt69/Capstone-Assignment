@@ -254,7 +254,7 @@ function removeNotification(notif) {
     
     setTimeout(() => {
         notif.remove();
-    }, 5000);
+    }, 1000);
 }
 
 function formatCardId(container){
