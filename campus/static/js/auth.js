@@ -85,3 +85,10 @@ function togglePasswordVisibility() {
         });
     }
 }
+
+const submitBtn = document.querySelector('button[type="submit"]');
+
+submitBtn.addEventListener('click', () => {
+    const authLoad = document.querySelector('.authLoad');
+    authLoad.classList.add('active');
+})

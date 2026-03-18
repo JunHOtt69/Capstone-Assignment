@@ -1,0 +1,110 @@
+{% extends "user_management.html" %} 
+{% load static %}  
+
+{% block title %} User CRUD  {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/user_management.css' %}">
+{% endblock %}
+
+{% block function_window %}
+    <div class="crud">
+        <div class="functionHeader">
+            <div class="titleWrapper">
+                <h2>User CRUD</h2>
+                <div class="searchBar">
+                    <input type="text" placeholder="Search by name or email..." id="searchInput">
+                </div>
+            </div>
+            <div class="userType"  data-role="{{active_role}}" id="user_role">
+                <a href="?role=admin" class="roleBtn {% if active_role == 'admin' %}active{% endif %}">Admin</a>
+                <a href="?role=lecturer" class="roleBtn {% if active_role == 'lecturer' %}active{% endif %}">Lecturer</a>
+                <a href="?role=student" class="roleBtn {% if active_role == 'student' %}active{% endif %}">Student</a>
+            </div>
+        </div>
+        {% include "partials/user_list.html" %}
+        <form class="editTableWrapper" method="POST" action="{% url 'user_crud' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" id="edit-user-id">
+            <input type="hidden" name="action" id="form-action" value="save">
+            <table id="edit-table">
+                <thead>
+                    <tr>
+                        <th class="f-nField">First Name</th>
+                        <th class="l-nField">Last Name</th>
+                        <th class="emailField">Email</th>
+                        
+                        {% if active_role == 'lecturer' %}
+                            <th class="departmentField">Department</th>
+                        {% elif active_role == 'student' %}
+                            <th class="intakeField">Intake</th>
+                        {% endif %}
+                        
+                        <th class="actionField">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="form-body" class="crudBody">
+                    <td><input type="text" name="first_name" id="edit-first-name"></td>
+                    <td><input type="text" name="last_name" id="edit-last-name"></td>
+                    <td><input type="text" name="email" id="edit-email"></td>
+
+                    {% if active_role == 'lecturer' %}
+                        <td>
+                            <div class="selectInput department">
+                                <div class="selectedLabel">
+                                    <label>Select A Department (Optional)</label>
+                                    <span class="arrow">
+                                        <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="optionContainer">
+                                    {% for dept in depts %}
+                                        <div class="option">
+                                            <input type="radio" name="extra_id" id="dept-{{ dept.dept_id }}" value="{{ dept.dept_id }}">
+                                            <label for="dept-{{ dept.dept_id }}">{{ dept.dept_name }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </td>
+                    {% elif active_role == 'student' %}
+                        <td>
+                            <div class="selectInput a_term">
+                                <div class="selectedLabel">
+                                    <label>Select A Term</label>
+                                    <span class="arrow">
+                                        <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441" stroke="black" stroke-width="6"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="optionContainer">
+                                    {% for term in terms %}
+                                    <div class="option">
+                                        <input type="radio" name="extra_id" id="term-{{ term.term_id }}" value="{{ term.term_id }}">
+                                        <label for="term-{{ term.term_id }}">{{ term.intake_code }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </td>
+                    {% endif %}
+                    <td class="actionBtns">
+                        <button class="deleteUser" id="dltUser"  type="submit">Delete User</button>
+                    </td>
+                </tbody>
+            </table>
+            <div class="editControl">
+                <button class="save" id="saveUser" type="submit">Save</button>
+                <button class="cancel" id="cancelUser" type="button" >Cancel</button>
+            </div>
+            <div class="errorMessage"></div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/user_crud.js' %}"></script>
+{% endblock %} 

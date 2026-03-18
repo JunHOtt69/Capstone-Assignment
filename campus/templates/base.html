@@ -49,7 +49,7 @@
                         </li>
                         {% if user_role == 'admin' %}
                             <li class="
-                            {% if request.resolver_match.url_name in 'user_management create_user_manually academic_management manage_academic_term manage_timetable manage_courses bulk_user_creation' %}
+                            {% if request.resolver_match.url_name in 'user_management create_user_manually academic_management manage_academic_term manage_timetable manage_courses bulk_user_creation user_crud' %}
                                 active
                             {% endif %}
                             ">
@@ -130,12 +130,10 @@
         <div class="notifContainer">
             {% if messages %}
                 {% for message in messages %}
-                    {% if "success" in message.tags or "error" in message.tags %}
-                        <div class="notif {{ message.tags }}">
-                            <p class="message">{{ message }}</p>
-                            <span class="closeBtn">&times;</span>
-                        </div>
-                    {% endif %}
+                    <div class="notif {{ message.tags }}">
+                        <p class="message">{{ message }}</p>
+                        <span class="closeBtn">&times;</span>
+                    </div>
                 {% endfor %}
             {% endif %}
         </div>
@@ -291,10 +289,26 @@
 
 <template id="i-Management-dropdown">
     <div class="functionG1">
-        <span class="title"><a href="{% url 'user_management' %}">User Management</a></span>
-        <span class="item"><a href="">User CRUD</a></span>
-        <span class="item"><a href="{% url "bulk_user_creation" %}">Bulk User Creation</a></span>
-        <span class="item"><a href="{% url 'create_user_manually' %}">Create User Manually</a></span>
+        <span class="title
+            {% if request.resolver_match.url_name == 'user_management' %}
+                active
+            {% endif %}
+        "><a href="{% url 'user_management' %}">User Management</a></span>
+        <span class="item
+            {% if request.resolver_match.url_name == 'user_crud' %}
+                active
+            {% endif %}
+        "><a href="{% url "user_crud" %}">User CRUD</a></span>
+        <span class="item
+            {% if request.resolver_match.url_name == 'bulk_user_creation' %}
+                active
+            {% endif %}
+        "><a href="{% url "bulk_user_creation" %}">Bulk User Creation</a></span>
+        <span class="item
+            {% if request.resolver_match.url_name == 'create_user_manually' %}
+                active
+            {% endif %}
+        "><a href="{% url 'create_user_manually' %}">Create User Manually</a></span>
     </div>
 
     <div class="functionG2">
@@ -316,7 +330,7 @@
 
         <div class="functionG2">
             <span class="title">Infrastructure &amp; Analytics</span>
-            <span class="item"><a href="{% url 'facility_status' %}">Facility Status</a></span>
+            {% comment %} <span class="item"><a href="{% url 'facility_status' %}">Facility Status</a></span> {% endcomment %}
             <span class="item"><a href="{% url "editmap" %}">Campus Navigation Config</a></span>
         </div>
     {% elif user_role == 'student' or user_role == 'lecturer' %}

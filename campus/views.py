@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.encoding import force_bytes
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.urls import reverse
@@ -21,7 +21,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
-from django.contrib.auth.views import LoginView, PasswordResetView
+from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetConfirmView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
@@ -46,6 +46,31 @@ from .models import (
 #playground
 def testing(request):
     return render(request, 'testing.html')
+
+#logout user when password resetting
+class SmartPasswordResetConfirmView(PasswordResetConfirmView):
+    def dispatch(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            logout(self.request)
+            messages.info(self.request, "You have been logged out to securely set up the new account password.")
+            return redirect(self.request.path)
+        
+        return super().dispatch(*args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        uidb64 = self.kwargs.get('uidb64')
+        
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            target_user = User.objects.get(pk=uid)
+            
+            context['is_new_user'] = not target_user.has_usable_password()
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            context['is_new_user'] = False
+            
+        return context
+        
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -258,13 +283,13 @@ def build_set_password_link(request, user):
     return request.build_absolute_uri(path)
 
 def check_email_exists(request):
-    emails = request.GET.getlist('emails[]')
+    emails = [e.lower() for e in request.GET.getlist('emails[]')]
     existing = User.objects.filter(
         Q(username__in = emails) | Q (email__in = emails)
     )
     
-    taken_set = set(existing.values_list('username', flat=True)) | \
-                set(existing.values_list('email', flat=True))
+    taken_set = {val.lower() for val in existing.values_list('username', flat=True)} | \
+                {val.lower() for val in existing.values_list('email', flat=True)}
 
     taken_details = []
 
@@ -315,7 +340,8 @@ def generate_user_id(role):
         if not exists:
             return new_id
 
-@role_required(allowed_roles=['admin'])  
+@role_required(allowed_roles=['admin'])
+@transaction.atomic 
 def create_user_manually(request):
     groups = {g.name: str(g.id) for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
     dept = list(departments.objects.values('dept_id', 'dept_name'))
@@ -422,7 +448,6 @@ def create_user_manually(request):
                 try: 
                     user = invite['user']
                     link = build_set_password_link(request, user)
-
                     subject = "Set your Smart Campus password"
                     from_email=None
                     to = [invite['email']]
@@ -475,6 +500,273 @@ def create_user_manually(request):
         context["selected_role"] = request.session.get('selected_role_id')
 
     return render(request, "partials/create_user_manually.html", context)
+
+
+#user crud
+@role_required(allowed_roles=['admin'])
+@transaction.atomic 
+def user_crud(request):
+    if request.method == "POST":
+        action = request.POST.get('action')
+        active_role = request.POST.get('active_role', 'admin')
+        user_id = request.POST.get('user_id')
+        user = get_object_or_404(User, id=user_id)
+        user_fullname = user.get_full_name()
+        
+        print('Action: ', action)
+        print("email", request.POST.get('email'))
+        try:
+            if action == "delete":
+                user.delete()
+                messages.success(request, f"User {user_fullname} has been permanently deleted.")
+
+            elif action == 'save':
+                user.first_name = request.POST.get('first_name')
+                user.last_name = request.POST.get('last_name')
+                new_email = request.POST.get('email')
+                
+                user.email = new_email
+                user.username = new_email
+                user.save()
+
+                extra_id = request.POST.get('extra_id')
+
+                if extra_id:
+                    if hasattr(user, 'lecturer_profile'):
+                        prof = user.lecturer_profile
+                        prof.dept = departments.objects.get(dept_id=extra_id)
+                        prof.save()
+                    elif hasattr(user, 'student_profile'):
+                        enrollment = user.course_enrollment
+                        enrollment.term = academic_term.objects.get(term_id=extra_id)
+                        enrollment.save()
+
+                messages.success(request, f"User {user_fullname} updated successfully!")
+
+        except Exception as e:
+            messages.error(request, f"Error updating user: {str(e)}")
+
+        return redirect(f"{reverse('user_crud')}?role={active_role}")
+
+    elif request.method == "GET":
+        role = request.GET.get('role', 'admin')
+        query = request.GET.get('q', '')
+
+        if role == 'lecturer':
+            user_list = User.objects.filter(groups__name__icontains='lecturer').select_related('lecturer_profile__dept')
+        elif role == 'student':
+            user_list = User.objects.filter(groups__name__icontains='student').select_related('course_enrollment__term')
+        else:
+            user_list = User.objects.filter(groups__name__icontains='admin')
+
+        if query:
+            words = query.split()
+            for word in words:
+                user_list = user_list.filter(
+                    Q(first_name__icontains=word) | 
+                    Q(last_name__icontains=word) | 
+                    Q(email__icontains=word)
+                )
+
+        context = {
+            'users': user_list,
+            'active_role': role,
+            'search_query': query,
+            "depts": departments.objects.all(),
+            "terms": academic_term.objects.all(),
+        }
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return render(request, 'partials/user_list.html', context)
+    
+    return render(request, "partials/user_crud.html", context)
+
+@role_required(allowed_roles=['admin'])
+def get_details(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    role = 'admin'
+    data = {
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+    }
+
+    if hasattr(user, 'lecturer_profile'):
+        data.update({
+            'role': 'lecturer',
+            'dept_id': user.lecturer_profile.dept.dept_id if user.lecturer_profile.dept else "",
+            'dept_name': user.lecturer_profile.dept.dept_name if user.lecturer_profile.dept else 'N/A',
+            'is_head': user.lecturer_profile.is_head,
+        })
+    elif hasattr(user, 'student_profile'):
+        enrollment = getattr(user, 'course_enrollment', None)
+        data.update({
+            'role': 'student',
+            'intake_id': enrollment.term.term_id if enrollment else '',
+            'intake_code': enrollment.term.intake_code,
+        })
+    else:
+        data['role'] = 'admin'
+
+    return JsonResponse(data)
+
+
+@role_required(allowed_roles=['admin'])
+@transaction.atomic
+def bulk_user_creation(request):
+    if request.method == 'POST':
+        try:
+            json_data = request.POST.get('user_data')
+            data = json.loads(json_data)
+
+            groups = {g.name.lower(): g for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
+            
+            users_to_invite = []
+            skipped_users = []
+            created_count = 0
+            row_num = 0
+
+            for index, row in enumerate(data):
+                row_num = index + 1
+                email = row.get('email', '').strip()
+                role_name = row.get('role', '').lower().strip()
+                first_name = row.get('first_name', '').strip()
+                last_name = row.get('last_name', '').strip()
+                group = groups.get(role_name)
+                dept_code = row.get('department', '').strip()
+                intake_code = row.get('intake', '').strip()
+
+                error_reason = None
+
+                if not email:
+                    error_reason = "Email is missing."
+                elif role_name not in groups:
+                    error_reason = f"Invalid role '{role_name}'. Must be admin, lecturer, or student."
+                elif not first_name and not last_name:
+                    error_reason = "Both First Name and Last Name are required."
+                
+                elif role_name == 'admin':
+                    if dept_code or intake_code:
+                        error_reason = "Admins should not have Department or Intake codes assigned."
+
+                elif role_name == 'lecturer':
+                    if not dept_code:
+                        error_reason = f"Lecturer must have a Department code."
+
+                    else:
+                        dept_obj = departments.objects.filter(dept_code=dept_code).first() 
+                        if not dept_obj:
+                            error_reason = f"Department code '{dept_code}' does not exist in the system."
+
+                    if not error_reason and intake_code:
+                        error_reason = "Lecturers cannot be assigned to an Intake code."
+
+                elif role_name == 'student':
+                    if not intake_code:
+                        error_reason = "Students must have an Intake code."
+                    else:
+                        term = academic_term.objects.filter(intake_code=intake_code).first()
+                        if not term:
+                            error_reason = f"Intake code '{intake_code}' is invalid or not found."
+
+                    if not error_reason and dept_code:
+                            error_reason = "Students should use Intake codes, not Department codes."
+
+                if error_reason:
+                    skipped_users.append({
+                        'row': row_num,
+                        'email': email if email else "Null",
+                        'reason': error_reason
+                    })
+                    continue
+
+                new_user = User.objects.create_user(
+                    username=email, 
+                    email=email,
+                    first_name=first_name, 
+                    last_name=last_name
+                )
+ 
+                new_user.groups.add(group)
+                new_user.set_unusable_password()
+                
+                if role_name in ['admin', 'lecturer']:
+                    new_user.is_staff = True
+                
+                new_user.save()
+                new_user.groups.add(group)
+
+                unique_id = generate_user_id(role_name)
+
+                if role_name == 'admin':
+                    admin_profiles.objects.create(
+                        user=new_user, 
+                        ad_id=unique_id
+                    )
+
+                elif role_name == 'lecturer':
+                    dept_obj = departments.objects.filter(dept_code=dept_code).first() 
+                    lecturer_profiles.objects.create(
+                        user=new_user, 
+                        lc_id=unique_id, 
+                        dept=dept_obj
+                    )
+
+                elif role_name == 'student':
+                    student_profiles.objects.create(user=new_user, tp_id=unique_id)
+                    
+                    term_obj = academic_term.objects.filter(intake_code=intake_code).first()
+
+                    if term_obj:
+                        course_enrollment.objects.create(
+                            student=new_user,
+                            term=term_obj,
+                            enrollment_status='Active'
+                        )
+
+                users_to_invite.append({
+                    'email': email,
+                    'first_name': first_name,
+                    'user': new_user
+                })
+                
+                created_count += 1
+
+            for invite in users_to_invite:
+                try:
+                    link = build_set_password_link(request, invite['user'])
+                    subject = "Set your Smart Campus password"
+                    html_content = render_to_string('emails/set_password_email.html', {
+                        "first_name": invite['first_name'],
+                        "reset_link": link,
+                    })
+                    msg = EmailMultiAlternatives(subject, "Please set your password.", None, [invite['email']])
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send()
+
+                    print(f"Link to reset email {invite['email']}:{link.strip()}")
+                except Exception as e:
+                    print(f"Mail error for {invite['email']}: {e}")
+            
+            if created_count > 0:
+                messages.success(request, f'Successfully created {created_count} user(s)!')
+
+            if skipped_users:
+                error_lines = [
+                    f"Row {item['row']} ({item['email']}): {item['reason']}" 
+                    for item in skipped_users
+                ]
+                
+                full_error_message = "Some rows were skipped:\n" + "\n".join(error_lines)
+                
+                messages.error(request, full_error_message)
+            return redirect("bulk_user_creation")
+
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect("bulk_user_creation")
+    
+    return render(request, 'partials/bulk_user_creation.html')
+
 
 #manage academic function
 @role_required(allowed_roles=['admin'])  
@@ -818,110 +1110,6 @@ def announcements(request):
 
 
 #FAQ function
-
-def _infer_attachment_count_from_content(html_content):
-    if not html_content:
-        return 0
-
-    soup = BeautifulSoup(html_content, 'html.parser')
-    image_count = len(soup.find_all('img'))
-
-    linked_attachment_count = 0
-    for link in soup.find_all('a', href=True):
-        href = (link.get('href') or '').lower()
-        if '/media/attachments/' in href:
-            linked_attachment_count += 1
-
-    return image_count + linked_attachment_count
-
-def _attach_faq_attachment_counts(faq_items):
-    items = list(faq_items)
-    if not items:
-        return items
-
-    faq_content_type = ContentType.objects.get_for_model(faq)
-    faq_ids = [item.id for item in items]
-
-    counts = (
-        attachments.objects
-        .filter(content_type=faq_content_type, object_id__in=faq_ids)
-        .values('object_id')
-        .annotate(total=Count('id'))
-    )
-    count_map = {row['object_id']: row['total'] for row in counts}
-
-    for item in items:
-        db_count = count_map.get(item.id, 0)
-        inferred_count = _infer_attachment_count_from_content(item.content)
-        item.attachment_count = max(db_count, inferred_count)
-
-    return items
-
-def viewFAQ(request):
-    categories = faq.CATEGORY_CHOICES
-
-    queryset = faq.objects.all()
-
-    if request.user.is_superuser:
-        pass
-    elif not request.user.is_authenticated:
-        queryset = queryset.filter(is_visitor_visible=True)
-    else:
-        user_groups = request.user.groups.values_list('name', flat=True)
-
-        role_query = Q(is_visitor_visible=True) 
-        if "admin" in user_groups:
-            role_query |= Q(is_ad_visible=True)
-        if "lecturer" in user_groups:
-            role_query |= Q(is_lc_visible=True)
-        if "student" in user_groups:
-            role_query |= Q(is_tp_visible=True)
-        queryset = queryset.filter(role_query).distinct()
-    
-    most_viewed_faqs = _attach_faq_attachment_counts(queryset.order_by('-view_count')[:9])
-    
-    try:
-        page = int(request.GET.get('page', 1))
-    except (ValueError, TypeError):
-        page = 1
-
-    selected_cats = request.GET.getlist('category')
-    main_list_qs = queryset.order_by('-published_time')
-
-
-    if selected_cats:
-        main_list_qs = main_list_qs.filter(category__in=selected_cats)
-
-    limit = 9
-
-    total_count = main_list_qs.count()
-    max_pages = max(1, math.ceil(total_count / limit))
-    start = (page - 1) * limit
-    end = start + limit
-    faqs = _attach_faq_attachment_counts(main_list_qs[start:end])
-
-    if page > max_pages:
-        page = max_pages
-        start = (page - 1) * limit
-        end = start + limit
-
-
-    context = {
-        'categories': categories,
-        'faqs': faqs,
-        'most_viewed': most_viewed_faqs,
-        'current_page': page,
-        'max_pages': max_pages,
-        'show_pagination': total_count > limit
-    }
-
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        response = render(request, 'partials/faq_list.html', context)
-        response['X-Max-Pages'] = max_pages
-        return response
-
-    return render(request, 'help/view_faq.html', context)
-
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def support_center(request):
     return render(request, 'help/support_center.html')
@@ -1792,14 +1980,108 @@ def faq_detail(request, slug):
         'user_reaction': user_reaction,
     })
 
-@role_required(allowed_roles=['admin'])
-def config_bot(request): 
-    return render(request, "help/config_bot.html")
+def _infer_attachment_count_from_content(html_content):
+    if not html_content:
+        return 0
 
-@role_required(allowed_roles=['admin'])
-def system_log(request): 
-    return render(request, "help/system_log.html")
+    soup = BeautifulSoup(html_content, 'html.parser')
+    image_count = len(soup.find_all('img'))
 
+    linked_attachment_count = 0
+    for link in soup.find_all('a', href=True):
+        href = (link.get('href') or '').lower()
+        if '/media/attachments/' in href:
+            linked_attachment_count += 1
+
+    return image_count + linked_attachment_count
+
+def _attach_faq_attachment_counts(faq_items):
+    items = list(faq_items)
+    if not items:
+        return items
+
+    faq_content_type = ContentType.objects.get_for_model(faq)
+    faq_ids = [item.id for item in items]
+
+    counts = (
+        attachments.objects
+        .filter(content_type=faq_content_type, object_id__in=faq_ids)
+        .values('object_id')
+        .annotate(total=Count('id'))
+    )
+    count_map = {row['object_id']: row['total'] for row in counts}
+
+    for item in items:
+        db_count = count_map.get(item.id, 0)
+        inferred_count = _infer_attachment_count_from_content(item.content)
+        item.attachment_count = max(db_count, inferred_count)
+
+    return items
+
+def viewFAQ(request):
+    categories = faq.CATEGORY_CHOICES
+
+    queryset = faq.objects.all()
+
+    if request.user.is_superuser:
+        pass
+    elif not request.user.is_authenticated:
+        queryset = queryset.filter(is_visitor_visible=True)
+    else:
+        user_groups = request.user.groups.values_list('name', flat=True)
+
+        role_query = Q(is_visitor_visible=True) 
+        if "admin" in user_groups:
+            role_query |= Q(is_ad_visible=True)
+        if "lecturer" in user_groups:
+            role_query |= Q(is_lc_visible=True)
+        if "student" in user_groups:
+            role_query |= Q(is_tp_visible=True)
+        queryset = queryset.filter(role_query).distinct()
+    
+    most_viewed_faqs = _attach_faq_attachment_counts(queryset.order_by('-view_count')[:9])
+    
+    try:
+        page = int(request.GET.get('page', 1))
+    except (ValueError, TypeError):
+        page = 1
+
+    selected_cats = request.GET.getlist('category')
+    main_list_qs = queryset.order_by('-published_time')
+
+
+    if selected_cats:
+        main_list_qs = main_list_qs.filter(category__in=selected_cats)
+
+    limit = 9
+
+    total_count = main_list_qs.count()
+    max_pages = max(1, math.ceil(total_count / limit))
+    start = (page - 1) * limit
+    end = start + limit
+    faqs = _attach_faq_attachment_counts(main_list_qs[start:end])
+
+    if page > max_pages:
+        page = max_pages
+        start = (page - 1) * limit
+        end = start + limit
+
+
+    context = {
+        'categories': categories,
+        'faqs': faqs,
+        'most_viewed': most_viewed_faqs,
+        'current_page': page,
+        'max_pages': max_pages,
+        'show_pagination': total_count > limit
+    }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        response = render(request, 'partials/faq_list.html', context)
+        response['X-Max-Pages'] = max_pages
+        return response
+
+    return render(request, 'help/view_faq.html', context)
 
 #extract and store image
 def extract_and_save_images(instance):
@@ -1859,77 +2141,15 @@ def save_manual_attachment(instance, file_obj):
         object_id=instance.id,
         file=file_obj
     )
+
 #Facility Email Ticket
-def send_ticket_update_email(recipient, sub, ticket, context, template):
-    subject = sub
-    from_email = settings.DEFAULT_FROM_EMAIL
-    
-    ticket_url = f"http://localhost:8000/support/tickets/{ticket.id}/"
-
-    context['ticket_URL'] = ticket_url
-
-    html_content = render_to_string(f"emails/{template}", context)
-    text_content = strip_tags(html_content) 
-
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+@role_required(allowed_roles=['admin'])
+def config_bot(request): 
+    return render(request, "help/config_bot.html")
 
 @role_required(allowed_roles=['admin'])
-@transaction.atomic
-def take_ownership(request, ticket_id):
-    if request.method == 'POST':
-        ticket = get_object_or_404(SupportTicket, id=ticket_id)
-        
-        if ticket.assigned_to:
-            return JsonResponse({'status': 'error', 'message': 'Ticket already assigned'}, status=400)
-        
-        ticket.assigned_to = request.user
-        ticket.status = 'in_progress'
-        ticket.save()
-
-        TicketActivity.objects.create(
-            ticket=ticket,
-            user=request.user,
-            action='status_change',
-            old_value='Open',
-            new_value='In Pprogress'
-        )
-
-        recipient = ticket.created_by
-
-        try:
-            template = 'ticket_update.html'
-            context = {
-                "first_name": recipient.first_name or recipient.username,
-                "ticket_title": ticket.title,
-                "ticketId": ticket.id,
-                "ticket_status": ticket.status
-            }
-            subject = f"Update on your support ticket #T{ticket.id}"
-            if recipient and recipient.email:
-                send_ticket_update_email(recipient, subject, ticket, context, template)
-
-        except Exception as e:
-                print(f"SMTP Error: {e}")
-                
-        messages.success(request, "You have successfully taken ownership of this support ticket")
-        return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'}, status=405)
-
-def send_booking_update_email(recipient, sub, booking_obj, context, template):
-    subject = sub
-    from_email = settings.DEFAULT_FROM_EMAIL
-
-    booking_url = "http://localhost:8000/facility/my/"
-    context["booking_URL"] = booking_url
-
-    html_content = render_to_string(f"emails/{template}", context)
-    text_content = strip_tags(html_content)
-
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+def system_log(request): 
+    return render(request, "help/system_log.html")
 
 #Facility Booking
 def facility_list(request):
@@ -1948,6 +2168,19 @@ def facility_list(request):
         "query": query
     })
 
+def send_booking_update_email(recipient, sub, booking_obj, context, template):
+    subject = sub
+    from_email = settings.DEFAULT_FROM_EMAIL
+
+    booking_url = "http://localhost:8000/facility/my/"
+    context["booking_URL"] = booking_url
+
+    html_content = render_to_string(f"emails/{template}", context)
+    text_content = strip_tags(html_content)
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [recipient.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
 
 def booking_form(request, facility_id):
     facility = get_object_or_404(facilities, pk=facility_id)
@@ -2848,5 +3081,3 @@ def rearrange_missing_class(request):
         'error': 'No available slot found for rearrangement.',
     })
 
-def bulk_user_creation(request):
-    return render(request, 'partials/bulk_user_creation.html')
