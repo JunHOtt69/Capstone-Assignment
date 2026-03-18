@@ -1,0 +1,50 @@
+<table id="user-table">
+    <thead>
+        <tr>
+            <th class="no-col">No.</th>
+            <th class="f-nField">First Name</th>
+            <th class="l-nField">Last Name</th>
+            <th class="emailField">Email</th>
+            
+            {% if active_role == 'lecturer' %}
+                <th class="departmentField">Department</th>
+            {% elif active_role == 'student' %}
+                <th class="intakeField">Intake</th>
+            {% endif %}
+            
+            <th class="actionField">Action</th>
+        </tr>
+    </thead>
+    <tbody id="form-body" class="crudBody">
+        {% for user_obj in users %}
+            <tr>
+                <td class="number-cell"></td>
+                <td>{{ user_obj.first_name }}</td>
+                <td>{{ user_obj.last_name }}</td>
+                <td>{{ user_obj.email }}</td>
+
+                {% if active_role == 'lecturer' %}
+                    <td>{{ user_obj.lecturer_profile.dept.dept_code|default:"N/A" }}</td>
+                {% elif active_role == 'student' %}
+                    <td>{{ user_obj.course_enrollment.term.intake_code|default:"N/A" }}</td>
+                {% endif %}
+
+                <td class="action-btns">
+                    <button onclick="openEditModal('{{ user_obj.id }}')" class="edit-btn">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    
+                    {% if not user_obj.has_usable_password %}
+                        <button onclick="resendInvite('{{ user_obj.id }}')" class="resend-btn" title="Resend Invitation">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center;">No users found for this role.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

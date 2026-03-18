@@ -24,23 +24,27 @@
     transition: left 0.1s ease-in-out, width 0.1s ease-in-out;
 }
 
-.functionHeader .userType.admin::before{
+.functionHeader .userType.admin::before,
+.functionHeader .userType[data-role="admin"]::before{
     left: 0;
     width: 3.5vw;
 }
 
-.functionHeader .userType.lecturer::before{
+.functionHeader .userType.lecturer::before,
+.functionHeader .userType[data-role="lecturer"]::before{
     left: 3.94vw;
     width: 4.15vw;
 }
 
-.functionHeader .userType.student::before{
+.functionHeader .userType.student::before, 
+.functionHeader .userType[data-role="student"]::before{
     left: 8.6vw;
     width: 3.95vw;
 }
 
 .functionHeader .userType button, 
-#previewSection button{
+#previewSection button,
+.roleBtn{
     outline: none;
     border: none;
     padding: 0.3vw 0.5vw;
@@ -52,6 +56,7 @@
     transition: background-color 0.2s, border .2s;
     background-color: transparent;
     z-index: 0;
+    text-decoration: none;
 }
 
 .functionHeader .userType button.active{
@@ -119,27 +124,31 @@
 }
 
 .managementContent .rightContent table,
-#previewSection table{
+#previewSection table,
+.crud table{
     width: 100%;
     border-collapse: collapse;
 }
 
 .managementContent .rightContent table thead,
-#previewSection table thead{
+#previewSection table thead,
+.crud table thead{
     background-color: greenyellow;
     color: rgba(var(--black), 1);
     border-bottom: 0.1vw solid rgba(var(--black), 1);
 }
 
 .managementContent .rightContent table thead th,
-#previewSection table thead th{
+#previewSection table thead th,
+.crud table thead th{
     padding: 0.3vw 0.5vw;
     height: 1.3vw;
     font-size: var(--p-fontsize);
 }
 
 .managementContent .rightContent table tbody tr,
-#previewSection table tbody tr{
+#previewSection table tbody tr,
+.crud table tbody tr{
     width: 100%;
     border-bottom: 0.1vw solid rgba(var(--black), 0.4);
     background-color: white;
@@ -148,22 +157,26 @@
 }
 
 .managementContent .rightContent table tbody tr:nth-child(even),
-#previewSection table tbody tr:nth-child(even){
+#previewSection table tbody tr:nth-child(even),
+.crud table tbody tr:nth-child(even){
     background-color: rgba(var(--black), 0.1);
 }
 
 .managementContent .rightContent table tbody tr:last-child,
-#previewSection table tbody tr:last-child{
+#previewSection table tbody tr:last-child,
+.crud table tbody tr:last-child{
     border-bottom: 0.1vw solid rgba(var(--black), 1);
 }
 
 .managementContent .rightContent table tbody tr:hover,
-#previewSection table tbody tr:hover{
+#previewSection table tbody tr:hover,
+.crud table tbody tr:hover{
     background-color: rgba(var(--dark-green), 0.1);
 }
 
 .managementContent .rightContent table tbody tr td,
-#previewSection table tbody tr td{
+#previewSection table tbody tr td,
+.crud table tbody tr td{
     padding: 0.1vw 0.3vw;
     font-size: var(--p-fontsize);
     height: 2vw;
@@ -269,14 +282,16 @@ tr td.actionField{
 
 tr.adminUser td.f-nField,
 tr.lecturerUser td.f-nField,
-tr.studentUser td.f-nField{
+tr.studentUser td.f-nField,
+.crud .f-nField{
     width: 20%;
     width: 20%;
 }
 
 tr.adminUser td.l-nField,
 tr.lecturerUser td.l-nField,
-tr.studentUser td.l-nField{
+tr.studentUser td.l-nField,
+.crud .l-nField{
     width: 20%;
 }
 
@@ -620,4 +635,15 @@ tr.studentUser td.termField{
     align-items: center;
     width: 100%;
     margin-top: 0.5vw
+}
+
+.functionHeader .titleWrapper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.roleBtn{
+    color: rgba(var(--black), 1);
 }

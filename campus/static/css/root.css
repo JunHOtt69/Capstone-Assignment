@@ -377,6 +377,11 @@ p{
     transition: font-size 0.2s;
 }
 
+.dropDownContentWrapper .item.active a,
+.dropDownContentWrapper .title.active a{
+    text-decoration: underline;
+}
+
 .dropDownContentWrapper a:hover,
 .dropDownContentWrapper .item:hover,
 .dropDownContentWrapper button:hover,
@@ -1070,6 +1075,11 @@ header li a{
         opacity .3s ease-in,
         backdrop-filter .3s,
         visibility .2s step-start;
+}
+
+.loading.active.authLoad{
+    backdrop-filter: blur(0.25vw);
+    -webkit-backdrop-filter: blur(0.25vw);
 }
 
 .loading.active{

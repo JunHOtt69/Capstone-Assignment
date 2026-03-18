@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.encoding import force_bytes
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.urls import reverse
@@ -56,6 +56,21 @@ class SmartPasswordResetConfirmView(PasswordResetConfirmView):
             return redirect(self.request.path)
         
         return super().dispatch(*args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        uidb64 = self.kwargs.get('uidb64')
+        
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            target_user = User.objects.get(pk=uid)
+            
+            context['is_new_user'] = not target_user.has_usable_password()
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            context['is_new_user'] = False
+            
+        return context
+        
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -290,7 +305,6 @@ def check_email_exists(request):
         'taken_emails' : taken_details,
     })
 
-
 def generate_user_id(role):
     prefixes = {
         'admin' : 'AD',
@@ -488,6 +502,10 @@ def create_user_manually(request):
 
     return render(request, "partials/create_user_manually.html", context)
 
+
+#user crud
+def user_crud(request):
+    return render(request, "partials/user_crud.html")
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic

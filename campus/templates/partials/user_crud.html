@@ -1,0 +1,31 @@
+{% extends "user_management.html" %} 
+{% load static %}  
+
+{% block title %} User CRUD  {% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/user_management.css' %}">
+{% endblock %}
+
+{% block function_window %}
+    <div class="crud">
+        <div class="functionHeader">
+            <div class="titleWrapper">
+                <h2>User CRUD</h2>
+                <div class="searchBar">
+                    <input type="text">
+                </div>
+            </div>
+            <div class="userType"  data-role="admin" id="user_role">
+                <a href="?role=admin" class="roleBtn {% if active_role == 'admin' %}active{% endif %}">Admin</a>
+                <a href="?role=lecturer" class="roleBtn {% if active_role == 'lecturer' %}active{% endif %}">Lecturer</a>
+                <a href="?role=student" class="roleBtn {% if active_role == 'student' %}active{% endif %}">Student</a>
+            </div>
+        </div>
+        {% include "partials/user_list.html" %}
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    {% comment %} <script src="{% static 'js/user_crud.js' %}"></script> {% endcomment %}
+{% endblock %} 

@@ -45,6 +45,8 @@ urlpatterns = [
     path("get-terms/", views.get_terms, name="get_terms"),
     path("check-email/", views.check_email_exists, name="check_email"),
     path("user/bulk-user-creation/", views.bulk_user_creation, name="bulk_user_creation"),
+    path("user/crud/", views.user_crud, name="user_crud"),
+    # path("get-users/", views.get_users, name="get_users"),
 
     # Courses management
     path("academic/courses/", views.manage_courses, name="manage_courses"),

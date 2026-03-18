@@ -104,8 +104,12 @@ main{
     /* padding-top: 4.1vw; */
 }
 
-.fieldWrapper h3,
 .error-container{
+    gap: 0.5;
+}
+
+.fieldWrapper h3,
+.error-container h3{
     font-weight: 600;
     margin-bottom: 1vw;
 }
@@ -377,7 +381,8 @@ main{
     font-size: var(--xs-fontsize);
 }
 
-.fieldWrapper .contentWrapper .return-login{
+.fieldWrapper .contentWrapper .return-login,
+.error-container .sendAgain{
     margin-top: 2vw;
     text-decoration: none;
     display: flex;
@@ -387,7 +392,8 @@ main{
 
 .fieldWrapper #loginButton,
 .fieldWrapper #sendCodeButton,
-.fieldWrapper .contentWrapper .return-login{
+.fieldWrapper .contentWrapper .return-login,
+.error-container .sendAgain{
     width: 15vw;
     height: 2vw;
     background-color: rgba(var(--black), 1);
