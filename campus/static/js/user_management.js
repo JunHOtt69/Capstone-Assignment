@@ -185,6 +185,8 @@ form.onsubmit = async function(event) {
             })
             return;
         }else{
+            const loading = document.querySelector('.loading');
+            loading.classList.add('active');
             form.submit();
         }
     } catch(error){

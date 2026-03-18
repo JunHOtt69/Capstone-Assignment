@@ -29,14 +29,29 @@
                     <td>{{ user_obj.course_enrollment.term.intake_code|default:"N/A" }}</td>
                 {% endif %}
 
-                <td class="action-btns">
+                <td class="actionBtns">
                     <button onclick="openEditModal('{{ user_obj.id }}')" class="edit-btn">
-                        <i class="fas fa-edit"></i>
+                        <i class="fas fa-edit">
+                            <svg fill="#030202" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                                viewBox="0 0 528.899 528.899"
+                                xml:space="preserve">
+                            <g>
+                                <path d="M328.883,89.125l107.59,107.589l-272.34,272.34L56.604,361.465L328.883,89.125z M518.113,63.177l-47.981-47.981
+                                    c-18.543-18.543-48.653-18.543-67.259,0l-45.961,45.961l107.59,107.59l53.611-53.611
+                                    C532.495,100.753,532.495,77.559,518.113,63.177z M0.3,512.69c-1.958,8.812,5.998,16.708,14.811,14.565l119.891-29.069
+                                    L27.473,390.597L0.3,512.69z"/>
+                            </g>
+                            </svg>
+                        </i>
                     </button>
                     
                     {% if not user_obj.has_usable_password %}
                         <button onclick="resendInvite('{{ user_obj.id }}')" class="resend-btn" title="Resend Invitation">
-                            <i class="fas fa-paper-plane"></i>
+                            <i class="fas fa-email">
+                                <svg viewBox="0 0 121 76" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0.5 20L60.5 50.5L120.5 20M0.5 0.5H120.5V75.5H0.5V0.5Z"/>
+                                </svg>
+                            </i>
                         </button>
                     {% endif %}
                 </td>
