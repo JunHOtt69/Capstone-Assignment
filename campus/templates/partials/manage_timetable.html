@@ -25,8 +25,8 @@
             <div class="optionContainer" id="termOptions">
                 {% for term in terms %}
                 <div class="option">
-                    <input type="radio" name="termRadio" id="term_{{ term.term_id }}" value="{{ term.term_id }}" data-start="{{ term.start_date|date:'Y-m-d' }}" data-end="{{ term.end_date|date:'Y-m-d' }}">
-                    <label for="term_{{ term.term_id }}">{{ term.course.course_name }} — {{ term.term_name }}</label>
+                    <input type="radio" name="termRadio" id="term_{{ term.term_id }}" value="{{ term.term_id }}" data-start="{{ term.start_date|date:'Y-m-d' }}" data-end="{{ term.end_date|date:'Y-m-d' }}" data-total-semesters="{{ term.course.total_semester }}" data-current-semester="{{ term.current_semester }}">
+                    <label for="term_{{ term.term_id }}">{{ term.intake_code }} — Sem {{ term.current_semester }} — {{ term.course.course_name }}</label>
                 </div>
                 {% endfor %}
             </div>
@@ -40,6 +40,7 @@
 
         <div class="controlGroup actionBtns" id="actionBtns" style="display:none;">
             <button class="ttBtn ttBtnPrimary" id="generateBtn">Generate Timetable</button>
+            <button class="ttBtn ttBtnDanger" id="deleteWeekBtn">Delete Week</button>
             <button class="ttBtn ttBtnSuccess" id="savePreferenceBtn">Save Preference</button>
             <button class="ttBtn ttBtnInfo" id="replicateBtn">Replicate to Week</button>
             <button class="ttBtn ttBtnWarning" id="missingBtn">Missing Classes</button>
@@ -117,8 +118,10 @@
             </div>
             <div class="ttModalBody">
                 <div class="formGroup">
-                    <label for="replicateWeekInput">Target Week (Monday):</label>
-                    <input type="date" id="replicateWeekInput" class="ttInput">
+                    <label for="replicateWeekSelect">Target Week:</label>
+                    <select id="replicateWeekSelect" class="ttInput">
+                        <option value="">— Select a week —</option>
+                    </select>
                 </div>
                 <button class="ttBtn ttBtnInfo" id="confirmReplicateBtn">Replicate</button>
             </div>
