@@ -609,6 +609,33 @@ def get_details(request, user_id):
 
     return JsonResponse(data)
 
+@role_required(allowed_roles=['admin'])
+def resend_invite(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    try:
+        link = build_set_password_link(request, user)
+        subject = "Set your Smart Campus password"
+        html_content = render_to_string('emails/set_password_email.html', {
+            "first_name": user.first_name,
+            "reset_link": link,
+        })
+        
+        msg = EmailMultiAlternatives(subject, "Please set your password.", None, [user.email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        print(f"Link to reset email {user.email}:{link.strip()}")
+
+        return JsonResponse({
+            'success': True, 
+            'message': f"Invitation resent to {user.email}"
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': f"Mail error: {str(e)}"
+        }, status=500)
 
 @role_required(allowed_roles=['admin'])
 @transaction.atomic

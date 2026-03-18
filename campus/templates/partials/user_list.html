@@ -46,7 +46,7 @@
                     </button>
                     
                     {% if not user_obj.has_usable_password %}
-                        <button onclick="resendInvite('{{ user_obj.id }}')" class="resend-btn" title="Resend Invitation">
+                        <button onclick="resendInvite(event, '{{ user_obj.id }}')" class="resend-btn" title="Resend Invitation">
                             <i class="fas fa-email">
                                 <svg viewBox="0 0 121 76" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M0.5 20L60.5 50.5L120.5 20M0.5 0.5H120.5V75.5H0.5V0.5Z"/>

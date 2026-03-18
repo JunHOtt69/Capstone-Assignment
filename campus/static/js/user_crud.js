@@ -53,6 +53,62 @@ function openEditModal(userId) {
         .catch(err => console.error("Error loading user:", err));
 }
 
+function resendInvite(e, userId) {
+    const btn = e.currentTarget || editWrapper.target.closest('button'); 
+
+    if(!btn) return;
+
+    btn.classList.add('sending');
+
+    fetch(`/resend-invite/${userId}/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotif('success', data.message);
+        } else {
+            showNotif('error', data.message);
+        }
+    })
+    .catch(err => {
+        console.error("Invite error:", err);
+        alert("Failed to connect to server.");
+    })
+    .finally(() => {
+        btn.classList.remove('sending');
+    });
+}
+
+function showNotif(tag, message){
+    const notifContainer = document.querySelector('.notifContainer');
+    const notif = document.createElement('div');
+    notif.classList.add('notif');
+    notif.classList.add(tag);
+    notif.innerHTML = `
+        <p class="message">${ message }</p>
+        <span class="closeBtn">&times;</span>
+    `;
+    
+    const closeBtn = notif.querySelector('.closeBtn');
+    closeBtn.addEventListener('click', () => {
+        notif.style.opacity = '0';
+        notif.style.transition = 'opacity 1s ease';
+        setTimeout(() => {
+            notif.remove();
+        }, 1000);
+    });
+
+    notifContainer.appendChild(notif);
+    
+    setTimeout(() => {
+        removeNotification(notif);
+    }, 5000);
+}
+
 const cancelBtn = document.getElementById('cancelUser');
 const saveBtn = document.getElementById('saveUser');
 const dltBtn = document.getElementById('dltUser');
