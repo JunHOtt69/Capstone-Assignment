@@ -21,7 +21,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
-from django.contrib.auth.views import LoginView, PasswordResetView
+from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetConfirmView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
@@ -46,6 +46,16 @@ from .models import (
 #playground
 def testing(request):
     return render(request, 'testing.html')
+
+#logout user when password resetting
+class SmartPasswordResetConfirmView(PasswordResetConfirmView):
+    def dispatch(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            logout(self.request)
+            messages.info(self.request, "You have been logged out to securely set up the new account password.")
+            return redirect(self.request.path)
+        
+        return super().dispatch(*args, **kwargs)
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -484,20 +494,69 @@ def create_user_manually(request):
 def bulk_user_creation(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
+            json_data = request.POST.get('user_data')
+            data = json.loads(json_data)
+
             groups = {g.name.lower(): g for g in Group.objects.filter(name__in=['admin', 'lecturer', 'student'])}
             
             users_to_invite = []
             skipped_users = []
             created_count = 0
+            row_num = 0
 
             for index, row in enumerate(data):
+                row_num = index + 1
                 email = row.get('email', '').strip()
                 role_name = row.get('role', '').lower().strip()
                 first_name = row.get('first_name', '').strip()
                 last_name = row.get('last_name', '').strip()
                 group = groups.get(role_name)
+                dept_code = row.get('department', '').strip()
+                intake_code = row.get('intake', '').strip()
 
+                error_reason = None
+
+                if not email:
+                    error_reason = "Email is missing."
+                elif role_name not in groups:
+                    error_reason = f"Invalid role '{role_name}'. Must be admin, lecturer, or student."
+                elif not first_name and not last_name:
+                    error_reason = "Both First Name and Last Name are required."
+                
+                elif role_name == 'admin':
+                    if dept_code or intake_code:
+                        error_reason = "Admins should not have Department or Intake codes assigned."
+
+                elif role_name == 'lecturer':
+                    if not dept_code:
+                        error_reason = f"Lecturer must have a Department code."
+
+                    else:
+                        dept_obj = departments.objects.filter(dept_code=dept_code).first() 
+                        if not dept_obj:
+                            error_reason = f"Department code '{dept_code}' does not exist in the system."
+
+                    if not error_reason and intake_code:
+                        error_reason = "Lecturers cannot be assigned to an Intake code."
+
+                elif role_name == 'student':
+                    if not intake_code:
+                        error_reason = "Students must have an Intake code."
+                    else:
+                        term = academic_term.objects.filter(intake_code=intake_code).first()
+                        if not term:
+                            error_reason = f"Intake code '{intake_code}' is invalid or not found."
+
+                    if not error_reason and dept_code:
+                            error_reason = "Students should use Intake codes, not Department codes."
+
+                if error_reason:
+                    skipped_users.append({
+                        'row': row_num,
+                        'email': email if email else "Null",
+                        'reason': error_reason
+                    })
+                    continue
 
                 new_user = User.objects.create_user(
                     username=email, 
@@ -505,11 +564,8 @@ def bulk_user_creation(request):
                     first_name=first_name, 
                     last_name=last_name
                 )
-
-                
-                if group: 
-                    new_user.groups.add(group)
-
+ 
+                new_user.groups.add(group)
                 new_user.set_unusable_password()
                 
                 if role_name in ['admin', 'lecturer']:
@@ -521,10 +577,12 @@ def bulk_user_creation(request):
                 unique_id = generate_user_id(role_name)
 
                 if role_name == 'admin':
-                    admin_profiles.objects.create(user=new_user, ad_id=unique_id)
+                    admin_profiles.objects.create(
+                        user=new_user, 
+                        ad_id=unique_id
+                    )
 
                 elif role_name == 'lecturer':
-                    dept_code = row.get('department', '').strip()
                     dept_obj = departments.objects.filter(dept_code=dept_code).first() 
                     lecturer_profiles.objects.create(
                         user=new_user, 
@@ -533,10 +591,10 @@ def bulk_user_creation(request):
                     )
 
                 elif role_name == 'student':
-                    intake_code = row.get('intake', '').strip()
                     student_profiles.objects.create(user=new_user, tp_id=unique_id)
                     
                     term_obj = academic_term.objects.filter(intake_code=intake_code).first()
+
                     if term_obj:
                         course_enrollment.objects.create(
                             student=new_user,
@@ -544,7 +602,6 @@ def bulk_user_creation(request):
                             enrollment_status='Active'
                         )
 
-                # 4. Queue for Email
                 users_to_invite.append({
                     'email': email,
                     'first_name': first_name,
@@ -553,7 +610,6 @@ def bulk_user_creation(request):
                 
                 created_count += 1
 
-            # 5. Handle Emails after DB creation
             for invite in users_to_invite:
                 try:
                     link = build_set_password_link(request, invite['user'])
@@ -565,13 +621,28 @@ def bulk_user_creation(request):
                     msg = EmailMultiAlternatives(subject, "Please set your password.", None, [invite['email']])
                     msg.attach_alternative(html_content, "text/html")
                     msg.send()
+
+                    print(f"Link to reset email {email}:{link.strip()}")
                 except Exception as e:
                     print(f"Mail error for {invite['email']}: {e}")
+            
+            if created_count > 0:
+                messages.success(request, f'Successfully created {created_count} user(s)!')
 
-            return JsonResponse({'success': True, 'count': created_count})
+            if skipped_users:
+                error_lines = [
+                    f"Row {item['row']} ({item['email']}): {item['reason']}" 
+                    for item in skipped_users
+                ]
+                
+                full_error_message = "Some rows were skipped:\n" + "\n".join(error_lines)
+                
+                messages.error(request, full_error_message)
+            return redirect("bulk_user_creation")
 
         except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+            messages.error(request, str(e))
+            return redirect("bulk_user_creation")
     
     return render(request, 'partials/bulk_user_creation.html')
 

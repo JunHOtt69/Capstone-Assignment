@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from campus.forms import CustomSetPasswordForm, CustomLoginForm, CustomPasswordResetForm # adjust import
-from campus.views import RoleBasedLoginView, CustomPasswordResetView
+from campus.views import RoleBasedLoginView, CustomPasswordResetView, SmartPasswordResetConfirmView
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -34,7 +34,7 @@ urlpatterns = [
     
     path(
         "accounts/reset/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
+        SmartPasswordResetConfirmView.as_view(
             template_name="registration/password_reset_confirm.html",
             form_class=CustomSetPasswordForm,
         ),

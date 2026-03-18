@@ -9,6 +9,8 @@ const errorMessageContainer = document.querySelector('.errorMessage');
 errorMessageContainer.innerHTML = '';
 previewSection.classList.add('hidden');
 dropZone.classList.remove('hidden');
+const loading = document.querySelector('.loading');
+loading.classList.remove('active');
 let parsedUserData = [];
 const REQUIRED_FIELDS = ['first_name', 'last_name', 'email', 'role'];
 
@@ -105,7 +107,9 @@ clearFileBtn.addEventListener('click', () => {
 });
 
 
-submitBtn.addEventListener('click', function() {
+submitBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+
     if (parsedUserData.length === 0) {
         return alert("Please upload a file first.");
     }
@@ -117,6 +121,8 @@ submitBtn.addEventListener('click', function() {
     const params = new URLSearchParams();
     emails.forEach(email => params.append('emails[]', email));
 
+    loading.classList.add('active');
+    
     fetch(`/check-email/?${params.toString()}`)
         .then(response => response.json())
         .then(data => {
@@ -128,9 +134,25 @@ submitBtn.addEventListener('click', function() {
                     const err = document.createElement('p');
                     err.textContent= `- Row ${item.index}: ${item.email}\n`;
                     errorMessageContainer.appendChild(err);
+                    loading.classList.remove('active');
                 });
             } else {
-                console.log('no error;')
+                const dataInput = document.getElementById('userDataInput');
+                const form = document.getElementById('bulkCreateForm');
+
+                const cleanData = parsedUserData.map(row => ({
+                    first_name: row.first_name || '',
+                    last_name: row.last_name || '',
+                    email: row.email || '',
+                    role: row.role || '',
+                    department: row.department || '',
+                    intake: row.intake || ''
+                }));
+
+                dataInput.value = JSON.stringify(cleanData);
+
+                // console.log("Final Json string", dataInput.value);
+                form.submit();
             }
         })
         .catch(err => alert("Error checking emails: " + err));

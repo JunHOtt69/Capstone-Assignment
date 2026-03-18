@@ -20,11 +20,19 @@ def card_context(request):
         if any('admin' in g.lower() for g in group_names) and hasattr(u, 'admin_profile'):
             role = 'admin'
             card_id = u.admin_profile.ad_id
+
         elif any('lecturer' in g.lower() for g in group_names) and hasattr(u, 'lecturer_profile'):
             role = 'lecturer'
-            card_id = u.lecturer_profile.lc_id
-            department = u.lecturer_profile.dept_id.dept_name if u.lecturer_profile.dept_id else 'N/A'
-            extra_info = f"Head of department of {department}" if u.lecturer_profile.is_head else department
+            prof = u.lecturer_profile
+            card_id = prof.lc_id
+
+            if prof.dept:
+                department_name = prof.dept.dept_name
+                is_head = getattr(prof, 'is_head', False)
+                extra_info = f"Head of department of {department_name}" if is_head else department_name
+            else:
+                extra_info = "N/A"
+            
         elif any('student' in g.lower() for g in group_names) and hasattr(u, 'student_profile'):
             role = 'student'
             card_id = u.student_profile.tp_id

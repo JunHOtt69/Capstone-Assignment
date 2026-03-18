@@ -44,13 +44,24 @@
                     </tr>
                 </tbody>
             </table>
-
-            <button id="submitBtn">
-                Confirm & Create Users
-            </button>
+            <form id="bulkCreateForm" method="POST" action="{% url 'bulk_user_creation' %}">
+                {% csrf_token %}
+                <input type="hidden" name="user_data" id="userDataInput">
+                <button type="submit" id="submitBtn">
+                    Confirm & Create Users
+                </button>
+            </form>
         </div>
 
-        <div class="errorMessage"></div>
+        <div class="errorMessage">
+            {% if djmsgs %}
+                {% for message in djmsgs %}
+                    {% if "error" in message.tags %}
+                        <p class="message">{{ message }}</p>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
     </div>
 {% endblock %}
 

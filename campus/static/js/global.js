@@ -4,7 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     notifications.forEach(notif => {
         const closeBtn = notif.querySelector('.closeBtn');
         closeBtn.addEventListener('click', () => {
-            removeNotification(notif);
+            notif.style.opacity = '0';
+            notif.style.transition = 'opacity 1s ease';
+            setTimeout(() => {
+                notif.remove();
+            }, 1000);
         });
 
         setTimeout(() => {
@@ -244,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function removeNotification(notif) {
     if (!notif) return;
-    
+    if (notif.classList.contains('error')) return;
     notif.style.opacity = '0';
     notif.style.transition = 'opacity 1s ease';
     

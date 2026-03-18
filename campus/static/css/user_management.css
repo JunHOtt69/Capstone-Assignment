@@ -432,6 +432,7 @@ tr.studentUser td.termField{
 .errorMessage p{
     color: red;
     font-size: var(--p-fontsize);
+    white-space: pre-wrap;
 }
 
 .controls .controlWrapper{
@@ -611,4 +612,12 @@ tr.studentUser td.termField{
     border: 0.01vw solid rgba(var(--black), 0);
     color: greenyellow;
     background-color: rgba(var(--black), 1);
+}
+
+#bulkCreateForm{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    margin-top: 0.5vw
 }

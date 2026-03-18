@@ -126,16 +126,14 @@
                 <span>Annnouncement Placement</span>
             </div>
         </div>
-
+        
         <div class="notifContainer">
             {% if messages %}
                 {% for message in messages %}
-                    {% if "success" in message.tags or "error" in message.tags %}
-                        <div class="notif {{ message.tags }}">
-                            <p class="message">{{ message }}</p>
-                            <span class="closeBtn">&times;</span>
-                        </div>
-                    {% endif %}
+                    <div class="notif {{ message.tags }}">
+                        <p class="message">{{ message }}</p>
+                        <span class="closeBtn">&times;</span>
+                    </div>
                 {% endfor %}
             {% endif %}
         </div>
