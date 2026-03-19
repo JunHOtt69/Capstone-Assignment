@@ -125,8 +125,8 @@ class newAnnouncemeentForm(forms.ModelForm):
     
     announcement_type = forms.ChoiceField(
         choices=ANNOUNCEMENT_TYPES,
-        initial='NORMAL',
         widget=forms.HiddenInput(),
+        required=True, 
     )
     
     is_tp_visible = forms.BooleanField(
@@ -156,7 +156,8 @@ class newAnnouncemeentForm(forms.ModelForm):
         fields = ['subject', 'content', 'announcement_type', 'is_active']
         widgets = {
             'subject': forms.TextInput(attrs={
-                'placeholder': ' '
+                'placeholder': ' ',
+                'required': True,
             }),
             'content': forms.HiddenInput(attrs={'required': True}),
         }

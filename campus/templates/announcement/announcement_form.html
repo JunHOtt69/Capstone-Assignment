@@ -36,7 +36,7 @@
                             </svg>
                         </span>
                     </div>
-                    <div class="optionContainer" id="categoryOptions">
+                    <div class="optionContainer" id="typeOptions">
                         {% for value, label in form.fields.announcement_type.choices %}
                             <div class="option">
                                 <input type="radio" name="announcement_type" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.announcement_type.value == value %}checked{% endif %}>
@@ -117,7 +117,7 @@
             {% endif %}
             
             <div class="extraConfig">
-                <ul data-config = 'visibility'>
+                <ul data-config = 'visibility' style="display: none; pointer-events: none;">
                     <li>
                         <span class="visibleIcon" id="visiblity" data-visible = 'true'>
                             <svg class="eye-closed" viewBox="0 0 190 67" xmlns="http://www.w3.org/2000/svg" fill="black">
@@ -139,7 +139,7 @@
                         </span>
                     </li>
                 </ul>
-
+                <div></div>
                 <div class="formBtnWrapper">
                     {% if faqInfo %}
                     <button class="delete">Delete</button>
@@ -179,13 +179,25 @@
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script src="{% static 'js/edit_faq.js' %}"></script>
+    <script>
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ]
+            },
+            placeholder: ' ',
+            formats: [
+                'bold', 'italic', 'underline', 
+                'list', 
+            ]
+        });
+    </script>
 {% endblock %} 
 
 {% block extra_template %}
-    <template id="commentInput">
-        <div class="commentEditor"></div>
-    </template>
-
     <template id="visiblitySection">
         <div class="visiblitySection" data-controls = 'simple'>
             <div class="visiblityHeader">
@@ -230,6 +242,35 @@
 
                     <div class="toggleBtn" id="studentToggle"  data-value = 'false'></div>
                 </div>
+
+                <div class="visibiltyWrapper" id="intakeWrapper">
+                    <div class="intakesWrapper">
+                        <p class="toggleTitle">Target Specific Intakes</p>
+                    
+                        <div id="selectedIntakesContainer" class="selected-tags-area">
+                        </div>
+                    </div>
+
+                    <div class="selectInput" id="intakeSelect">
+                        <div class="selectedLabel">
+                            <label>Select Intake(s)...</label>
+                            <span class="arrow">
+                                <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
+                                </svg>
+                            </span>
+                        </div>
+                        
+                        <div class="optionContainer" id="intakeOptions">
+                            {% for term in available_term %}
+                                <div class="option" data-id="{{ term.term_id }}" data-code="{{ term.intake_code }}">
+                                    <span>{{ term.intake_code }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </template>

@@ -7,33 +7,14 @@ const fieldSelectors = {
     category: '#id_category',
     type: '#id_announcement_type',
     is_active: '#id_is_active',
-    tp: '#is_tp_visible',
-    lc: '#is_lc_visible',
-    ad: '#is_ad_visible',
+    tp: '#id_is_tp_visible',
+    lc: '#id_is_lc_visible',
+    ad: '#id_is_ad_visible',
     vr: "#id_is_visitor_visible",
     intake: '#id_academic_term',
 };
 
 document.addEventListener("DOMContentLoaded", async function() {
-    const quill = new Quill('#editor', {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                [{ 'size': ['small', false, 'large', 'huge'] }],
-                ['bold', 'italic', 'underline'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                ['link', 'image'],
-            ]
-        },
-        placeholder: ' ',
-        formats: [
-            'size', 
-            'bold', 'italic', 'underline', 
-            'list', 
-            'link', 'image'
-        ]
-    });
-
     const hiddenContent = document.querySelector('#id_content').value;
     if (hiddenContent && hiddenContent.trim() !== "") {
         quill.root.innerHTML = hiddenContent;
@@ -69,19 +50,28 @@ document.addEventListener("DOMContentLoaded", async function() {
     if(saveBtn){
         saveBtn.addEventListener('click', (e) => {
             contentInput.value = quill.root.innerHTML;
-            const category =  document.querySelector('#id_category').value;
-            
+            const category =  document.querySelector('#id_category');
+            const type = document.querySelector('#id_announcement_type');
             isSubmitting = true;
 
             if (quill.getText().trim().length === 0) {
                 e.preventDefault();
                 isSubmitting = false;
-                alert("The FAQ content cannot be empty!");
+
+                if(category) alert("The FAQ content cannot be empty!");
+                if(type) alert("The announcement content cannot be empty!");
             } 
-            else if(category == ''){
+
+            if(category && category.value == ''){
                 e.preventDefault();
                 isSubmitting = false;
                 alert("The FAQ category cannot be empty!");
+            }
+            
+            if(type && type.value == ''){
+                e.preventDefault();
+                isSubmitting = false;
+                alert("The announcement type cannot be empty!");
             }
         });
     }
@@ -109,32 +99,54 @@ document.addEventListener("DOMContentLoaded", async function() {
 
 
     const categoryInput = document.getElementById('id_category');
+    const announcement_typeInput = document.getElementById('id_announcement_type');
     const selectInput = document.getElementById('categorySelect');
     const selectedLabel = selectInput.querySelector('.selectedLabel');
     const categoryOptions = document.getElementById('categoryOptions');
+    const typeOptions = document.getElementById('typeOptions');
 
-    selectedLabel.addEventListener('click', () => {
-        const isNowTrue = selectInput.classList.contains('active');
-        selectInput.classList.toggle('active', !isNowTrue);
-    });
+    if(selectedLabel){
+        selectedLabel.addEventListener('click', () => {
+            const isNowTrue = selectInput.classList.contains('active');
+            selectInput.classList.toggle('active', !isNowTrue);
+        });
+    }
+    if(categoryOptions){
+        categoryOptions.addEventListener('change', (event) => {
+            if(event.target.type === 'radio'){
+                const chosenText = event.target.nextElementSibling.innerText;
+                const selectInput = event.target.closest('.selectInput');
+                const displayLabel = selectInput.querySelector('.selectedLabel label');
 
-    categoryOptions.addEventListener('change', (event) => {
-        if(event.target.type === 'radio'){
-            const chosenText = event.target.nextElementSibling.innerText;
-            const selectInput = event.target.closest('.selectInput');
-            const displayLabel = selectInput.querySelector('.selectedLabel label');
+                displayLabel.innerText = `Category: ${chosenText}`;
+                selectInput.classList.toggle('active', false);
+                
+                categoryInput.value = event.target.value;
+            }
+        });
+    }
+    
+    if(typeOptions){
+        typeOptions.addEventListener('change', (event) => {
+            if(event.target.type === 'radio'){
+                const chosenText = event.target.nextElementSibling.innerText;
+                const selectInput = event.target.closest('.selectInput');
+                const displayLabel = selectInput.querySelector('.selectedLabel label');
 
-            displayLabel.innerText = `Category: ${chosenText}`;
-            selectInput.classList.toggle('active', false);
-            
-            categoryInput.value = event.target.value;
-        }
-    });
-
+                displayLabel.innerText = `Type: ${chosenText}`;
+                selectInput.classList.toggle('active', false);
+                
+                
+                announcement_typeInput.value = event.target.value;
+                console.log(announcement_typeInput.value);
+            }
+        });
+    }
 
     const extraConfig = document.querySelector('.extraConfig ul');
     const commentIcon = extraConfig.querySelector('.commentIcon');
     const visibleIcon = extraConfig.querySelector('.visibleIcon');
+    
     const configContent = document.querySelector('.configContent');
 
     const roles = {
@@ -205,7 +217,11 @@ document.addEventListener("DOMContentLoaded", async function() {
         const lecturerToggle = template.querySelector('#lecturerToggle');
         const studentToggle = template.querySelector('#studentToggle');
         const visitorToggle = template.querySelector('#visitorToggle');
-
+        const termViewInput = template.querySelector('#intakeSelect');
+        const intakeOptions = template.querySelector('#intakeOptions');
+        const academic_term_input = document.querySelector('#id_academic_term');
+        const selectedContainer = template.querySelector('#selectedIntakesContainer');
+        let selectedIds = []
         let allChecked = true;
 
         Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
@@ -292,6 +308,33 @@ document.addEventListener("DOMContentLoaded", async function() {
             studentToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = studentToggle.dataset.value !== 'true';
+
+            if (isNowTrue) {
+                selectedIds = [];
+                updateHiddenInput();
+            
+                if (selectedContainer) {
+                    selectedContainer.innerHTML = '';
+                }
+                
+                if (intakeOptions) {
+                    const options = intakeOptions.querySelectorAll('.option');
+                    options.forEach(option => {
+                        option.style.display = 'block';
+                    });
+                }
+
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'none';
+                }
+            } else {
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'flex';
+                }
+            }
+
             const fields = {
                 'tp': isNowTrue,
             };
@@ -312,6 +355,73 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             passBooleanValue(fields);
         }}
+
+        if(termViewInput){
+            termViewInput.addEventListener('click', () => {
+                const remainingOptions = Array.from(intakeOptions.querySelectorAll('.option'))
+                    .filter(opt => opt.style.display !== 'none');
+
+                if (remainingOptions.length === 0) {
+                    return;
+                }
+
+                termViewInput.classList.toggle('active', true);
+            });
+        }
+        
+        if(intakeOptions){
+            intakeOptions.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                const option = e.target.closest('.option');
+                if (!option) return;
+
+                const id = option.dataset.id;
+                const code = option.dataset.code;
+
+                selectedIds.push(id);
+                updateHiddenInput();
+
+                const tag = document.createElement('div');
+                tag.className = 'intake-tag';
+                tag.dataset.id = id;
+                tag.innerHTML = `
+                    <span>${code}</span>
+                    <span class="remove-tag" onclick="removeIntake('${id}', '${code}')">&times;</span>
+                `;
+                selectedContainer.appendChild(tag);
+
+                option.style.display = 'none';
+
+                const remainingOptions = Array.from(intakeOptions.querySelectorAll('.option'))
+                    .filter(opt => opt.style.display !== 'none');
+
+                if (remainingOptions.length === 0) {
+                    termViewInput.classList.remove('active');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if(!termViewInput.contains(e.target) && !intakeOptions.contains(e.target)){
+                    termViewInput.classList.toggle('active', false);
+                }
+            });
+        }
+
+        window.removeIntake = function(id, code) {
+            selectedIds = selectedIds.filter(item => item !== id);
+            updateHiddenInput();
+
+            const tag = selectedContainer.querySelector(`.intake-tag[data-id="${id}"]`);
+            if (tag) tag.remove();
+
+            const option = intakeOptions.querySelector(`.option[data-id="${id}"]`);
+            if (option) option.style.display = 'block';
+        }
+
+        function updateHiddenInput() {
+            academic_term_input.value = selectedIds.join(',');
+        }
 
         configContent.innerHTML = ``;
         configContent.appendChild(template);
@@ -440,9 +550,9 @@ document.addEventListener("DOMContentLoaded", async function() {
 
 document.addEventListener('click', (e) => {
     const selectInput = document.getElementById('categorySelect');
-    const categoryOptions = document.getElementById('categoryOptions');
+    const options = document.getElementById('categoryOptions') || document.getElementById('typeOptions');
     
-    if(!selectInput.contains(e.target) && !categoryOptions.contains(e.target)){
+    if(!selectInput.contains(e.target) && !options.contains(e.target)){
         selectInput.classList.toggle('active', false);
     }
 });

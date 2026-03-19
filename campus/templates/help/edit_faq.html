@@ -181,6 +181,26 @@
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script src="{% static 'js/edit_faq.js' %}"></script>
+    <script>
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                ]
+            },
+            placeholder: ' ',
+            formats: [
+                'size', 
+                'bold', 'italic', 'underline', 
+                'list', 
+                'link', 'image'
+            ]
+        });
+    </script>
 {% endblock %} 
 
 {% block extra_template %}

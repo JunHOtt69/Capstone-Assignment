@@ -35,7 +35,7 @@ import json
 import base64
 import math
 from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm,newAnnouncemeentForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage, TicketActivity
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage, TicketActivity, announcement, announcementTarget
 from .decorators import role_required
 from .models import facilities, booking
 from .models import (
@@ -3587,9 +3587,76 @@ def rearrange_missing_class(request):
 
 
 #announcement function
-def announcements_form(request): 
+@role_required(allowed_roles=['admin'])
+@transaction.atomic
+def announcements_form(request, pk=None):
+    instance = get_object_or_404(announcement, pk=pk) if pk else None
+    target_instance = None
+
+    if instance:
+        target_instance = announcementTarget.objects.filter(announcement=instance).first()
+
+    if request.method == 'POST':
+        form = newAnnouncemeentForm(request.POST)
+
+        if form.is_valid():
+            ann_obj = form.save(commit=False)
+            if not instance:
+                ann_obj.author = request.user.admin_profile
+            ann_obj.save()
+
+            soup = BeautifulSoup(ann_obj.content, 'html.parser')
+            images = soup.find_all('img')
+            images_processed = False
+
+            for img in images:
+                src = img.get('src', '')
+                if src.startswith('data:image'):
+                    try:
+                        format, imgstr = src.split(';base64,')
+                        ext = format.split('/')[-1]
+                        filename = f"ann_{ann_obj.announcement_id}_{uuid.uuid4().hex[:8]}.{ext}"
+                        data = ContentFile(base64.b64decode(imgstr), name=filename)
+                        
+                        new_attachment = attachments.objects.create(
+                            content_type=ContentType.objects.get_for_model(ann_obj),
+                            object_id=ann_obj.announcement_id,
+                            file=data
+                        )
+                        img['src'] = new_attachment.file.url
+                        images_processed = True
+                    except Exception as e:
+                        print(f"Error processing image: {e}")
+
+            if images_processed:
+                ann_obj.content = str(soup)
+                ann_obj.save()
+
+            is_for_students = request.POST.get('is_tp_visible') == 'True'
+            intake_ids_raw = request.POST.get('academic_term', '')
+
+            target = announcementTarget.objects.create(
+                announcement= ann_obj,
+                defaults={
+                    'is_for_students': is_for_students,
+                    'is_for_lecturer': request.POST.get('is_lc_visible') == 'True',
+                    'is_for_admins': request.POST.get('is_ad_visible') == 'True', 
+                    'academic_term': intake_ids_raw if not is_for_students else None
+                }
+            )
+
+            messages.success(request, "Announcement published successfully!")
+            return redirect('announcement_list')
+        else:
+            messages.error(request, "Error saving announcement.")
+    else:
+        form = newAnnouncemeentForm()
+
+    available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
     context = {
-        "form": newAnnouncemeentForm(),
+        "form": form,
+        'targetInfo': target_instance,
+        "available_term": available_term,
     }
     return render(request, "announcement/announcement_form.html", context)
 
