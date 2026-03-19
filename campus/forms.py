@@ -1,5 +1,5 @@
 from django import forms
-from .models import course, academic_term, faq, SupportTicket
+from .models import course, academic_term, faq, SupportTicket, announcement
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, PasswordResetForm
 import os
 
@@ -117,6 +117,7 @@ class newFAQForm(forms.ModelForm):
             'is_tp_visible': forms.HiddenInput(attrs={'required': True}),
         }
 
+
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
@@ -184,4 +185,57 @@ class SupportTicketForm(forms.ModelForm):
                 'required': True,
             }),
             'description': forms.HiddenInput(attrs={'required': True}),
+        }
+
+class newAnnouncemeentForm(forms.ModelForm):
+    ANNOUNCEMENT_TYPES = [
+        ('BANNER', 'Rolling Banner'),
+        ('NORMAL', 'Normal News'),
+    ]
+    
+    extra_attachments = LimitedMultipleFileField(
+        required=False,
+        widget=MultipleFileInput(attrs={
+            'style': 'display: none',
+            'accept': '.png, .jpg, .jpeg',
+        })
+    )
+
+    announcement_type = forms.ChoiceField(
+        choices=ANNOUNCEMENT_TYPES,
+        widget=forms.HiddenInput(),
+        required=True, 
+    )
+    
+    is_tp_visible = forms.BooleanField(
+        required=False, 
+        widget=forms.HiddenInput(),
+    )
+    is_lc_visible = forms.BooleanField(
+        required=False, 
+        widget=forms.HiddenInput(),
+    )
+    is_ad_visible = forms.BooleanField(
+        required=False, 
+        widget=forms.HiddenInput(),
+    )
+    is_active = forms.BooleanField(
+        required=False, 
+        widget=forms.HiddenInput(),
+    )
+
+    academic_term = forms.CharField(
+        required=False, 
+        widget=forms.HiddenInput(),
+    )
+
+    class Meta:
+        model = announcement
+        fields = ['subject', 'content', 'announcement_type', 'is_active']
+        widgets = {
+            'subject': forms.TextInput(attrs={
+                'placeholder': ' ',
+                'required': True,
+            }),
+            'content': forms.HiddenInput(attrs={'required': True}),
         }

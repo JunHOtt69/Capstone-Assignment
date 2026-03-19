@@ -1,7 +1,6 @@
 {% extends "base.html" %} 
 {% load static %}  
-
-{% block title %} Manage FAQ Post{% endblock %}
+{% block title %}{% if instance %}Edit Announcement{% else %}Create new Announcement{% endif %}{% endblock %}
 
 {% block extra_head %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
@@ -12,60 +11,50 @@
 {% block content %}
 <div class="faqPage">
     <div class="faqPageReturn">
-        <span class="returnIcon" onclick="location.href='/FAQs/{{ faqInfo.slug }}';">
+        {% comment %} <span class="returnIcon" onclick="location.href='/FAQs/{{ faqInfo.slug }}';">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
             </svg>
-        </span>
-        <h3 class="pageTitle">Create New FAQ Post</h3>
+        </span> {% endcomment %}
+        <h3 class="pageTitle">{% if instance %}Edit Announcement{% else %}Create new Announcement{% endif %}</h3>
     </div>
     <form method="post" id="faq">
         {% csrf_token %}
         <section class="faqInfo">
             <div class="titleInputWrapper">
-                <span class="placeholder">Title</span>
-                {{ form.title }}
+                <span class="placeholder">Subject</span>
+                {{ form.subject }}
             </div>
             <div class="faqCategory">
                 <div class="selectInput"  id="categorySelect">
-                    <div class="selectedLabel">
-                        <label for="">Please Choose a category</label>
+                    <div class="selectedLabel announcementType">
+                        <label for="">Please Choose a announcement type</label>
                         <span class="arrow">
                             <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
                             </svg>
                         </span>
                     </div>
-                    <div class="optionContainer" id="categoryOptions">
-                        {% for value, label in form.fields.category.choices %}
+                    <div class="optionContainer" id="typeOptions">
+                        {% for value, label in form.fields.announcement_type.choices %}
                             <div class="option">
-                                <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.category.value == value %}checked{% endif %}>
+                                <input type="radio" name="announcement_type" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.announcement_type.value == value %}checked{% endif %}>
                                 
                                 <label for="cat_{{ forloop.counter }}">{{label}}</label>
                             </div>
                         {% endfor %}
                     </div>
                 </div>
-                {{ form.category }}
+                {{ form.announcement_type }}
             </div>
 
-            {% if faqInfo %}
+            {% if instance %}
                 <div class="basicInfoWrapper">
-                    <div class="views">
-                        <span>Views: </span>
-                        <span class="value"> 
-                            {% if faqInfo.view_count %}
-                                {{ faqInfo.view_count }}
-                            {% else %}
-                                0
-                            {% endif %}
-                        </span>
-                    </div>
                     <div class="Author">
                         <span>Author: </span>
                         <span class="value">
-                            {% if faqInfo.author %}
-                                {{ faqInfo.author }}
+                            {% if instance.author %}
+                                {{ instance.author }}
                             {% else %}
                                 {{ card_id }}
                             {% endif %}
@@ -74,50 +63,18 @@
                     <div class="publish_date">
                         <span>Publish Date: </span>
                         <span class="value">
-                            {% if faqInfo.published_time %}
-                                {{ faqInfo.published_time }}
+                            {% if instance.published_time %}
+                                {{ instance.published_time }}
                             {% else %}
                                 Not Published Yet
                             {% endif %}
                         </span>
                     </div>
-                    <div class="likesWrapper">
-                        <div class="likes">
-                            <span>
-                                <svg class="likes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M35.5 69.9766V54.9766H1.5V173.477H35.5V151.477M35.5 69.9766C52 64.9766 64.5 51.4766 68.5 39.9766C72.6587 28.0203 71 17.4766 73 11.9766C75 6.47664 86 -3.02341 95.5 3.97659C105 10.9766 119 33.4766 106 64.9766C120.167 64.9766 144.9 64.9766 148.5 64.9766C160 64.9766 171.278 73.4766 169.5 89.4766C165 112.977 160.265 138.477 159.5 151.477C159 159.977 147.5 172.477 126 173.477C104.5 174.477 47.5 167.477 35.5 151.477M35.5 69.9766V151.477"/>
-                                </svg>
-
-                            </span>
-                            <span class="value">
-                                {% if faqInfo.n_likes %}
-                                {{ faqInfo.n_likes }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="dislikes">
-                            <span>
-                                <svg class="dislikes-icon" viewBox="0 0 172 176" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M135.686 105.093V120.093H169.686V1.59344H135.686V23.5934M135.686 105.093C119.186 110.093 106.686 123.593 102.686 135.093C98.5269 147.05 100.186 157.593 98.1857 163.093C96.1857 168.593 85.1857 178.093 75.6857 171.093C66.1857 164.093 52.1857 141.593 65.1857 110.093C51.019 110.093 26.2857 110.093 22.6857 110.093C11.1857 110.093 -0.0921088 101.593 1.68567 85.5935C6.18567 62.0935 10.921 36.5934 11.6857 23.5934C12.1857 15.0934 23.6857 2.59344 45.1857 1.59344C66.6857 0.593445 123.686 7.59344 135.686 23.5934M135.686 105.093V23.5934"/>
-                                </svg>
-                            </span>
-                            <span class="value">
-                                {% if faqInfo.n_dislikes %}
-                                {{ faqInfo.n_dislikes }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="class"></div>
                 </div>
             {% endif %}
             
             <div class="extraConfig">
-                <ul data-config = 'visibility'>
+                <ul data-config = 'visibility' style="display: none; pointer-events: none;">
                     <li>
                         <span class="visibleIcon" id="visiblity" data-visible = 'true'>
                             <svg class="eye-closed" viewBox="0 0 190 67" xmlns="http://www.w3.org/2000/svg" fill="black">
@@ -139,21 +96,19 @@
                         </span>
                     </li>
                 </ul>
-
+                <div></div>
                 <div class="formBtnWrapper">
-                    {% if faqInfo %}
-                        <button class="delete">Delete</button>
+                    {% if instance %}
+                    <button class="delete">Delete</button>
                     {% endif %}
-                    
                     <button class="cancel">Discard Changes</button>
                     <button class="save">Save</button>
                 </div>
             </div>
             {{ form.is_ad_visible }}
-            {{ form.is_visitor_visible }}
             {{ form.is_lc_visible }}
             {{ form.is_tp_visible }}
-
+            {{ form.academic_term }}
             
             {% if messages %}
                 <div class="errorMessage">
@@ -164,6 +119,41 @@
                     {% endfor %}
                 </div>
             {% endif %}
+            
+            <div class="imageUploadContainer hide">
+                <div class="dropZone">
+                    <div class="dropzoneTitle {% if instance.attachments.all %}hide{% endif %}">
+                        <span class="imgIcon">
+                            <svg viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M31.5 143.5H131.5C138.127 143.5 143.5 138.127 143.5 131.5V86.5M31.5 143.5H12.5C5.87258 143.5 0.5 138.127 0.5 131.5V12.5C0.5 5.87258 5.87258 0.5 12.5 0.5H131.5C138.127 0.5 143.5 5.87258 143.5 12.5V86.5M31.5 143.5L96 55.5L143.5 86.5M59 39C59 49.4934 50.4934 58 40 58C29.5066 58 21 49.4934 21 39C21 28.5066 29.5066 20 40 20C50.4934 20 59 28.5066 59 39Z" />
+                            </svg>
+                        </span>
+                        <span>CLick or Drag & Drop Images here</span>
+                        <span class="fileLimitInfo">Accepted: PNG, JPG (Max 5 files)</span>
+                    </div>
+
+                    {{ form.extra_attachments }}
+                    
+                    <div class="attComList {% if not instance or not instance.attachments.all %}hide{% endif %}">
+                        {% for att in instance.attachments.all %}
+                        <div class="fileCard" data-attachment-id="{{ att.id }}">
+                            <div class="fileInfo">
+                                <span class="fileIcon">
+                                    <img src="/media/file_icons/{{ att.extension }}.svg" onerror="this.src='/media/file_icons/IMAGE.svg'">
+                                </span>
+                                <div class="fileDetailWrapper">
+                                    <p class="fileName">{{ att.filename }}</p>
+                                    <p class="fileSize">{{ att.filesize }}</p>
+                                </div>
+                            </div>
+                            <div class="deleteExistingFile" data-id="{{ att.id }}">&times;</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <span class="errorMessage" style="display: none;"></span>
+                <input type="hidden" name="deleted_attachments" id="deletedAttachments" value="">
+            </div>
 
             <div class="configContent">
             </div>
@@ -182,33 +172,60 @@
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script src="{% static 'js/edit_faq.js' %}"></script>
     <script>
-        const quill = new Quill('#editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'size': ['small', false, 'large', 'huge'] }],
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['link', 'image'],
-                ]
-            },
-            placeholder: ' ',
-            formats: [
-                'size', 
-                'bold', 'italic', 'underline', 
-                'list', 
-                'link', 'image'
-            ]
-        });
-        attachQuillListeners(); 
+        window.campusData = {
+            savedIntakes: "{{ targetInfo.academic_term|default:'' }}",
+            isStudentVisible: "{{ targetInfo.is_for_students|yesno:'true,false' }}"
+        };
+        
+        let quill = null; 
+
+        function initializeQuillInHtml(type) {
+            const wrapper = document.querySelector('.textAreaWrapper');
+            const hiddenInput = document.querySelector('#id_content');
+
+            let existingHtml = "";
+            if (quill) {
+                existingHtml = quill.root.innerHTML;
+                
+                const oldEditor = document.getElementById('editor');
+                const oldToolbar = wrapper.querySelector('.ql-toolbar');
+                
+                if (oldEditor) oldEditor.remove();
+                if (oldToolbar) oldToolbar.remove();
+                
+                quill = null; 
+            }
+
+            const newEditorDiv = document.createElement('div');
+            newEditorDiv.id = 'editor';
+            newEditorDiv.className = 'editor';
+            wrapper.insertBefore(newEditorDiv, hiddenInput);
+
+            const toolbarOptions = (type === 'BANNER') 
+                ? [['bold', 'italic', 'underline']] 
+                : [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }]];
+
+            quill = new Quill('#editor', {
+                theme: 'snow',
+                modules: { toolbar: toolbarOptions },
+                placeholder: type === 'BANNER' ? 'Enter scrolling banner text...' : 'Enter announcement content...',
+                formats: (type === 'BANNER') ? ['bold', 'italic', 'underline'] : ['bold', 'italic', 'underline', 'list']
+            });
+
+            if (existingHtml) {
+                quill.root.innerHTML = existingHtml;
+                if (type === 'BANNER') {
+                    const length = quill.getLength();
+                    quill.formatText(0, length, 'list', false);
+                }
+            }
+
+            attachQuillListeners(); 
+        }
     </script>
 {% endblock %} 
 
 {% block extra_template %}
-    <template id="commentInput">
-        <div class="commentEditor"></div>
-    </template>
-
     <template id="visiblitySection">
         <div class="visiblitySection" data-controls = 'simple'>
             <div class="visiblityHeader">
@@ -254,17 +271,38 @@
                     <div class="toggleBtn" id="studentToggle"  data-value = 'false'></div>
                 </div>
 
-                <div class="visibiltyWrapper">
-                    <div class="descWrapper">
-                        <p class="toggleTitle">Visitor Access</p>
-                        <p class="toggleDescription">Toggle this to allow visitors to view this FAQ. Turn it off to hide it from visitor users.</p>
+                <div class="visibiltyWrapper" id="intakeWrapper">
+                    <div class="intakesWrapper">
+                        <p class="toggleTitle">Target Specific Intakes</p>
+                    
+                        <div id="selectedIntakesContainer" class="selected-tags-area">
+                        </div>
                     </div>
 
-                    <div class="toggleBtn" id="visitorToggle"  data-value = 'false'></div>
+                    <div class="selectInput" id="intakeSelect">
+                        <div class="selectedLabel">
+                            <label>Select Intake(s)...</label>
+                            <span class="arrow">
+                                <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
+                                </svg>
+                            </span>
+                        </div>
+                        
+                        <div class="optionContainer" id="intakeOptions">
+                            {% for term in available_term %}
+                                <div class="option" data-id="{{ term.term_id }}" data-code="{{ term.intake_code }}">
+                                    <span>{{ term.intake_code }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </template>
+
 
     <template id="commentSection">
         <p class="configTitle">Comment Section</p>

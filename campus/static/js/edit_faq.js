@@ -1,26 +1,21 @@
 let isSubmitting = false;
 let initialData = {};
+const fieldSelectors = {
+    title: '#id_title',
+    subject: '#id_subject',
+    content: '#id_content',
+    category: '#id_category',
+    type: '#id_announcement_type',
+    is_active: '#id_is_active',
+    tp: '#id_is_tp_visible',
+    lc: '#id_is_lc_visible',
+    ad: '#id_is_ad_visible',
+    vr: "#id_is_visitor_visible",
+    intake: '#id_academic_term',
+    extra_attachments: "#id_extra_attachments"
+};
 
-document.addEventListener("DOMContentLoaded", async function() {
-    const quill = new Quill('#editor', {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                [{ 'size': ['small', false, 'large', 'huge'] }],
-                ['bold', 'italic', 'underline'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                ['link', 'image'],
-            ]
-        },
-        placeholder: ' ',
-        formats: [
-            'size', 
-            'bold', 'italic', 'underline', 
-            'list', 
-            'link', 'image'
-        ]
-    });
-
+window.attachQuillListeners = function(){
     const hiddenContent = document.querySelector('#id_content').value;
     if (hiddenContent && hiddenContent.trim() !== "") {
         quill.root.innerHTML = hiddenContent;
@@ -33,87 +28,154 @@ document.addEventListener("DOMContentLoaded", async function() {
         const html = quill.root.innerHTML;
         contentInput.value = html;
     });
+}
 
-
+document.addEventListener("DOMContentLoaded", async function() {
     const faqForm = document.getElementById('faq');
     const saveBtn = document.querySelector('.save');
     const discardBtn = document.querySelector('.cancel');
     const deleteBtn = document.querySelector('.delete');
 
-    discardBtn.addEventListener('click', (e) => {
-        e.preventDefault(); 
-        
-        const confirmDiscard = confirm("Are you sure you want to discard your changes? All unsaved progress will be lost.");
-        
-        if (confirmDiscard) {
-            window.location.reload();
-        }
-    });
-
-    saveBtn.addEventListener('click', (e) => {
-        contentInput.value = quill.root.innerHTML;
-        const category =  document.querySelector('#id_category').value;
-        
-        isSubmitting = true;
-
-        if (quill.getText().trim().length === 0) {
-            e.preventDefault();
-            isSubmitting = false;
-            alert("The FAQ content cannot be empty!");
-        } 
-        else if(category == ''){
-            e.preventDefault();
-            isSubmitting = false;
-            alert("The FAQ category cannot be empty!");
-        }
-    });
-
-    deleteBtn.onclick = (e) => {
-        e.preventDefault();
-        if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
-
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrfmiddlewaretoken';
-            csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    if(discardBtn){
+        discardBtn.addEventListener('click', (e) => {
+            e.preventDefault(); 
             
-            form.appendChild(csrfInput);
-            document.body.appendChild(form);
+            const confirmDiscard = confirm("Are you sure you want to discard your changes? All unsaved progress will be lost.");
             
-            form.submit();
+            if (confirmDiscard) {
+                window.location.reload();
+            }
+        });
+    }
+    
+
+    if(saveBtn){
+        saveBtn.addEventListener('click', (e) => {
+            // e.preventDefault();
+            contentInput.value = quill.root.innerHTML;
+            const category =  document.querySelector('#id_category');
+            const type = document.querySelector('#id_announcement_type');
+            isSubmitting = true;
+
+            if (quill.getText().trim().length === 0) {
+                e.preventDefault();
+                isSubmitting = false;
+
+                if(category) alert("The FAQ content cannot be empty!");
+                if(type) alert("The announcement content cannot be empty!");
+            } 
+
+            if(category && category.value == ''){
+                e.preventDefault();
+                isSubmitting = false;
+                alert("The FAQ category cannot be empty!");
+            }
+            
+            if(type && type.value == ''){
+                e.preventDefault();
+                isSubmitting = false;
+                alert("The announcement type cannot be empty!");
+            }
+
+            // for(const [key, selector] of Object.entries(fieldSelectors)){
+            //     const element = document.querySelector(selector);
+            //     if (element) {
+            //         if (element.type === 'file') {
+            //             // Check if there are actually files selected
+            //             if (element.files.length > 0) {
+            //                 // Convert FileList to Array to see all names in console
+            //                 const fileNames = Array.from(element.files).map(f => f.name);
+            //                 console.log(`${key} (Multiple):`, fileNames);
+            //             } else {
+            //                 console.log(`${key}: No files uploaded`);
+            //             }
+            //         } else {
+            //             // Handle regular text/hidden inputs
+            //             console.log(key, element.value);
+            //         }
+            //     }
+            // }
+        });
+    }
+
+    if(deleteBtn){
+        deleteBtn.onclick = (e) => {
+            e.preventDefault();
+            if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                
+                form.submit();
+            }
         }
     }
 
+
     const categoryInput = document.getElementById('id_category');
+    const announcement_typeInput = document.getElementById('id_announcement_type');
     const selectInput = document.getElementById('categorySelect');
     const selectedLabel = selectInput.querySelector('.selectedLabel');
     const categoryOptions = document.getElementById('categoryOptions');
+    const typeOptions = document.getElementById('typeOptions');
+    const imageUploadContainer = document.querySelector('.imageUploadContainer');
+    
+    if(selectedLabel){
+        selectedLabel.addEventListener('click', () => {
+            const isNowTrue = selectInput.classList.contains('active');
+            selectInput.classList.toggle('active', !isNowTrue);
+        });
+    }
+    if(categoryOptions){
+        categoryOptions.addEventListener('change', (event) => {
+            if(event.target.type === 'radio'){
+                const chosenText = event.target.nextElementSibling.innerText;
+                const selectInput = event.target.closest('.selectInput');
+                const displayLabel = selectInput.querySelector('.selectedLabel label');
 
-    selectedLabel.addEventListener('click', () => {
-        const isNowTrue = selectInput.classList.contains('active');
-        selectInput.classList.toggle('active', !isNowTrue);
-    });
+                displayLabel.innerText = `Category: ${chosenText}`;
+                selectInput.classList.toggle('active', false);
+                
+                categoryInput.value = event.target.value;
+            }
+        });
+    }
+    
+    if(typeOptions){
+        typeOptions.addEventListener('change', (event) => {
+            if(event.target.type === 'radio'){
+                const chosenText = event.target.nextElementSibling.innerText;
+                const selectInput = event.target.closest('.selectInput');
+                const displayLabel = selectInput.querySelector('.selectedLabel label');
 
-    categoryOptions.addEventListener('change', (event) => {
-        if(event.target.type === 'radio'){
-            const chosenText = event.target.nextElementSibling.innerText;
-            const selectInput = event.target.closest('.selectInput');
-            const displayLabel = selectInput.querySelector('.selectedLabel label');
+                displayLabel.innerText = `Type: ${chosenText}`;
+                selectInput.classList.toggle('active', false);
+                
+                announcement_typeInput.value = event.target.value;
+                document.querySelector('.textAreaWrapper').classList.remove('hide');
+                initializeQuillInHtml(event.target.value);
 
-            displayLabel.innerText = `Category: ${chosenText}`;
-            selectInput.classList.toggle('active', false);
-            
-            categoryInput.value = event.target.value;
-        }
-    });
-
+                if (event.target.value === 'BANNER') {
+                    imageUploadContainer.classList.add('hide');
+                } else {
+                    imageUploadContainer.classList.remove('hide');
+                }
+            }
+        });
+    }
 
     const extraConfig = document.querySelector('.extraConfig ul');
     const commentIcon = extraConfig.querySelector('.commentIcon');
     const visibleIcon = extraConfig.querySelector('.visibleIcon');
+    
     const configContent = document.querySelector('.configContent');
 
     const roles = {
@@ -170,10 +232,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         const buttons = template.querySelectorAll('button');
 
         buttons.forEach(btn => {
-            btn.onclick = (e) => {
-                e.preventDefault();
-                container.dataset.controls = btn.innerText.toLowerCase();
+            if(btn){
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    container.dataset.controls = btn.innerText.toLowerCase();
+                }
             }
+            
         });
 
         const publicToggle = template.querySelector('#public');
@@ -181,7 +246,11 @@ document.addEventListener("DOMContentLoaded", async function() {
         const lecturerToggle = template.querySelector('#lecturerToggle');
         const studentToggle = template.querySelector('#studentToggle');
         const visitorToggle = template.querySelector('#visitorToggle');
-
+        const termViewInput = template.querySelector('#intakeSelect');
+        const intakeOptions = template.querySelector('#intakeOptions');
+        const academic_term_input = document.querySelector('#id_academic_term');
+        const selectedContainer = template.querySelector('#selectedIntakesContainer');
+        let selectedIds = []
         let allChecked = true;
 
         Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
@@ -194,16 +263,22 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if(!val) allChecked = false;
             }
         });
-
-        publicToggle.dataset.value = allChecked;
+        
+        if(publicToggle){
+            publicToggle.dataset.value = allChecked;
+        }
 
         function passBooleanValue(newChanges={}){
-            const currentState = {
-                'ad': newChanges.hasOwnProperty('ad') ? newChanges['ad'] : (document.getElementById('adminToggle').dataset.value === 'true'),
-                'lc': newChanges.hasOwnProperty('lc') ? newChanges['lc'] : (document.getElementById('lecturerToggle').dataset.value === 'true'),
-                'tp': newChanges.hasOwnProperty('tp') ? newChanges['tp'] : (document.getElementById('studentToggle').dataset.value === 'true'),
-                'vr': newChanges.hasOwnProperty('vr') ? newChanges['vr'] : (document.getElementById('visitorToggle').dataset.value === 'true'),
-            };
+            const currentState = {};
+            Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
+                const toggle = document.querySelector(toggleId);
+                if (toggle) {
+                    const isChecked = newChanges.hasOwnProperty(key) 
+                        ? newChanges[key] 
+                        : (toggle.dataset.value === 'true' || toggle.dataset.value === true);
+                    currentState[key] = isChecked;
+                }
+            });
 
             Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
                 if(newChanges.hasOwnProperty(key)){
@@ -216,16 +291,44 @@ document.addEventListener("DOMContentLoaded", async function() {
             });
 
             const allChecked = Object.values(currentState).every(val => val === true);
-            publicToggle.dataset.value = allChecked;
+            if(publicToggle) publicToggle.dataset.value = allChecked;
 
             const icon = document.querySelector('#visiblity');
             icon.dataset.visible = allChecked;
         }
 
-        publicToggle.onclick = (e) => {
+        if(publicToggle){
+            publicToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = publicToggle.dataset.value !== 'true';
             publicToggle.dataset.value = isNowTrue;
+
+            if (isNowTrue) {
+                selectedIds = [];
+                updateHiddenInput();
+            
+                if (selectedContainer) {
+                    selectedContainer.innerHTML = '';
+                }
+                
+                if (intakeOptions) {
+                    const options = intakeOptions.querySelectorAll('.option');
+                    options.forEach(option => {
+                        option.style.display = 'block';
+                    });
+                }
+
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'none';
+                }
+            } else {
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'flex';
+                }
+            }
+
             const fields = {
                 'ad': isNowTrue,
                 'lc': isNowTrue,
@@ -234,18 +337,20 @@ document.addEventListener("DOMContentLoaded", async function() {
             };
 
             passBooleanValue(fields);
-        }
+        }}
         
-        adminToggle.onclick = (e) => {
+        if(adminToggle){
+            adminToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = adminToggle.dataset.value !== 'true';
             const fields = {
                 'ad': isNowTrue,
             };
             passBooleanValue(fields);
-        }
+        }}
 
-        lecturerToggle.onclick = (e) => {
+        if(lecturerToggle){
+            lecturerToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = lecturerToggle.dataset.value !== 'true';
             const fields = {
@@ -253,19 +358,48 @@ document.addEventListener("DOMContentLoaded", async function() {
             };
 
             passBooleanValue(fields);
-        }
+        }}
         
-        studentToggle.onclick = (e) => {
+        if(studentToggle){
+            studentToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = studentToggle.dataset.value !== 'true';
+
+            if (isNowTrue) {
+                selectedIds = [];
+                updateHiddenInput();
+            
+                if (selectedContainer) {
+                    selectedContainer.innerHTML = '';
+                }
+                
+                if (intakeOptions) {
+                    const options = intakeOptions.querySelectorAll('.option');
+                    options.forEach(option => {
+                        option.style.display = 'block';
+                    });
+                }
+
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'none';
+                }
+            } else {
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'flex';
+                }
+            }
+
             const fields = {
                 'tp': isNowTrue,
             };
 
             passBooleanValue(fields);
-        }
+        }}
 
-        visitorToggle.onclick = (e) => {
+        if(visitorToggle){
+            visitorToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = visitorToggle.dataset.value !== 'true';
             const fields = {
@@ -276,6 +410,97 @@ document.addEventListener("DOMContentLoaded", async function() {
             };
 
             passBooleanValue(fields);
+        }}
+
+        if(termViewInput){
+            termViewInput.addEventListener('click', () => {
+                const remainingOptions = Array.from(intakeOptions.querySelectorAll('.option'))
+                    .filter(opt => opt.style.display !== 'none');
+
+                if (remainingOptions.length === 0) {
+                    return;
+                }
+
+                termViewInput.classList.toggle('active', true);
+            });
+        }
+        
+        if(intakeOptions){
+            intakeOptions.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                const option = e.target.closest('.option');
+                if (!option) return;
+
+                const id = option.dataset.id;
+                const code = option.dataset.code;
+
+                selectedIds.push(id);
+                updateHiddenInput();
+
+                const tag = document.createElement('div');
+                tag.className = 'intake-tag';
+                tag.dataset.id = id;
+                tag.innerHTML = `
+                    <span>${code}</span>
+                    <span class="remove-tag" onclick="removeIntake('${id}', '${code}')">&times;</span>
+                `;
+                selectedContainer.appendChild(tag);
+
+                option.style.display = 'none';
+
+                const remainingOptions = Array.from(intakeOptions.querySelectorAll('.option'))
+                    .filter(opt => opt.style.display !== 'none');
+
+                if (remainingOptions.length === 0) {
+                    termViewInput.classList.remove('active');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if(!termViewInput.contains(e.target) && !intakeOptions.contains(e.target)){
+                    termViewInput.classList.toggle('active', false);
+                }
+            });
+        }
+
+        window.removeIntake = function(id, code) {
+            selectedIds = selectedIds.filter(item => item !== id);
+            updateHiddenInput();
+
+            const tag = selectedContainer.querySelector(`.intake-tag[data-id="${id}"]`);
+            if (tag) tag.remove();
+
+            const option = intakeOptions.querySelector(`.option[data-id="${id}"]`);
+            if (option) option.style.display = 'block';
+        }
+
+        function updateHiddenInput() {
+            academic_term_input.value = selectedIds.join(',');
+        }
+        
+        const savedIntakeString = window.campusData.savedIntakes;
+        
+        if (savedIntakeString) {
+            const savedIds = savedIntakeString.split(',');
+            const cleanIds = savedIds.filter(id => id.trim() !== "");
+
+            console.log(savedIds);
+
+            cleanIds.forEach(id => {
+                const option = intakeOptions.querySelector(`.option[data-id="${id}"]`);
+                
+                if (option) {
+                    option.click(); 
+                }
+            });
+            
+            const intakeWrapper = template.querySelector('#intakeWrapper');
+            if (cleanIds.length > 0 && intakeWrapper) {
+                if (window.campusData.isStudentVisible === 'false') {
+                    intakeWrapper.style.display = 'flex';
+                }
+            }
         }
 
         configContent.innerHTML = ``;
@@ -391,15 +616,13 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function captureInitialState() {
-        initialData = {
-            title: document.querySelector('#id_title').value,
-            content: document.querySelector('#id_content').value,
-            category: document.querySelector('#id_category').value,
-            ad: document.querySelector('#id_is_ad_visible').value,
-            lc: document.querySelector('#id_is_lc_visible').value,
-            tp: document.querySelector('#id_is_tp_visible').value,
-            vr: document.querySelector('#id_is_visitor_visible').value
-        };
+        for(const [key, selector] of Object.entries(fieldSelectors)){
+            const element = document.querySelector(selector);
+    
+            if (element) {
+                initialData[key] = element.value;
+            }
+        }
     }
 
     captureInitialState();
@@ -407,9 +630,9 @@ document.addEventListener("DOMContentLoaded", async function() {
 
 document.addEventListener('click', (e) => {
     const selectInput = document.getElementById('categorySelect');
-    const categoryOptions = document.getElementById('categoryOptions');
+    const options = document.getElementById('categoryOptions') || document.getElementById('typeOptions');
     
-    if(!selectInput.contains(e.target) && !categoryOptions.contains(e.target)){
+    if(!selectInput.contains(e.target) && !options.contains(e.target)){
         selectInput.classList.toggle('active', false);
     }
 });
@@ -417,29 +640,165 @@ document.addEventListener('click', (e) => {
 window.addEventListener('beforeunload', (event) => {
     if (isSubmitting) return;
 
-    const currentData = {
-        title: document.querySelector('#id_title').value,
-        content: document.querySelector('#id_content').value,
-        category: document.querySelector('#id_category').value,
-        ad: document.querySelector('#id_is_ad_visible').value,
-        lc: document.querySelector('#id_is_lc_visible').value,
-        tp: document.querySelector('#id_is_tp_visible').value,
-        vr: document.querySelector('#id_is_visitor_visible').value
-    };
+    let currentData = {};
+    for(const [key, selector] of Object.entries(fieldSelectors)){
+        const element = document.querySelector(selector);
+        if (element) {
+            currentData[key] = element.value;
+        }
+    }
 
-    console.log()
-
-    const hasChanged = 
-        currentData.title !== initialData.title ||
-        currentData.content !== initialData.content ||
-        currentData.category !== initialData.category ||
-        currentData.ad !== initialData.ad ||
-        currentData.lc !== initialData.lc ||
-        currentData.vr !== initialData.vr ||
-        currentData.tp !== initialData.tp;
+    const hasChanged = Object.keys(currentData).some(key => {
+        return initialData.hasOwnProperty(key) && currentData[key] !== initialData[key]
+    });
 
     if (hasChanged) {
         event.preventDefault();
         event.returnValue = ''; 
     }
 });
+
+
+const dropzoneTitle = document.querySelector('.dropzoneTitle');
+const fileInput = document.getElementById('id_extra_attachments');
+const fileCardList = document.querySelector('.attComList');
+const dropZone = document.querySelector('.dropZone');
+const fileError = document.querySelector('.imageUploadContainer .errorMessage');
+const deletedAttachmentsInput = document.getElementById('deletedAttachments');
+let deletedIds = [];
+let masterFileList = [];
+
+if(dropZone){
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.add('active');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.remove('active');
+        }, false);
+    });
+
+    dropzoneTitle.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('drop', (e) => {
+        handleFileSelection(Array.from(e.dataTransfer.files));
+    });
+
+    fileInput.addEventListener('change', function() {
+        handleFileSelection(Array.from(this.files || []));
+    });
+
+    function handleFileSelection(newFiles) {
+        if (newFiles.length === 0) return;
+
+        const allowedExtensions = ['PNG', 'JPG', 'JPEG'];
+        const invalidExtensions = [];
+        const validNewFiles = [];
+
+        newFiles.forEach(file => {
+            const ext = file.name.split('.').pop().toUpperCase();
+            if (allowedExtensions.includes(ext)) {
+                validNewFiles.push(file);
+            } else {
+                invalidExtensions.push(file.name);
+            }
+        });
+
+        if (invalidExtensions.length > 0) {
+            showError(`Unsupported file type: ${invalidExtensions.join(', ')}. Only PNG/JPG allowed.`);
+            return;
+        }
+
+        if (masterFileList.length + validNewFiles.length > 5) {
+            showError("Maximum 5 images allowed.");
+            return;
+        }
+
+        masterFileList = [...masterFileList, ...validNewFiles];
+        syncInput();
+        renderFileCards();
+    }
+
+    function syncInput() {
+        const dt = new DataTransfer();
+        masterFileList.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
+    }
+
+    function showError(msg) {
+        fileError.textContent = msg;
+        fileError.style.display = 'block';
+        setTimeout(() => { fileError.style.display = 'none'; }, 4000);
+    }
+
+    function renderFileCards() {
+        fileCardList.innerHTML = '';
+        dropzoneTitle.classList.add('hide');
+        fileCardList.classList.remove('hide');
+        
+        masterFileList.forEach((file, index) => {
+            let extension = file.name.split('.').pop().toUpperCase();
+            if (extension === 'JPEG') extension = 'JPG';
+            const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+
+            const card = document.createElement('div');
+            card.className = 'fileCard';
+            card.innerHTML = `
+                <div class="fileInfo">
+                    <span class="fileIcon">
+                        <img src="/media/file_icons/${extension}.svg" onerror="this.src='/media/file_icons/FILE.svg'">
+                    </span>
+                </div>
+                <div class="fileDetailWrapper">
+                    <p class="fileName">${file.name}</p>
+                    <p class="fileSize">${fileSize}</p>
+                </div>
+                <div class="deleteFile" data-index="${index}">&times;</div>
+            `;
+            fileCardList.appendChild(card);
+        });
+    }
+
+    fileCardList.addEventListener('click', (e) => {
+        const deleteBtn = e.target;
+        
+        if (deleteBtn.classList.contains('deleteExistingFile')) {
+            const id = deleteBtn.dataset.id;
+            deletedIds.push(id);
+            deletedAttachmentsInput.value = deletedIds.join(',');
+            
+            deleteBtn.closest('.fileCard').remove();
+            checkEmptyState();
+        }
+
+        const btn = deleteBtn.closest('.deleteFile');
+        if (btn) {
+            const index = parseInt(btn.dataset.index);
+            masterFileList.splice(index, 1);
+            syncInput();
+            renderFileCards();
+            checkEmptyState();
+        }
+    });
+
+    function checkEmptyState() {
+        const currentCards = fileCardList.querySelectorAll('.fileCard');
+        if (currentCards.length === 0) {
+            dropzoneTitle.classList.remove('hide');
+            fileCardList.classList.add('hide');
+        } else {
+            dropzoneTitle.classList.add('hide');
+            fileCardList.classList.remove('hide');
+        }
+    }
+}

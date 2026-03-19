@@ -34,8 +34,8 @@ import random
 import json
 import base64
 import math
-from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm
-from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage, TicketActivity
+from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm,newAnnouncemeentForm
+from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage, TicketActivity, announcement, announcementTarget
 from .decorators import role_required
 from .models import facilities, booking
 from .models import (
@@ -1130,11 +1130,6 @@ def point_of_interest_upload(request):
         return JsonResponse({"url": url})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-
-#announcement function
-def announcements(request): 
-    return render(request, "dashboards/announcements.html")
-
 
 #FAQ function
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
@@ -3587,3 +3582,69 @@ def rearrange_missing_class(request):
         'error': 'No available slot found for rearrangement.',
     })
 
+
+
+#announcement function
+@role_required(allowed_roles=['admin'])
+@transaction.atomic
+def announcements_form(request, pk=None):
+    instance = get_object_or_404(announcement, pk=pk) if pk else None
+    target_instance = None
+
+    if instance:
+        target_instance = announcementTarget.objects.filter(announcement=instance).first()
+
+    if request.method == 'POST':
+        form = newAnnouncemeentForm(request.POST, request.FILES, instance=instance)
+
+        if form.is_valid():
+            ann_obj = form.save(commit=False)
+            if not instance:
+                ann_obj.author = request.user.admin_profile
+            ann_obj.save()
+
+            deleted_ids_raw = request.POST.get('deleted_attachments', '')
+            if deleted_ids_raw:
+                deleted_ids = [rid for rid in deleted_ids_raw.split(',') if rid]
+                attachments.objects.filter(id__in=deleted_ids).delete()
+
+            files = request.FILES.getlist('extra_attachments')
+            for f in files:
+                attachments.objects.create(
+                    content_type=ContentType.objects.get_for_model(ann_obj),
+                    object_id=ann_obj.announcement_id,
+                    file=f
+                )
+
+            is_for_students = request.POST.get('is_tp_visible') == 'True'
+            intake_ids_raw = request.POST.get('academic_term', '')
+
+            announcementTarget.objects.update_or_create(
+                announcement=ann_obj,
+                defaults={
+                    'is_for_students': is_for_students,
+                    'is_for_lecturer': request.POST.get('is_lc_visible') == 'True',
+                    'is_for_admins': request.POST.get('is_ad_visible') == 'True', 
+                    'academic_term': intake_ids_raw if not is_for_students else None
+                }
+            )
+
+            messages.success(request, f"Announcement {'updated' if instance else 'published'} successfully!")
+            return redirect('announcement_list')
+        else:
+            messages.error(request, "There was an error in the form. Please check your inputs.")
+            print(form.errors)
+    else:
+        form = newAnnouncemeentForm(instance=instance)
+
+    available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
+    context = {
+        "form": form,
+        "instance": instance,
+        'targetInfo': target_instance,
+        "available_term": available_term,
+    }
+    return render(request, "announcement/announcement_form.html", context)
+
+def announcement_list(request): 
+    return render(request, "announcement/announcement_list.html")
