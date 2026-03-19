@@ -12,9 +12,10 @@ const fieldSelectors = {
     ad: '#id_is_ad_visible',
     vr: "#id_is_visitor_visible",
     intake: '#id_academic_term',
+    extra_attachments: "#id_extra_attachments"
 };
 
-document.addEventListener("DOMContentLoaded", async function() {
+window.attachQuillListeners = function(){
     const hiddenContent = document.querySelector('#id_content').value;
     if (hiddenContent && hiddenContent.trim() !== "") {
         quill.root.innerHTML = hiddenContent;
@@ -27,8 +28,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         const html = quill.root.innerHTML;
         contentInput.value = html;
     });
+}
 
-
+document.addEventListener("DOMContentLoaded", async function() {
     const faqForm = document.getElementById('faq');
     const saveBtn = document.querySelector('.save');
     const discardBtn = document.querySelector('.cancel');
@@ -49,6 +51,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     if(saveBtn){
         saveBtn.addEventListener('click', (e) => {
+            // e.preventDefault();
             contentInput.value = quill.root.innerHTML;
             const category =  document.querySelector('#id_category');
             const type = document.querySelector('#id_announcement_type');
@@ -73,6 +76,25 @@ document.addEventListener("DOMContentLoaded", async function() {
                 isSubmitting = false;
                 alert("The announcement type cannot be empty!");
             }
+
+            // for(const [key, selector] of Object.entries(fieldSelectors)){
+            //     const element = document.querySelector(selector);
+            //     if (element) {
+            //         if (element.type === 'file') {
+            //             // Check if there are actually files selected
+            //             if (element.files.length > 0) {
+            //                 // Convert FileList to Array to see all names in console
+            //                 const fileNames = Array.from(element.files).map(f => f.name);
+            //                 console.log(`${key} (Multiple):`, fileNames);
+            //             } else {
+            //                 console.log(`${key}: No files uploaded`);
+            //             }
+            //         } else {
+            //             // Handle regular text/hidden inputs
+            //             console.log(key, element.value);
+            //         }
+            //     }
+            // }
         });
     }
 
@@ -104,7 +126,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const selectedLabel = selectInput.querySelector('.selectedLabel');
     const categoryOptions = document.getElementById('categoryOptions');
     const typeOptions = document.getElementById('typeOptions');
-
+    const imageUploadContainer = document.querySelector('.imageUploadContainer');
+    
     if(selectedLabel){
         selectedLabel.addEventListener('click', () => {
             const isNowTrue = selectInput.classList.contains('active');
@@ -136,9 +159,15 @@ document.addEventListener("DOMContentLoaded", async function() {
                 displayLabel.innerText = `Type: ${chosenText}`;
                 selectInput.classList.toggle('active', false);
                 
-                
                 announcement_typeInput.value = event.target.value;
-                console.log(announcement_typeInput.value);
+                document.querySelector('.textAreaWrapper').classList.remove('hide');
+                initializeQuillInHtml(event.target.value);
+
+                if (event.target.value === 'BANNER') {
+                    imageUploadContainer.classList.add('hide');
+                } else {
+                    imageUploadContainer.classList.remove('hide');
+                }
             }
         });
     }
@@ -273,6 +302,33 @@ document.addEventListener("DOMContentLoaded", async function() {
             e.preventDefault();
             const isNowTrue = publicToggle.dataset.value !== 'true';
             publicToggle.dataset.value = isNowTrue;
+
+            if (isNowTrue) {
+                selectedIds = [];
+                updateHiddenInput();
+            
+                if (selectedContainer) {
+                    selectedContainer.innerHTML = '';
+                }
+                
+                if (intakeOptions) {
+                    const options = intakeOptions.querySelectorAll('.option');
+                    options.forEach(option => {
+                        option.style.display = 'block';
+                    });
+                }
+
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'none';
+                }
+            } else {
+                const intakeWrapper = template.querySelector('#intakeWrapper');
+                if (intakeWrapper) {
+                    intakeWrapper.style.display = 'flex';
+                }
+            }
+
             const fields = {
                 'ad': isNowTrue,
                 'lc': isNowTrue,
@@ -421,6 +477,30 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         function updateHiddenInput() {
             academic_term_input.value = selectedIds.join(',');
+        }
+        
+        const savedIntakeString = window.campusData.savedIntakes;
+        
+        if (savedIntakeString) {
+            const savedIds = savedIntakeString.split(',');
+            const cleanIds = savedIds.filter(id => id.trim() !== "");
+
+            console.log(savedIds);
+
+            cleanIds.forEach(id => {
+                const option = intakeOptions.querySelector(`.option[data-id="${id}"]`);
+                
+                if (option) {
+                    option.click(); 
+                }
+            });
+            
+            const intakeWrapper = template.querySelector('#intakeWrapper');
+            if (cleanIds.length > 0 && intakeWrapper) {
+                if (window.campusData.isStudentVisible === 'false') {
+                    intakeWrapper.style.display = 'flex';
+                }
+            }
         }
 
         configContent.innerHTML = ``;
@@ -577,3 +657,148 @@ window.addEventListener('beforeunload', (event) => {
         event.returnValue = ''; 
     }
 });
+
+
+const dropzoneTitle = document.querySelector('.dropzoneTitle');
+const fileInput = document.getElementById('id_extra_attachments');
+const fileCardList = document.querySelector('.attComList');
+const dropZone = document.querySelector('.dropZone');
+const fileError = document.querySelector('.imageUploadContainer .errorMessage');
+const deletedAttachmentsInput = document.getElementById('deletedAttachments');
+let deletedIds = [];
+let masterFileList = [];
+
+if(dropZone){
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.add('active');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.remove('active');
+        }, false);
+    });
+
+    dropzoneTitle.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('drop', (e) => {
+        handleFileSelection(Array.from(e.dataTransfer.files));
+    });
+
+    fileInput.addEventListener('change', function() {
+        handleFileSelection(Array.from(this.files || []));
+    });
+
+    function handleFileSelection(newFiles) {
+        if (newFiles.length === 0) return;
+
+        const allowedExtensions = ['PNG', 'JPG', 'JPEG'];
+        const invalidExtensions = [];
+        const validNewFiles = [];
+
+        newFiles.forEach(file => {
+            const ext = file.name.split('.').pop().toUpperCase();
+            if (allowedExtensions.includes(ext)) {
+                validNewFiles.push(file);
+            } else {
+                invalidExtensions.push(file.name);
+            }
+        });
+
+        if (invalidExtensions.length > 0) {
+            showError(`Unsupported file type: ${invalidExtensions.join(', ')}. Only PNG/JPG allowed.`);
+            return;
+        }
+
+        if (masterFileList.length + validNewFiles.length > 5) {
+            showError("Maximum 5 images allowed.");
+            return;
+        }
+
+        masterFileList = [...masterFileList, ...validNewFiles];
+        syncInput();
+        renderFileCards();
+    }
+
+    function syncInput() {
+        const dt = new DataTransfer();
+        masterFileList.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
+    }
+
+    function showError(msg) {
+        fileError.textContent = msg;
+        fileError.style.display = 'block';
+        setTimeout(() => { fileError.style.display = 'none'; }, 4000);
+    }
+
+    function renderFileCards() {
+        fileCardList.innerHTML = '';
+        dropzoneTitle.classList.add('hide');
+        fileCardList.classList.remove('hide');
+        
+        masterFileList.forEach((file, index) => {
+            let extension = file.name.split('.').pop().toUpperCase();
+            if (extension === 'JPEG') extension = 'JPG';
+            const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+
+            const card = document.createElement('div');
+            card.className = 'fileCard';
+            card.innerHTML = `
+                <div class="fileInfo">
+                    <span class="fileIcon">
+                        <img src="/media/file_icons/${extension}.svg" onerror="this.src='/media/file_icons/FILE.svg'">
+                    </span>
+                </div>
+                <div class="fileDetailWrapper">
+                    <p class="fileName">${file.name}</p>
+                    <p class="fileSize">${fileSize}</p>
+                </div>
+                <div class="deleteFile" data-index="${index}">&times;</div>
+            `;
+            fileCardList.appendChild(card);
+        });
+    }
+
+    fileCardList.addEventListener('click', (e) => {
+        const deleteBtn = e.target;
+        
+        if (deleteBtn.classList.contains('deleteExistingFile')) {
+            const id = deleteBtn.dataset.id;
+            deletedIds.push(id);
+            deletedAttachmentsInput.value = deletedIds.join(',');
+            
+            deleteBtn.closest('.fileCard').remove();
+            checkEmptyState();
+        }
+
+        const btn = deleteBtn.closest('.deleteFile');
+        if (btn) {
+            const index = parseInt(btn.dataset.index);
+            masterFileList.splice(index, 1);
+            syncInput();
+            renderFileCards();
+            checkEmptyState();
+        }
+    });
+
+    function checkEmptyState() {
+        const currentCards = fileCardList.querySelectorAll('.fileCard');
+        if (currentCards.length === 0) {
+            dropzoneTitle.classList.remove('hide');
+            fileCardList.classList.add('hide');
+        } else {
+            dropzoneTitle.classList.add('hide');
+            fileCardList.classList.remove('hide');
+        }
+    }
+}
