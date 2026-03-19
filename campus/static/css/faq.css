@@ -776,6 +776,11 @@ form .faqInfo{
     padding: 0.3vw 0.5vw;
 }
 
+.selectInput:has(.announcementType){
+    width: 15vw;
+    max-width: 15vw;
+}
+
 .selectInput .selectedLabel{
     display: flex;
     justify-content: space-between;

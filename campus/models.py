@@ -537,26 +537,44 @@ class skipped_date(models.Model):
     def __str__(self):
         return f"{self.date} - {self.reason}"
     
-class Announcement(models.Model):
+class announcement(models.Model):
+    ANNOUNCEMENT_TYPES = [
+        ('BANNER', 'Rolling Banner'),
+        ('NORMAL', 'Normal News'),
+    ]
+
     announcement_id = models.AutoField(primary_key=True)
     subject = models.CharField(max_length=255)
     content = models.TextField()
     date_published = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
+    author = models.ForeignKey(
+        'admin_profiles',
+        on_delete= models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='authored_ann'
+    )
+
+    announcement_type = models.CharField(
+        max_length=10, 
+        choices=ANNOUNCEMENT_TYPES, 
+        default='NORMAL'
+    )
 
     def __str__(self):
         return self.subject
 
-class AnnouncementTarget(models.Model):
+class announcementTarget(models.Model):
     target_id = models.AutoField(primary_key=True)
     announcement = models.ForeignKey(
-        Announcement, 
+        announcement, 
         on_delete=models.CASCADE, 
         related_name='targets'
     )
-    is_for_students = models.BooleanField(default=False)
-    is_for_lecturer = models.BooleanField(default=False)
-    is_for_admins = models.BooleanField(default=False)
+    is_for_students = models.BooleanField(default=True)
+    is_for_lecturer = models.BooleanField(default=True)
+    is_for_admins = models.BooleanField(default=True)
     academic_term = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):

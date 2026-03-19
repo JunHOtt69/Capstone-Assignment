@@ -1,7 +1,7 @@
 {% extends "base.html" %} 
 {% load static %}  
 
-{% block title %} Manage FAQ Post{% endblock %}
+{% block title %} Create new Announcement{% endblock %}
 
 {% block extra_head %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
@@ -17,19 +17,19 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
             </svg>
         </span>
-        <h3 class="pageTitle">Create New FAQ Post</h3>
+        <h3 class="pageTitle">Create New Announcement</h3>
     </div>
     <form method="post" id="faq">
         {% csrf_token %}
         <section class="faqInfo">
             <div class="titleInputWrapper">
-                <span class="placeholder">Title</span>
-                {{ form.title }}
+                <span class="placeholder">Subject</span>
+                {{ form.subject }}
             </div>
             <div class="faqCategory">
                 <div class="selectInput"  id="categorySelect">
-                    <div class="selectedLabel">
-                        <label for="">Please Choose a category</label>
+                    <div class="selectedLabel announcementType">
+                        <label for="">Please Choose a announcement type</label>
                         <span class="arrow">
                             <svg viewBox="0 0 179 68" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M1.68164 2.48441L91.8043 63.4844L176.682 2.48441"/>
@@ -37,16 +37,16 @@
                         </span>
                     </div>
                     <div class="optionContainer" id="categoryOptions">
-                        {% for value, label in form.fields.category.choices %}
+                        {% for value, label in form.fields.announcement_type.choices %}
                             <div class="option">
-                                <input type="radio" name="category" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.category.value == value %}checked{% endif %}>
+                                <input type="radio" name="announcement_type" id="cat_{{ forloop.counter }}" value="{{value}}" {% if form.announcement_type.value == value %}checked{% endif %}>
                                 
                                 <label for="cat_{{ forloop.counter }}">{{label}}</label>
                             </div>
                         {% endfor %}
                     </div>
                 </div>
-                {{ form.category }}
+                {{ form.announcement_type }}
             </div>
 
             {% if faqInfo %}
@@ -142,18 +142,16 @@
 
                 <div class="formBtnWrapper">
                     {% if faqInfo %}
-                        <button class="delete">Delete</button>
+                    <button class="delete">Delete</button>
                     {% endif %}
-                    
                     <button class="cancel">Discard Changes</button>
                     <button class="save">Save</button>
                 </div>
             </div>
             {{ form.is_ad_visible }}
-            {{ form.is_visitor_visible }}
             {{ form.is_lc_visible }}
             {{ form.is_tp_visible }}
-
+            {{ form.academic_term }}
             
             {% if messages %}
                 <div class="errorMessage">
@@ -232,18 +230,10 @@
 
                     <div class="toggleBtn" id="studentToggle"  data-value = 'false'></div>
                 </div>
-
-                <div class="visibiltyWrapper">
-                    <div class="descWrapper">
-                        <p class="toggleTitle">Visitor Access</p>
-                        <p class="toggleDescription">Toggle this to allow visitors to view this FAQ. Turn it off to hide it from visitor users.</p>
-                    </div>
-
-                    <div class="toggleBtn" id="visitorToggle"  data-value = 'false'></div>
-                </div>
             </div>
         </div>
     </template>
+
 
     <template id="commentSection">
         <p class="configTitle">Comment Section</p>

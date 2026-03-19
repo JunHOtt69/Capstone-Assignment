@@ -34,7 +34,7 @@ import random
 import json
 import base64
 import math
-from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm
+from .forms import UserRowForm, AcademicTermForm, newFAQForm, SupportTicketForm,newAnnouncemeentForm
 from .models import course, academic_term, academic_rules, departments, lecturer_profiles, course_enrollment, admin_profiles, student_profiles, MapNode, MapEdge, faq, FAQReaction, AttendanceSession, AttendanceMark, attachments, SupportTicket, TicketMessage, TicketActivity
 from .decorators import role_required
 from .models import facilities, booking
@@ -1130,11 +1130,6 @@ def point_of_interest_upload(request):
         return JsonResponse({"url": url})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-
-#announcement function
-def announcements(request): 
-    return render(request, "dashboards/announcements.html")
-
 
 #FAQ function
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
@@ -3589,3 +3584,14 @@ def rearrange_missing_class(request):
         'error': 'No available slot found for rearrangement.',
     })
 
+
+
+#announcement function
+def announcements_form(request): 
+    context = {
+        "form": newAnnouncemeentForm(),
+    }
+    return render(request, "announcement/announcement_form.html", context)
+
+def manage_announcements(request): 
+    return render(request, "announcement/manage_announcements.html")

@@ -76,7 +76,8 @@ urlpatterns = [
     path("academic/timetable/rearrange/", views.rearrange_missing_class, name="rearrange_missing_class"),
 
     #announcement function
-    path('announcements/', views.announcements, name='announcements'),
+    path('announcements/new/', views.announcements_form, name='announcements_form'),
+    path('announcements/manage/', views.manage_announcements, name='manage_announcements'),
 
     # Help center
     path('FAQs/', views.viewFAQ, name='viewFAQ'),

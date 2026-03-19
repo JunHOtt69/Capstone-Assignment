@@ -1,5 +1,18 @@
 let isSubmitting = false;
 let initialData = {};
+const fieldSelectors = {
+    title: '#id_title',
+    subject: '#id_subject',
+    content: '#id_content',
+    category: '#id_category',
+    type: '#id_announcement_type',
+    is_active: '#id_is_active',
+    tp: '#is_tp_visible',
+    lc: '#is_lc_visible',
+    ad: '#is_ad_visible',
+    vr: "#id_is_visitor_visible",
+    intake: '#id_academic_term',
+};
 
 document.addEventListener("DOMContentLoaded", async function() {
     const quill = new Quill('#editor', {
@@ -40,52 +53,60 @@ document.addEventListener("DOMContentLoaded", async function() {
     const discardBtn = document.querySelector('.cancel');
     const deleteBtn = document.querySelector('.delete');
 
-    discardBtn.addEventListener('click', (e) => {
-        e.preventDefault(); 
-        
-        const confirmDiscard = confirm("Are you sure you want to discard your changes? All unsaved progress will be lost.");
-        
-        if (confirmDiscard) {
-            window.location.reload();
-        }
-    });
-
-    saveBtn.addEventListener('click', (e) => {
-        contentInput.value = quill.root.innerHTML;
-        const category =  document.querySelector('#id_category').value;
-        
-        isSubmitting = true;
-
-        if (quill.getText().trim().length === 0) {
-            e.preventDefault();
-            isSubmitting = false;
-            alert("The FAQ content cannot be empty!");
-        } 
-        else if(category == ''){
-            e.preventDefault();
-            isSubmitting = false;
-            alert("The FAQ category cannot be empty!");
-        }
-    });
-
-    deleteBtn.onclick = (e) => {
-        e.preventDefault();
-        if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
-
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrfmiddlewaretoken';
-            csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    if(discardBtn){
+        discardBtn.addEventListener('click', (e) => {
+            e.preventDefault(); 
             
-            form.appendChild(csrfInput);
-            document.body.appendChild(form);
+            const confirmDiscard = confirm("Are you sure you want to discard your changes? All unsaved progress will be lost.");
             
-            form.submit();
+            if (confirmDiscard) {
+                window.location.reload();
+            }
+        });
+    }
+    
+
+    if(saveBtn){
+        saveBtn.addEventListener('click', (e) => {
+            contentInput.value = quill.root.innerHTML;
+            const category =  document.querySelector('#id_category').value;
+            
+            isSubmitting = true;
+
+            if (quill.getText().trim().length === 0) {
+                e.preventDefault();
+                isSubmitting = false;
+                alert("The FAQ content cannot be empty!");
+            } 
+            else if(category == ''){
+                e.preventDefault();
+                isSubmitting = false;
+                alert("The FAQ category cannot be empty!");
+            }
+        });
+    }
+
+    if(deleteBtn){
+        deleteBtn.onclick = (e) => {
+            e.preventDefault();
+            if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                
+                form.submit();
+            }
         }
     }
+
 
     const categoryInput = document.getElementById('id_category');
     const selectInput = document.getElementById('categorySelect');
@@ -170,10 +191,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         const buttons = template.querySelectorAll('button');
 
         buttons.forEach(btn => {
-            btn.onclick = (e) => {
-                e.preventDefault();
-                container.dataset.controls = btn.innerText.toLowerCase();
+            if(btn){
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    container.dataset.controls = btn.innerText.toLowerCase();
+                }
             }
+            
         });
 
         const publicToggle = template.querySelector('#public');
@@ -194,16 +218,22 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if(!val) allChecked = false;
             }
         });
-
-        publicToggle.dataset.value = allChecked;
+        
+        if(publicToggle){
+            publicToggle.dataset.value = allChecked;
+        }
 
         function passBooleanValue(newChanges={}){
-            const currentState = {
-                'ad': newChanges.hasOwnProperty('ad') ? newChanges['ad'] : (document.getElementById('adminToggle').dataset.value === 'true'),
-                'lc': newChanges.hasOwnProperty('lc') ? newChanges['lc'] : (document.getElementById('lecturerToggle').dataset.value === 'true'),
-                'tp': newChanges.hasOwnProperty('tp') ? newChanges['tp'] : (document.getElementById('studentToggle').dataset.value === 'true'),
-                'vr': newChanges.hasOwnProperty('vr') ? newChanges['vr'] : (document.getElementById('visitorToggle').dataset.value === 'true'),
-            };
+            const currentState = {};
+            Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
+                const toggle = document.querySelector(toggleId);
+                if (toggle) {
+                    const isChecked = newChanges.hasOwnProperty(key) 
+                        ? newChanges[key] 
+                        : (toggle.dataset.value === 'true' || toggle.dataset.value === true);
+                    currentState[key] = isChecked;
+                }
+            });
 
             Object.entries(roles).forEach(([key, [djangoId, toggleId]]) => {
                 if(newChanges.hasOwnProperty(key)){
@@ -216,13 +246,14 @@ document.addEventListener("DOMContentLoaded", async function() {
             });
 
             const allChecked = Object.values(currentState).every(val => val === true);
-            publicToggle.dataset.value = allChecked;
+            if(publicToggle) publicToggle.dataset.value = allChecked;
 
             const icon = document.querySelector('#visiblity');
             icon.dataset.visible = allChecked;
         }
 
-        publicToggle.onclick = (e) => {
+        if(publicToggle){
+            publicToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = publicToggle.dataset.value !== 'true';
             publicToggle.dataset.value = isNowTrue;
@@ -234,18 +265,20 @@ document.addEventListener("DOMContentLoaded", async function() {
             };
 
             passBooleanValue(fields);
-        }
+        }}
         
-        adminToggle.onclick = (e) => {
+        if(adminToggle){
+            adminToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = adminToggle.dataset.value !== 'true';
             const fields = {
                 'ad': isNowTrue,
             };
             passBooleanValue(fields);
-        }
+        }}
 
-        lecturerToggle.onclick = (e) => {
+        if(lecturerToggle){
+            lecturerToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = lecturerToggle.dataset.value !== 'true';
             const fields = {
@@ -253,9 +286,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             };
 
             passBooleanValue(fields);
-        }
+        }}
         
-        studentToggle.onclick = (e) => {
+        if(studentToggle){
+            studentToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = studentToggle.dataset.value !== 'true';
             const fields = {
@@ -263,9 +297,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             };
 
             passBooleanValue(fields);
-        }
+        }}
 
-        visitorToggle.onclick = (e) => {
+        if(visitorToggle){
+            visitorToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = visitorToggle.dataset.value !== 'true';
             const fields = {
@@ -276,7 +311,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             };
 
             passBooleanValue(fields);
-        }
+        }}
 
         configContent.innerHTML = ``;
         configContent.appendChild(template);
@@ -391,15 +426,13 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function captureInitialState() {
-        initialData = {
-            title: document.querySelector('#id_title').value,
-            content: document.querySelector('#id_content').value,
-            category: document.querySelector('#id_category').value,
-            ad: document.querySelector('#id_is_ad_visible').value,
-            lc: document.querySelector('#id_is_lc_visible').value,
-            tp: document.querySelector('#id_is_tp_visible').value,
-            vr: document.querySelector('#id_is_visitor_visible').value
-        };
+        for(const [key, selector] of Object.entries(fieldSelectors)){
+            const element = document.querySelector(selector);
+    
+            if (element) {
+                initialData[key] = element.value;
+            }
+        }
     }
 
     captureInitialState();
@@ -417,26 +450,17 @@ document.addEventListener('click', (e) => {
 window.addEventListener('beforeunload', (event) => {
     if (isSubmitting) return;
 
-    const currentData = {
-        title: document.querySelector('#id_title').value,
-        content: document.querySelector('#id_content').value,
-        category: document.querySelector('#id_category').value,
-        ad: document.querySelector('#id_is_ad_visible').value,
-        lc: document.querySelector('#id_is_lc_visible').value,
-        tp: document.querySelector('#id_is_tp_visible').value,
-        vr: document.querySelector('#id_is_visitor_visible').value
-    };
+    let currentData = {};
+    for(const [key, selector] of Object.entries(fieldSelectors)){
+        const element = document.querySelector(selector);
+        if (element) {
+            currentData[key] = element.value;
+        }
+    }
 
-    console.log()
-
-    const hasChanged = 
-        currentData.title !== initialData.title ||
-        currentData.content !== initialData.content ||
-        currentData.category !== initialData.category ||
-        currentData.ad !== initialData.ad ||
-        currentData.lc !== initialData.lc ||
-        currentData.vr !== initialData.vr ||
-        currentData.tp !== initialData.tp;
+    const hasChanged = Object.keys(currentData).some(key => {
+        return initialData.hasOwnProperty(key) && currentData[key] !== initialData[key]
+    });
 
     if (hasChanged) {
         event.preventDefault();
