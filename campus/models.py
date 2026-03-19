@@ -153,7 +153,7 @@ class facilities(models.Model):
     facility_id = models.AutoField(primary_key = True)
     facility_name = models.CharField(max_length=100, unique=True)
     type = models.CharField(max_length=20, choices=FACILITY_TYPES)
-    
+
     class Meta:
         db_table = 'facilities'
 
