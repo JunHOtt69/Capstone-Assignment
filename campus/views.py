@@ -2364,16 +2364,14 @@ def facility_status(request):
             status="Approved"
         ).order_by("start_time")
 
-        if not f.is_bookable:
-            status = "Unavailable"
-        elif day_bookings.exists():
-            status = "Booked"
+        if day_bookings.exists():
+            current_status = "Booked"
         else:
-            status = "Available"
+            current_status = "Available"
 
         data.append({
             "facility": f,
-            "status": status,
+            "status": current_status,
             "bookings": day_bookings
         })
 
