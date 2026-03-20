@@ -77,6 +77,7 @@ urlpatterns = [
 
     #announcement function
     path('announcements/new/', views.announcements_form, name='announcements_form'),
+    path('announcements/manage/', views.announcement_manage, name='announcement_manage'),
     path('announcements/', views.announcement_list, name='announcement_list'),
 
     # Help center

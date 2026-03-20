@@ -1,4 +1,6 @@
-{% load static %}<!DOCTYPE html>
+{% load static %}
+{% load chat_extras %}
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -120,20 +122,6 @@
                         {% endif %}
                     {% endfor %}
                 {% endwith %}
-                
-                
-
-                {% comment %} <span>Welcome to Smart Campus Management System</span>
-                <span>@ Capstone Assignment Group 17</span>
-                <span>Annnouncement Placement</span>
-                
-                <span>Welcome to Smart Campus Management System</span>
-                <span>@ Capstone Assignment Group 17</span>
-                <span>Annnouncement Placement</span>
-                
-                <span>Welcome to Smart Campus Management System</span>
-                <span>@ Capstone Assignment Group 17</span>
-                <span>Annnouncement Placement</span> {% endcomment %}
             </div>
         </div>
 
@@ -361,22 +349,24 @@
     <div class="functionG1">
         <span class="title">Quick Actions</span>
         <span class="item"><a href="{% url 'announcement_list' %}">Manage Announcement</a></span>
-        <span class="item"><a href="{% url "announcements_form" %}">Publish Announcement</a></span>
+        {% if user_role == 'admin' %}
+            
+            <span class="item"><a href="{% url 'announcement_manage' %}">View All Announcement</a></span>
+            <span class="item"><a href="{% url "announcements_form" %}">Publish Announcement</a></span>
+        {% endif %}
     </div>
     <div class="functionG2">
         <span class="title">Latest Announcements</span>
         <div class="messageContainer">
-            {% if announcements %}
-                {% for a in announcements %}
-                    <div class="message">
-                        <p class="a_title">{{ a.title }}</p>
-                        <p class="announcement"> {{ a.content }} </p>
-                        <p class="time">{{ a.publish_time }}</p>
-                    </div>
-                {% endfor %}
-            {% else %}
+            {% for a in recent_news %}
+                <div class="message" onclick="window.location.href='{% url 'announcement_list' %}';">
+                    <p class="a_title">{{ a.subject }}</p>
+                    <div class="announcement"> {{ a.content|striptags|truncatechars:150 }} </div>
+                    <p class="time">{{ a.date_published|smart_date }}</p>
+                </div>
+            {% empty %}
                 <span class="empty-state">No recent announcements.</span>
-            {% endif %}
+            {% endfor %}
         </div>
     </div>
 </template>

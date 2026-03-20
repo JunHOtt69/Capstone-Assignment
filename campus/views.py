@@ -2150,7 +2150,7 @@ def extract_and_save_images(instance):
 
 def save_manual_attachment(instance, file_obj):
     pk_value=instance.pk
-    
+
     original_name = file_obj.name
     _, ext = os.path.splitext(original_name)
     
@@ -3672,3 +3672,6 @@ def announcement_list(request):
         "announcements": announcements,
     }
     return render(request, "announcement/announcement_list.html", context)
+
+def announcement_manage(request):
+    return render(request, "announcement/announcement_manage.html")
