@@ -109,11 +109,21 @@
         </div>
         <div class="bannerTicker">
             <div class="banner">
-                <span>Welcome to Smart Campus Management System</span>
-                <span>@ Capstone Assignment Group 17</span>
-                <span>Annnouncement Placement</span>
+                {% with "1234" as range_str %}
+                    {% for i in range_str %}
+                        {% if rolling_banner %}
+                            {{ rolling_banner.content|safe }}
+                        {% else %}
+                            <p>Welcome to Smart Campus Management System</p>
+                            <p>@ Capstone Assignment Group 17</p>
+                            <p>Annnouncement Placement</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
+                
+                
 
-                <span>Welcome to Smart Campus Management System</span>
+                {% comment %} <span>Welcome to Smart Campus Management System</span>
                 <span>@ Capstone Assignment Group 17</span>
                 <span>Annnouncement Placement</span>
                 
@@ -123,7 +133,7 @@
                 
                 <span>Welcome to Smart Campus Management System</span>
                 <span>@ Capstone Assignment Group 17</span>
-                <span>Annnouncement Placement</span>
+                <span>Annnouncement Placement</span> {% endcomment %}
             </div>
         </div>
 

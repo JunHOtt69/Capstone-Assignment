@@ -3,6 +3,8 @@ from barcode import get_barcode
 from barcode.writer import ImageWriter
 import io
 import base64
+from django.utils import timezone
+from .models import announcement, announcementTarget
 
 #returning card ID
 def card_context(request):
@@ -70,3 +72,42 @@ def card_context(request):
         'user_barcode' : barcode_base64 if barcode_base64 else None,
         'extra_info' : extra_info
     }
+
+def announcement_banner(request):
+    user = request.user
+    if not user.is_authenticated:
+        return {"rolling_banner": None}
+
+    recent_banners = announcement.objects.filter(
+        announcement_type='BANNER',
+        is_active=True,
+        date_published__lte=timezone.now()
+    ).order_by('-date_published')
+
+    for banner in recent_banners:
+        target = announcementTarget.objects.filter(announcement=banner).first()
+        if not target: continue
+
+        show_this_one = False
+
+        if hasattr(user, 'admin_profile') and target.is_for_admins:
+            show_this_one = True
+            
+        elif hasattr(user, 'lecturer_profile') and target.is_for_lecturer:
+            show_this_one = True
+            
+        elif hasattr(user, 'student_profile'):
+            if target.is_for_students:
+                show_this_one = True
+
+            elif target.academic_term:
+                student_intake = str(user.student_profile.academic_term.term_id)
+                allowed_intakes = target.academic_term.split(',')
+                if student_intake in allowed_intakes:
+                    show_this_one = True
+
+        if show_this_one:
+            return {
+                "rolling_banner": banner }
+        
+    return {"rolling_banner": None}
