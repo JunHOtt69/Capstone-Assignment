@@ -736,11 +736,13 @@ header li a{
     animation: scroll-flexible 10s linear infinite;
 }
 
-.banner span{
+.banner span,
+.banner p{
     font-size: var(--h4-fontsize);
     white-space: nowrap;
     font-weight: 600;
     text-transform: uppercase;
+    display: inline-block;
 }
 
 .banner span:last-child{

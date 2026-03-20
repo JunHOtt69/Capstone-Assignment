@@ -99,7 +99,7 @@
                 <div></div>
                 <div class="formBtnWrapper">
                     {% if instance %}
-                    <button class="delete">Delete</button>
+                    <button class="deactive">Deactive</button>
                     {% endif %}
                     <button class="cancel">Discard Changes</button>
                     <button class="save">Save</button>
@@ -108,6 +108,7 @@
             {{ form.is_ad_visible }}
             {{ form.is_lc_visible }}
             {{ form.is_tp_visible }}
+            {{ form.is_visitor_visible }}
             {{ form.academic_term }}
             
             {% if messages %}
@@ -159,9 +160,15 @@
             </div>
         </section>
         <section class="contentInput">
-            <div class="textAreaWrapper">
+            {{ form.content }}
+            <div class="textAreaWrapper hide" id="newsInput">
                 <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
-                {{ form.content }}
+            </div>
+            <div class="textAreaWrapper hide" id="bannerInput">
+                <textarea id="bannerText" maxlength="200" placeholder="Enter scrolling banner text..."></textarea>
+                <div class="textCount">
+                    <span id="charCount">200</span> characters remaining
+                </div>
             </div>
         </section>
     </form>
@@ -177,51 +184,43 @@
             isStudentVisible: "{{ targetInfo.is_for_students|yesno:'true,false' }}"
         };
         
-        let quill = null; 
+        const quill= new Quill('#editor', {
+            theme: 'snow',
+            modules: { 
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ]
+            },
+            placeholder: 'Enter announcement content...',
+            formats: ['bold', 'italic', 'underline', 'list']
+        });
+        attachQuillListeners();
+         
+        const bannerTextarea = document.getElementById('bannerText');
+        const charCountDisplay = document.getElementById('charCount');
+        const MAX_CHARS = 200;
 
-        function initializeQuillInHtml(type) {
-            const wrapper = document.querySelector('.textAreaWrapper');
-            const hiddenInput = document.querySelector('#id_content');
+        bannerTextarea.addEventListener('input', function() {
+            const announcement_typeInput = document.getElementById('id_announcement_type');
+            const hiddenContent = document.querySelector('#id_content');
+            if (announcement_typeInput.value === 'BANNER') {
+                hiddenContent.value = this.value;
 
-            let existingHtml = "";
-            if (quill) {
-                existingHtml = quill.root.innerHTML;
-                
-                const oldEditor = document.getElementById('editor');
-                const oldToolbar = wrapper.querySelector('.ql-toolbar');
-                
-                if (oldEditor) oldEditor.remove();
-                if (oldToolbar) oldToolbar.remove();
-                
-                quill = null; 
-            }
+                const remaining = MAX_CHARS - this.value.length;
+                charCountDisplay.innerText = remaining;
 
-            const newEditorDiv = document.createElement('div');
-            newEditorDiv.id = 'editor';
-            newEditorDiv.className = 'editor';
-            wrapper.insertBefore(newEditorDiv, hiddenInput);
-
-            const toolbarOptions = (type === 'BANNER') 
-                ? [['bold', 'italic', 'underline']] 
-                : [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }]];
-
-            quill = new Quill('#editor', {
-                theme: 'snow',
-                modules: { toolbar: toolbarOptions },
-                placeholder: type === 'BANNER' ? 'Enter scrolling banner text...' : 'Enter announcement content...',
-                formats: (type === 'BANNER') ? ['bold', 'italic', 'underline'] : ['bold', 'italic', 'underline', 'list']
-            });
-
-            if (existingHtml) {
-                quill.root.innerHTML = existingHtml;
-                if (type === 'BANNER') {
-                    const length = quill.getLength();
-                    quill.formatText(0, length, 'list', false);
+                if (remaining <= 10) {
+                    charCountDisplay.style.color = "red"; 
+                    charCountDisplay.style.fontWeight = "bold";
+                } else {
+                    charCountDisplay.style.color = "inherit"; 
+                    charCountDisplay.style.fontWeight = "normal";
                 }
             }
+        });
 
-            attachQuillListeners(); 
-        }
+
     </script>
 {% endblock %} 
 
@@ -248,6 +247,14 @@
             <div class="individualControl">
                 <div class="visibiltyWrapper">
                     <div class="descWrapper">
+                        <p class="toggleTitle">Visitor Access</p>
+                        <p class="toggleDescription">Toggle this to allow visitors to view this FAQ. Turn it off to hide it from visitor users.</p>
+                    </div>
+
+                    <div class="toggleBtn" id="visitorToggle"  data-value = 'false'></div>
+                </div>
+                <div class="visibiltyWrapper">
+                    <div class="descWrapper">
                         <p class="toggleTitle">Admin Access</p>
                         <p class="toggleDescription">Toggle this to allow admin to view this FAQ. Turn it off to hide the post from admin users.</p>
                     </div>
@@ -270,7 +277,7 @@
 
                     <div class="toggleBtn" id="studentToggle"  data-value = 'false'></div>
                 </div>
-
+                
                 <div class="visibiltyWrapper" id="intakeWrapper">
                     <div class="intakesWrapper">
                         <p class="toggleTitle">Target Specific Intakes</p>
@@ -298,7 +305,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </template>
