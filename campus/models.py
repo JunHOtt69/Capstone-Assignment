@@ -550,7 +550,7 @@ class announcement(models.Model):
     is_active = models.BooleanField(default=True)
     author = models.ForeignKey(
         'admin_profiles',
-        on_delete= models.SET_NULL,
+        on_delete= models.CASCADE,
         null=True,
         blank=True,
         related_name='authored_ann'
@@ -575,6 +575,7 @@ class announcementTarget(models.Model):
     is_for_students = models.BooleanField(default=True)
     is_for_lecturer = models.BooleanField(default=True)
     is_for_admins = models.BooleanField(default=True)
+    is_visitor_visible = models.BooleanField(default= False)
     academic_term = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):

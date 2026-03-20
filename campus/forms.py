@@ -219,7 +219,8 @@ class newAnnouncemeentForm(forms.ModelForm):
         required=False, 
         widget=forms.HiddenInput(),
     )
-    is_active = forms.BooleanField(
+
+    is_visitor_visible = forms.BooleanField(
         required=False, 
         widget=forms.HiddenInput(),
     )
@@ -231,7 +232,7 @@ class newAnnouncemeentForm(forms.ModelForm):
 
     class Meta:
         model = announcement
-        fields = ['subject', 'content', 'announcement_type', 'is_active']
+        fields = ['subject', 'content', 'announcement_type']
         widgets = {
             'subject': forms.TextInput(attrs={
                 'placeholder': ' ',

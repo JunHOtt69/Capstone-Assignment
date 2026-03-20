@@ -15,6 +15,7 @@ const fieldSelectors = {
     extra_attachments: "#id_extra_attachments"
 };
 
+
 window.attachQuillListeners = function(){
     const hiddenContent = document.querySelector('#id_content').value;
     if (hiddenContent && hiddenContent.trim() !== "") {
@@ -52,17 +53,26 @@ document.addEventListener("DOMContentLoaded", async function() {
     if(saveBtn){
         saveBtn.addEventListener('click', (e) => {
             // e.preventDefault();
-            contentInput.value = quill.root.innerHTML;
+            const contentInput = document.querySelector('#id_content');
             const category =  document.querySelector('#id_category');
             const type = document.querySelector('#id_announcement_type');
-            isSubmitting = true;
+            
 
-            if (quill.getText().trim().length === 0) {
+            if (type && type.value === 'BANNER') {
+                contentInput.value = bannerTextarea.value;
+            } else {
+                contentInput.value = quill.root.innerHTML;
+            }
+            isSubmitting = true;
+            const finalValue = contentInput.value.replace(/<[^>]*>/g, '').trim();
+
+            if (finalValue.length === 0) {
                 e.preventDefault();
                 isSubmitting = false;
 
                 if(category) alert("The FAQ content cannot be empty!");
                 if(type) alert("The announcement content cannot be empty!");
+                return;
             } 
 
             if(category && category.value == ''){
@@ -76,7 +86,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 isSubmitting = false;
                 alert("The announcement type cannot be empty!");
             }
-
+            console.log(isSubmitting);
             // for(const [key, selector] of Object.entries(fieldSelectors)){
             //     const element = document.querySelector(selector);
             //     if (element) {
@@ -127,7 +137,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     const categoryOptions = document.getElementById('categoryOptions');
     const typeOptions = document.getElementById('typeOptions');
     const imageUploadContainer = document.querySelector('.imageUploadContainer');
-    
+    const hiddenContent = document.querySelector('#id_content');
+    const newsInputWrapper = document.getElementById('newsInput');
+    const bannerInputWrapper = document.getElementById('bannerInput');
+    const bannerTextarea = document.getElementById('bannerText');
+
     if(selectedLabel){
         selectedLabel.addEventListener('click', () => {
             const isNowTrue = selectInput.classList.contains('active');
@@ -149,6 +163,31 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
     
+    function toggleInputFields(type) {
+        if (type === 'BANNER') {
+            bannerInputWrapper.classList.remove('hide');
+            newsInputWrapper.classList.add('hide');
+            imageUploadContainer.classList.add('hide');
+            
+            if(hiddenContent.value == "") return;
+            
+            const plainText = hiddenContent.value.replace(/<[^>]*>/g, ''); 
+            bannerTextarea.value = plainText;
+            hiddenContent.value = plainText;
+        } else {
+            newsInputWrapper.classList.remove('hide');
+            bannerInputWrapper.classList.add('hide');
+            imageUploadContainer.classList.remove('hide');
+            
+            if(hiddenContent.value == "") return;
+
+            if (bannerTextarea.value.trim() !== "") {
+                quill.root.innerHTML = `<p>${bannerTextarea.value}</p>`;
+                hiddenContent.value = quill.root.innerHTML;
+            }
+        }
+    }
+    
     if(typeOptions){
         typeOptions.addEventListener('change', (event) => {
             if(event.target.type === 'radio'){
@@ -159,15 +198,10 @@ document.addEventListener("DOMContentLoaded", async function() {
                 displayLabel.innerText = `Type: ${chosenText}`;
                 selectInput.classList.toggle('active', false);
                 
-                announcement_typeInput.value = event.target.value;
-                document.querySelector('.textAreaWrapper').classList.remove('hide');
-                initializeQuillInHtml(event.target.value);
-
-                if (event.target.value === 'BANNER') {
-                    imageUploadContainer.classList.add('hide');
-                } else {
-                    imageUploadContainer.classList.remove('hide');
-                }
+                const selectedValue = event.target.value;
+                announcement_typeInput.value = selectedValue;
+                console.log(announcement_typeInput);
+                toggleInputFields(selectedValue);
             }
         });
     }
@@ -248,6 +282,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         const visitorToggle = template.querySelector('#visitorToggle');
         const termViewInput = template.querySelector('#intakeSelect');
         const intakeOptions = template.querySelector('#intakeOptions');
+        
         const academic_term_input = document.querySelector('#id_academic_term');
         const selectedContainer = template.querySelector('#selectedIntakesContainer');
         let selectedIds = []
@@ -402,12 +437,20 @@ document.addEventListener("DOMContentLoaded", async function() {
             visitorToggle.onclick = (e) => {
             e.preventDefault();
             const isNowTrue = visitorToggle.dataset.value !== 'true';
-            const fields = {
-                'ad': isNowTrue,
-                'lc': isNowTrue,
-                'tp': isNowTrue,
-                'vr': isNowTrue,
-            };
+            let fields;
+
+            if(intakeOptions){
+                fields = {
+                    'vr': isNowTrue,
+                };
+            }else{
+                fields = {
+                    'ad': isNowTrue,
+                    'lc': isNowTrue,
+                    'tp': isNowTrue,
+                    'vr': isNowTrue,
+                };
+            }
 
             passBooleanValue(fields);
         }}

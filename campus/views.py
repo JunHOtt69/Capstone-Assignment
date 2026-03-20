@@ -3625,6 +3625,7 @@ def announcements_form(request, pk=None):
                     'is_for_students': is_for_students,
                     'is_for_lecturer': request.POST.get('is_lc_visible') == 'True',
                     'is_for_admins': request.POST.get('is_ad_visible') == 'True', 
+                    'is_visitor_visible': request.POST.get('is_visitor_visible') == 'True', 
                     'academic_term': intake_ids_raw if not is_for_students else None
                 }
             )

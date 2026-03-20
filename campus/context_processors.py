@@ -75,9 +75,7 @@ def card_context(request):
 
 def announcement_banner(request):
     user = request.user
-    if not user.is_authenticated:
-        return {"rolling_banner": None}
-
+    
     recent_banners = announcement.objects.filter(
         announcement_type='BANNER',
         is_active=True,
@@ -87,8 +85,10 @@ def announcement_banner(request):
     for banner in recent_banners:
         target = announcementTarget.objects.filter(announcement=banner).first()
         if not target: continue
-
         show_this_one = False
+
+        if not user.is_authenticated and target.is_visitor_visible:
+            show_this_one = True
 
         if hasattr(user, 'admin_profile') and target.is_for_admins:
             show_this_one = True
