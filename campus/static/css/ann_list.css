@@ -1,0 +1,217 @@
+main{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.sectionHeader{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    margin-top: 1vw;
+}
+
+.sectionHeader .pageTitle{
+    margin: 0;
+    font-family: "Instrument Serif", serif;
+    letter-spacing: 0.02em;
+    font-size: var(--h2-fontsize);
+}
+
+.sectionHeader .pageSubtitle{
+    font-size: var(--xs-fontsize);
+    color: rgba(var(--black), 0.5);
+}
+
+.announcementPage{
+    width: 100%;
+    height: auto;
+    flex: 1;
+    background:
+        radial-gradient(circle at 8% 5%, rgba(var(--green-yellow), 0.18), transparent 34%),
+        radial-gradient(circle at 92% 16%, rgba(var(--dark-green), 0.08), transparent 30%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 2vw;
+    padding-bottom: 5vw;
+}
+
+.newsWrapper{
+    padding: 0 27vw;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1vw;
+    width: 100%;
+    height: auto;
+}
+
+.news{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    width: 100%;
+    background-color: white;
+    border: 0.1vw solid rgba(var(--gray), 0.7);
+    border-radius: 0.5vw;
+    padding: 0.5vw 1vw;
+}
+
+.news .newsInfoWrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5vw;
+    width: 50%;
+    color: rgba(var(--black), 0.5);
+    font-size: var(--xs-fontsize);
+    margin-bottom: 1vw;
+}
+
+.newsContent p{
+    margin-top: 0;
+    margin-bottom: 0.5vw;
+    text-align: justify;
+
+}
+
+.newsContent ol,
+.newsContent ol li{
+    width: auto;
+    list-style-position: inside !important;
+    font-size: var(--p-fontsize);
+}
+
+.newsContent ol{
+    margin-top: 0;
+    margin-bottom: 0.5vw;
+}
+
+.newsContent ol li[data-list="bullet"]{
+    list-style: disc;
+}
+
+.newsAttachment{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    height: 25vw;
+    overflow: hidden;
+    position: relative;
+    /* background-color: rgba(var(--black), 1); */
+}
+
+.arrow{
+    position: absolute;
+    width: 2vw;
+    height: 2vw;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    font-size: var(--h3-fontsize);
+    top: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color .2s;
+    transform: translateY(-50%);
+    z-index: 3;
+    user-select: none;
+}
+
+.arrow:hover{
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.arrow.left{
+    left: 1vw;
+}
+
+.arrow.right{
+    right: 1vw;
+}
+
+.carousel-window {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    overflow: hidden;
+}
+
+.imgList{
+    width: auto;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 2vw;
+    transition: transform 0.5s ease-in-out;
+    transform: translateX(0);
+    user-select: none;
+}
+
+.imgItem{
+    flex: 0 0 calc(100vw - 27vw * 2 - 2vw );
+    height: 20vw;
+    transition: transform 0.5s, opacity 0.5s;
+    opacity: 0.5;
+    overflow: hidden;
+    transform: scale(0.8); /* Side images are smaller */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.imgItem img{
+    height: 100%;
+    width: auto;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.imgItem.active {
+    opacity: 1;
+    transform: scale(1);
+    z-index: 2;
+}
+
+.carouselIndicators{
+    position: absolute;
+    bottom: 1vw;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3;
+    height: 1vw;
+    width: 100%;
+    gap: 0.5vw;
+}
+
+.carouselIndicators .dot{
+    border-radius: 50%;
+    background-color: rgba(var(--green-yellow), 0.4);
+    filter: brightness(60%);
+    width: 0.5vw;
+    height: 0.5vw;
+    transition: background-color .2s, filter .2s;
+    cursor: pointer;
+    user-select: none;
+}
+
+.carouselIndicators .dot.active{
+    background-color: rgba(var(--dark-green), 1);
+    filter: brightness(100%);
+}

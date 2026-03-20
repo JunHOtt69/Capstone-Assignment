@@ -2149,18 +2149,20 @@ def extract_and_save_images(instance):
         instance.save(update_fields=[field_name])
 
 def save_manual_attachment(instance, file_obj):
+    pk_value=instance.pk
+    
     original_name = file_obj.name
     _, ext = os.path.splitext(original_name)
     
     model_name = instance._meta.model_name
     timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
-    new_filename = f"{model_name}_{instance.id}_{timestamp}{ext}"
+    new_filename = f"{model_name}_{pk_value}_{timestamp}{ext}"
 
     file_obj.name = new_filename
 
     return attachments.objects.create(
         content_type=ContentType.objects.get_for_model(instance),
-        object_id=instance.id,
+        object_id=pk_value,
         file=file_obj
     )
 
@@ -3610,11 +3612,7 @@ def announcements_form(request, pk=None):
 
             files = request.FILES.getlist('extra_attachments')
             for f in files:
-                attachments.objects.create(
-                    content_type=ContentType.objects.get_for_model(ann_obj),
-                    object_id=ann_obj.announcement_id,
-                    file=f
-                )
+                save_manual_attachment(ann_obj, f)
 
             is_for_students = request.POST.get('is_tp_visible') == 'True'
             intake_ids_raw = request.POST.get('academic_term', '')
@@ -3648,4 +3646,29 @@ def announcements_form(request, pk=None):
     return render(request, "announcement/announcement_form.html", context)
 
 def announcement_list(request): 
-    return render(request, "announcement/announcement_list.html")
+    user = request.user
+
+    announcements = announcement.objects.filter(
+        announcement_type="NORMAL",
+        is_active=True,
+    ).prefetch_related('all_attachments').order_by('-date_published')
+
+    if not user.is_authenticated:
+       announcements = announcements.objects.filter(targets__is_visitor_visible=True)
+    elif not user.is_superuser:
+        if hasattr(user, 'admin_profile'):
+            announcements = announcements.objects.filter(targets__is_for_admins=True)
+        elif hasattr(user, 'lecturer_profile'):
+            announcements = announcements.objects.filter(targets__is_for_lecturer=True)
+        elif hasattr(user, 'student_profile'):
+            student_intake = str(user.student_profile.academic_term.term_id)
+
+            announcements = announcements.objects.filter(
+                Q(targets__is_for_lecturer=True) |
+                Q(target__academic_term__icontains=student_intake)
+            ).distinct()
+
+    context = {
+        "announcements": announcements,
+    }
+    return render(request, "announcement/announcement_list.html", context)

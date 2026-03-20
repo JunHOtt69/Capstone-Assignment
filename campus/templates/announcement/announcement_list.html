@@ -1,13 +1,60 @@
 {% extends "base.html" %} 
 {% load static %}  
+{% load chat_extras %}
 {% block title %}Announcements{% endblock %}
 
 {% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/ann_list.css' %}">
 {% endblock %}
 
 {% block content %}
-    <h3>Announcement list is Under construction</h3>
+    <div class="announcementPage">
+        <div class="sectionHeader">
+            <div class="pageTitle">Announcements</div>
+            <div class="pageSubtitle"><p>Stay informed with the latest news, events, and important notices.</p></div>
+        </div>
+        <div class="newsWrapper">
+            {% for news in announcements %}
+            <div class="news">
+                <h3 class="newstitle">{{ news.subject }}</h3>
+                <div class="newsInfoWrapper">
+                    <span>{{ news.author.full_name }}</span>
+                    <span>|</span>
+                    <span>{{ news.date_published|smart_date }}</span>
+                </div>
+                <div class="newsContent">
+                    {{ news.content|safe }}
+                </div>
+                <div class="newsAttachment">
+                    <span class="arrow left">&lt;</span>
+                    <span class="arrow right">&gt;</span>
+                    <div class="carousel-window">
+                        <div class="imgList">
+                            {% for attachment in news.all_attachments.all %}
+                                {% if attachment.extension in "JPG,PNG,JPEG,GIF" %}
+                                    <div class="imgItem">
+                                        <img src="{{ attachment.file.url }}" alt="{{ news.subject }}" class="news-img">
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="carouselIndicators">
+                        {% for attachment in news.all_attachments.all %}
+                            {% if attachment.extension in "JPG,PNG,JPEG,GIF" %}
+                                <span class="dot" data-index="{{ forloop.counter0 }}"></span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p>No news updates available at the moment.</p>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_scripts %}
+    <script src="{% static 'js/ann_list.js' %}"></script>
 {% endblock %} 

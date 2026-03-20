@@ -28,6 +28,7 @@ main{
     cursor: pointer;
 }
 
+.pageTitle,
 .faqPageReturn .pageTitle{
     margin: 0;
 }

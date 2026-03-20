@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             const contentInput = document.querySelector('#id_content');
             const category =  document.querySelector('#id_category');
             const type = document.querySelector('#id_announcement_type');
-            
+            const titleInput = document.querySelector('#id_subject') || document.querySelector('#id_title');
 
             if (type && type.value === 'BANNER') {
                 contentInput.value = bannerTextarea.value;
@@ -65,6 +65,13 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
             isSubmitting = true;
             const finalValue = contentInput.value.replace(/<[^>]*>/g, '').trim();
+
+            if(titleInput){
+                if(titleInput.value == ''){
+                    alert("The title cannot be empty!");
+                    return;
+                }
+            }
 
             if (finalValue.length === 0) {
                 e.preventDefault();
@@ -86,7 +93,8 @@ document.addEventListener("DOMContentLoaded", async function() {
                 isSubmitting = false;
                 alert("The announcement type cannot be empty!");
             }
-            console.log(isSubmitting);
+            const loading = document.querySelector('.loading');
+            loading.classList.add('active');
             // for(const [key, selector] of Object.entries(fieldSelectors)){
             //     const element = document.querySelector(selector);
             //     if (element) {
