@@ -198,13 +198,11 @@
         <div class="functionG1">
             <span class="title">Knowledge Managemenet</span>
             <span class="item"><a href="{% url "viewFAQ" %}">Manage FAQ</a></span>
-            {% comment %} <span class="item"><a href="{% url "config_bot" %}">Config Chatbot</a></span> {% endcomment %}
         </div>
 
         <div class="functionG2">
             <span class="title">System Support</span>
             <span class="item"><a href="{% url "feedbacks" %}">Support Tickets</a></span>
-            {% comment %} <span class="item"><a href="{% url "system_log" %}">System Logs</a></span> {% endcomment %}
         </div>
         {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
@@ -214,7 +212,6 @@
 
         <div class="functionG2">
             <span class="title">Interactive Support</span>
-            {% comment %} <span class="item"><a href="{% url 'smart_assistant' %}">Campus AI Assistant</a></span> {% endcomment %}
             <span class="item"><a href="{% url "submit_feedback" %}">Submit Ticket</a></span>
             <span class="item"><a href="{% url "feedbacks" %}">My Tickets</a></span>
         </div>
@@ -348,10 +345,10 @@
 <template id="i-Announcements-dropdown">
     <div class="functionG1">
         <span class="title">Quick Actions</span>
-        <span class="item"><a href="{% url 'announcement_list' %}">Manage Announcement</a></span>
+        <span class="item"><a href="{% url 'announcement_list' %}">View All Announcement</a></span>
         {% if user_role == 'admin' %}
             
-            <span class="item"><a href="{% url 'announcement_manage' %}">View All Announcement</a></span>
+            <span class="item"><a href="{% url 'announcement_manage' %}">Manage Announcement</a></span>
             <span class="item"><a href="{% url "announcements_form" %}">Publish Announcement</a></span>
         {% endif %}
     </div>
@@ -376,14 +373,13 @@
         <div class="functionG1">
             <span class="title">Quick Actions</span>
             <span class="item"><a href="{% url 'create_user_manually' %}">Add New User</a></span>
-            <span class="item"><a href="">Sytem Logs</a></span>
-            <span class="item"><a href="">Academic Management</a></span>
+            <span class="item"><a href="{% url 'academic_management' %}">Academic Management</a></span>
         </div>
         <div class="functionG2">
             <span class="title">Service Actions</span>
-            <span class="item"><a href="">Reply Feedback Ticket</a></span>
-            <span class="item"><a href="">Update Announcement</a></span>
-            <span class="item"><a href="">Manage FAQ Content</a></span>
+            <span class="item"><a href="{% url "feedbacks" %}">Reply Feedback Ticket</a></span>
+            <span class="item"><a href="{% url 'announcement_manage' %}">Manage Announcement</a></span>
+            <span class="item"><a href="{% url "viewFAQ" %}">Manage FAQ Content</a></span>
             <span class="item"><a href="">Timetable Scheduling</a></span>
         </div>
     {% elif user_role == 'student' or user_role == 'lecturer' %}
@@ -398,7 +394,7 @@
             <span class="item"><a href="">Campus Map</a></span>
             <span class="item"><a href="">Facility Availability</a></span>
             <span class="item"><a href="">My Profile</a></span>
-            <span class="item"><a href="">IT Support</a></span>
+            <span class="item"><a href="{% url "submit_feedback" %}">IT Support</a></span>
         </div>
         <div class="functionG2">
             <span class="title">Today's Class</span>

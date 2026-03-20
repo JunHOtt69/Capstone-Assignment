@@ -3654,18 +3654,18 @@ def announcement_list(request):
     ).prefetch_related('all_attachments').order_by('-date_published')
 
     if not user.is_authenticated:
-       announcements = announcements.objects.filter(targets__is_visitor_visible=True)
+       announcements = announcements.filter(targets__is_visitor_visible=True)
     elif not user.is_superuser:
         if hasattr(user, 'admin_profile'):
-            announcements = announcements.objects.filter(targets__is_for_admins=True)
+            announcements = announcements.filter(targets__is_for_admins=True)
         elif hasattr(user, 'lecturer_profile'):
-            announcements = announcements.objects.filter(targets__is_for_lecturer=True)
+            announcements = announcements.filter(targets__is_for_lecturer=True)
         elif hasattr(user, 'student_profile'):
-            student_intake = str(user.student_profile.academic_term.term_id)
+            student_intake = str(user.course_enrollment.term.term_id)
 
-            announcements = announcements.objects.filter(
+            announcements = announcements.filter(
                 Q(targets__is_for_lecturer=True) |
-                Q(target__academic_term__icontains=student_intake)
+                Q(targets__academic_term__icontains=student_intake)
             ).distinct()
 
     context = {
