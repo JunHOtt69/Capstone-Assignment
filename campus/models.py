@@ -62,12 +62,16 @@ class admin_profiles(models.Model):
     
     class Meta:
         db_table = 'admin_profiles'
-    
-    def __str__(self):
+
+    @property
+    def full_name(self):
         full_name = self.user.get_full_name().strip()
         if full_name:
             return full_name
         return self.ad_id
+    
+    def __str__(self):
+        return self.full_name
 
 class class_session(models.Model):
     STATUS_CHOICES = [
@@ -234,6 +238,9 @@ class SubjectComponent(models.Model):
     total_required_hours = models.IntegerField(default=0)
     class_type = models.CharField(max_length=20, choices=CLASS_TYPE_CHOICES, default='Lecture')
 
+    class Meta:
+        db_table = 'campus_subjectcomponent'
+
     def __str__(self):
         return f"{self.subject.subject_code}-{self.class_type}"
     
@@ -249,13 +256,19 @@ class MapNode(models.Model):
     x = models.IntegerField()
     y = models.IntegerField()
 
+    class Meta:
+        db_table = 'campus_mapnode'
+
     def __str__(self):
         return f"{self.node_id} - {self.name if self.name else 'Pathway'}"
 
 class MapEdge(models.Model):
     from_node = models.ForeignKey(MapNode, related_name='edges_from', on_delete=models.CASCADE)
     to_node = models.ForeignKey(MapNode, related_name='edges_to', on_delete=models.CASCADE)
-    
+
+    class Meta:
+        db_table = 'campus_mapedge'
+
     def __str__(self):
         return f"{self.from_node.node_id} to {self.to_node.node_id}"
     
@@ -290,6 +303,9 @@ class faq(models.Model):
     n_dislikes = models.PositiveIntegerField(default=0)
     slug = models.SlugField(unique=True, blank=True)
 
+    class Meta:
+        db_table = 'campus_faq'
+
     def save(self, *args, **kwargs):
         # Generate slug if it doesn't exist
         if not self.slug:
@@ -313,6 +329,7 @@ class FAQReaction(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = 'campus_faqreaction'
         unique_together = ('faq', 'user')
 
     def __str__(self):
@@ -324,6 +341,9 @@ class attachments(models.Model):
     object_id = models.PositiveIntegerField()
     file = models.FileField(upload_to='attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'campus_attachments'
 
     @property
     def filename(self):
@@ -360,6 +380,9 @@ class AttendanceSession(models.Model):
     expires_at = models.DateTimeField()
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        db_table = 'campus_AttendanceSession'
+
     def __str__(self):
         return f"OTP {self.otp} (active={self.is_active})"
 
@@ -374,6 +397,7 @@ class AttendanceMark(models.Model):
     marked_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
+        db_table = 'campus_attendanceMark'
         unique_together = ("session", "student")
 
     def __str__(self):
@@ -455,6 +479,9 @@ class SupportTicket(models.Model):
     def is_close_requested(self):
         return self.activities.filter(action="closure_request").exists()
 
+    class Meta:
+        db_table = 'campus_supportticket'
+
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -464,6 +491,9 @@ class TicketMessage(models.Model):
     is_admin_reply = models.BooleanField(default=False)
     
     all_attachments = GenericRelation(attachments)
+
+    class Meta:
+        db_table = 'campus_ticketmessage'
 
     @property 
     def sender_name(self):
@@ -486,6 +516,7 @@ class TicketActivity(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = 'campus_ticketactivity'
         ordering = ['-timestamp']
 
     @property
@@ -561,6 +592,11 @@ class announcement(models.Model):
         choices=ANNOUNCEMENT_TYPES, 
         default='NORMAL'
     )
+    
+    all_attachments = GenericRelation('attachments')
+
+    class Meta:
+        db_table = 'campus_announcement'
 
     def __str__(self):
         return self.subject
@@ -577,6 +613,9 @@ class announcementTarget(models.Model):
     is_for_admins = models.BooleanField(default=True)
     is_visitor_visible = models.BooleanField(default= False)
     academic_term = models.CharField(max_length=50, blank=True, null=True)
+    
+    class Meta:
+        db_table = 'campus_announcementTarget'
 
     def __str__(self):
         return f"Target for {self.announcement.subject}: {self.user_group}"

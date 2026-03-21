@@ -82,6 +82,16 @@ def announcement_banner(request):
         date_published__lte=timezone.now()
     ).order_by('-date_published')
 
+    recent_news = announcement.objects.filter(
+        announcement_type='NORMAL',
+        is_active=True,
+        date_published__lte=timezone.now()
+    ).only(
+        'subject', 
+        'content', 
+        'date_published'
+    ).order_by('-date_published')[:2]
+
     for banner in recent_banners:
         target = announcementTarget.objects.filter(announcement=banner).first()
         if not target: continue
@@ -108,6 +118,7 @@ def announcement_banner(request):
 
         if show_this_one:
             return {
-                "rolling_banner": banner }
+                "recent_news": recent_news,
+                "rolling_banner": banner, }
         
-    return {"rolling_banner": None}
+    return {"recent_news": recent_news, "rolling_banner": None}

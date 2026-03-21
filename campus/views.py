@@ -2149,18 +2149,20 @@ def extract_and_save_images(instance):
         instance.save(update_fields=[field_name])
 
 def save_manual_attachment(instance, file_obj):
+    pk_value=instance.pk
+
     original_name = file_obj.name
     _, ext = os.path.splitext(original_name)
     
     model_name = instance._meta.model_name
     timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
-    new_filename = f"{model_name}_{instance.id}_{timestamp}{ext}"
+    new_filename = f"{model_name}_{pk_value}_{timestamp}{ext}"
 
     file_obj.name = new_filename
 
     return attachments.objects.create(
         content_type=ContentType.objects.get_for_model(instance),
-        object_id=instance.id,
+        object_id=pk_value,
         file=file_obj
     )
 
@@ -3629,11 +3631,7 @@ def announcements_form(request, pk=None):
 
             files = request.FILES.getlist('extra_attachments')
             for f in files:
-                attachments.objects.create(
-                    content_type=ContentType.objects.get_for_model(ann_obj),
-                    object_id=ann_obj.announcement_id,
-                    file=f
-                )
+                save_manual_attachment(ann_obj, f)
 
             is_for_students = request.POST.get('is_tp_visible') == 'True'
             intake_ids_raw = request.POST.get('academic_term', '')
@@ -3667,4 +3665,78 @@ def announcements_form(request, pk=None):
     return render(request, "announcement/announcement_form.html", context)
 
 def announcement_list(request): 
-    return render(request, "announcement/announcement_list.html")
+    user = request.user
+
+    announcements = announcement.objects.filter(
+        announcement_type="NORMAL",
+        is_active=True,
+    ).prefetch_related('all_attachments').order_by('-date_published')
+
+    if not user.is_authenticated:
+       announcements = announcements.filter(targets__is_visitor_visible=True)
+    elif not user.is_superuser:
+        if hasattr(user, 'admin_profile'):
+            announcements = announcements.filter(targets__is_for_admins=True)
+        elif hasattr(user, 'lecturer_profile'):
+            announcements = announcements.filter(targets__is_for_lecturer=True)
+        elif hasattr(user, 'student_profile'):
+            student_intake = str(user.course_enrollment.term.term_id)
+
+            announcements = announcements.filter(
+                Q(targets__is_for_lecturer=True) |
+                Q(targets__academic_term__icontains=student_intake)
+            ).distinct()
+
+    context = {
+        "announcements": announcements,
+    }
+    return render(request, "announcement/announcement_list.html", context)
+
+@role_required(allowed_roles=['admin'])
+@transaction.atomic
+def announcement_manage(request):
+    news_qs = announcement.objects.filter(announcement_type='NORMAL').order_by('-date_published')
+    banner_qs = announcement.objects.filter(announcement_type='BANNER').order_by('-date_published')
+
+    try:
+        news_page = int(request.GET.get('news_page', 1))
+        banner_page = int(request.GET.get('banner_page', 1))
+    except (ValueError, TypeError):
+        news_page = 1
+        banner_page = 1
+
+    limit = 9
+
+    news_total = news_qs.count()
+    max_news_pages = max(1, math.ceil(news_total / limit))
+    if news_page > max_news_pages: news_page = max_news_pages
+    
+    news_start = (news_page - 1) * limit
+    news_list = news_qs[news_start : news_start + limit]
+
+    banner_total = banner_qs.count()
+    max_banner_pages = max(1, math.ceil(banner_total / limit))
+    if banner_page > max_banner_pages: banner_page = max_banner_pages
+    
+    banner_start = (banner_page - 1) * limit
+    banner_list = banner_qs[banner_start : banner_start + limit]
+
+    context = {
+        'news_list': news_list,
+        'banner_list': banner_list,
+        'current_news_page': news_page,
+        'max_news_pages': max_news_pages,
+        'current_banner_page': banner_page,
+        'max_banner_pages': max_banner_pages,
+        'show_pagination': True 
+    }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        target = request.GET.get('target')
+        
+        if target == 'news':
+            return render(request, 'partials/announcement_list_partial.html', context)
+        elif target == 'banner':
+            return render(request, 'partials/banner_list_partial.html', context)
+        
+    return render(request, "announcement/announcement_manage.html", context)

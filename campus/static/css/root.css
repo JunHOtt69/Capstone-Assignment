@@ -528,31 +528,13 @@ p{
     position: relative;
 }
 
-.dropDownContentWrapper .messageContainer .message::after{
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 0 solid rgba(var(--green-yellow), 0);
-    top: 0;
-    left:0;
-    transform: scale(1.05, 1.1);
-    box-shadow: 0 0 0 rgba(var(--green-yellow), 0);
-    transition: box-shadow 0.2s, border 0.2s; 
-}
-
-.dropDownContentWrapper .messageContainer .message:hover::after{
-    border: 0.01vw solid rgba(var(--green-yellow), 0.3);
-    box-shadow: 0 0 0.5vw rgba(var(--green-yellow), 0.4);
-}
-
 .dropDownContentWrapper .messageContainer .message p{
     color: rgba(var(--black), 1);
 }
 
 .dropDownContentWrapper .messageContainer .message .time{
     width: max-content;
-    max-width: 5vw;
+    max-width: 7vw;
     flex-shrink: 0;
     background-color: transparent;
     color: rgba(var(--black), 0.7);
@@ -576,11 +558,23 @@ p{
 }
 
 .message .announcement{
+    display: -webkit-box;
     white-space: normal;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     font-size: calc(var(--xs-fontsize) - 0.1vw);
+    line-height: 1.4;
+}
+
+.message .announcement p {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.message .announcement p + p::before {
+    content: " ";
 }
 
 .navCurtain{

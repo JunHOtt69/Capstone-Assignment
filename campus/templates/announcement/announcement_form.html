@@ -10,15 +10,15 @@
 
 {% block content %}
 <div class="faqPage">
-    <div class="faqPageReturn">
-        {% comment %} <span class="returnIcon" onclick="location.href='/FAQs/{{ faqInfo.slug }}';">
+    <div class="faqPageReturn" >
+        <span class="returnIcon" onclick="location.href='/announcements/';">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
             </svg>
-        </span> {% endcomment %}
+        </span> 
         <h3 class="pageTitle">{% if instance %}Edit Announcement{% else %}Create new Announcement{% endif %}</h3>
     </div>
-    <form method="post" id="faq">
+    <form method="post" id="faq" enctype="multipart/form-data">
         {% csrf_token %}
         <section class="faqInfo">
             <div class="titleInputWrapper">
