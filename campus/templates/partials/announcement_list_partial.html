@@ -1,7 +1,7 @@
 {% for a in news_list %}
     <div class="newsRow">
         <div class="newsInfo">
-            <span class="subject">{{ a.subject }}</span>
+            <p class="subject">{{ a.subject }}</p>
             <span class="date">{{ a.date_published|date:"d M Y" }}</span>
         </div>
         <div class="actions">
