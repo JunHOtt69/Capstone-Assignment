@@ -2723,7 +2723,7 @@ def get_timetable_data(request):
         term=term_obj,
         date__gte=monday,
         date__lte=friday
-    ).select_related('session', 'session__facility', 'subject', 'lecturer').order_by('date', 'session__start_time')
+    ).select_related('session', 'session__facility', 'subject_component', 'subject_component__subject', 'lecturer').order_by('date', 'session__start_time')
 
     # Filter to only subjects in the selected semester
     semester_subject_ids = set(
@@ -2732,10 +2732,10 @@ def get_timetable_data(request):
             recommended_semester=target_semester
         ).values_list('subject_id', flat=True)
     )
-    sessions_qs = [s for s in sessions_qs if s.subject_id in semester_subject_ids]
+    sessions_qs = [s for s in sessions_qs if s.subject_component.subject_id in semester_subject_ids]
 
     # Pre-fetch SubjectComponent types for all subjects in this week
-    subject_ids = set(s.subject_id for s in sessions_qs)
+    subject_ids = set(s.subject_component.subject_id for s in sessions_qs)
     comp_map = {}
     for comp in SubjectComponent.objects.filter(subject_id__in=subject_ids):
         comp_map.setdefault(comp.subject_id, []).append(comp.class_type)
@@ -2743,14 +2743,14 @@ def get_timetable_data(request):
     # Pre-compute per-subject session dates (sorted) for Lecture/Tutorial disambiguation
     subj_dates = {}
     for cs in sessions_qs:
-        subj_dates.setdefault(cs.subject_id, []).append((cs.date, cs.id))
+        subj_dates.setdefault(cs.subject_component.subject_id, []).append((cs.date, cs.id))
     for sid in subj_dates:
         subj_dates[sid].sort()
 
     timetable = []
     for cs in sessions_qs:
         fac_type = cs.session.facility.type
-        components = comp_map.get(cs.subject_id, [])
+        components = comp_map.get(cs.subject_component.subject_id, [])
         # Facility rules: Lab→Lab, Auditorium→Lecture, Classroom→Tutorial/Lecture
         if fac_type == 'Lab':
             ct = 'Lab'
@@ -2759,7 +2759,7 @@ def get_timetable_data(request):
         elif fac_type == 'Classroom':
             if 'Tutorial' in components and 'Lecture' in components:
                 # Both exist — first session of the week is Lecture, rest Tutorial
-                dates_for_subj = subj_dates.get(cs.subject_id, [])
+                dates_for_subj = subj_dates.get(cs.subject_component.subject_id, [])
                 first_id = dates_for_subj[0][1] if dates_for_subj else None
                 ct = 'Lecture' if cs.id == first_id else 'Tutorial'
             elif 'Tutorial' in components:
@@ -2776,8 +2776,8 @@ def get_timetable_data(request):
             'day_name': DAY_NAMES.get(cs.session.day_of_week, ''),
             'start_time': cs.session.start_time.strftime('%H:%M'),
             'end_time': cs.session.end_time.strftime('%H:%M'),
-            'subject_code': cs.subject.subject_code,
-            'subject_name': cs.subject.subject_name,
+            'subject_code': cs.subject_component.subject.subject_code,
+            'subject_name': cs.subject_component.subject.subject_name,
             'class_type': ct,
             'lecturer': cs.lecturer.get_full_name(),
             'facility': cs.session.facility.facility_name,
@@ -2950,12 +2950,19 @@ def generate_timetable(request):
             for comp in components:
                 items_to_schedule.append({
                     'subject': cs_entry.subject,
+                    'component': comp,
                     'class_type': comp.class_type,
                     'hours_per_class': comp.hours_per_class,
                 })
         else:
+            default_comp, _ = SubjectComponent.objects.get_or_create(
+                subject=cs_entry.subject,
+                class_type='Lecture',
+                defaults={'hours_per_class': 2, 'total_required_hours': 0}
+            )
             items_to_schedule.append({
                 'subject': cs_entry.subject,
+                'component': default_comp,
                 'class_type': 'Lecture',
                 'hours_per_class': 2,
             })
@@ -2989,7 +2996,7 @@ def generate_timetable(request):
         date__gte=week_monday,
         date__lt=week_monday + timedelta(days=5),
         status='scheduled'
-    ).select_related('session')
+    ).select_related('session', 'subject_component')
 
     occupied_intake = set()
     occupied_lecturer = set()
@@ -3011,7 +3018,7 @@ def generate_timetable(request):
         lecturer_week_hours[ex.lecturer_id] = lecturer_week_hours.get(ex.lecturer_id, 0) + hrs
         # Seed scoring state
         assignments.append({
-            'subj_id': ex.subject_id,
+            'subj_id': ex.subject_component.subject_id,
             'day_ord': d_ord,
             'slot_idx': _slot_index(st),
             'facility_id': ex.session.facility_id,
@@ -3105,7 +3112,7 @@ def generate_timetable(request):
 
             new_cs = class_session.objects.create(
                 session=best_sess,
-                subject=subj,
+                subject_component=item['component'],
                 lecturer=assigned_lecturer,
                 term=term_obj,
                 date=best_date,
@@ -3172,21 +3179,21 @@ def generate_timetable(request):
                     # Score before swap
                     old_i = _score_candidate(
                         day_i, slot_i, sess_i.facility, 'Lab' if i_needs == 'Lab' else 'Lecture',
-                        cs_i.subject_id, assignments, day_load, facility_usage, num_items
+                        cs_i.subject_component.subject_id, assignments, day_load, facility_usage, num_items
                     )
                     old_j = _score_candidate(
                         day_i, slot_i, sess_j.facility, 'Lab' if j_needs == 'Lab' else 'Lecture',
-                        cs_j.subject_id, assignments, day_load, facility_usage, num_items
+                        cs_j.subject_component.subject_id, assignments, day_load, facility_usage, num_items
                     )
 
                     # Score after swap
                     new_i = _score_candidate(
                         day_i, slot_i, sess_j.facility, 'Lab' if i_needs == 'Lab' else 'Lecture',
-                        cs_i.subject_id, assignments, day_load, facility_usage, num_items
+                        cs_i.subject_component.subject_id, assignments, day_load, facility_usage, num_items
                     )
                     new_j = _score_candidate(
                         day_i, slot_i, sess_i.facility, 'Lab' if j_needs == 'Lab' else 'Lecture',
-                        cs_j.subject_id, assignments, day_load, facility_usage, num_items
+                        cs_j.subject_component.subject_id, assignments, day_load, facility_usage, num_items
                     )
 
                     if (new_i + new_j) > (old_i + old_j):
@@ -3243,7 +3250,7 @@ def delete_week_timetable(request):
         date__gte=monday,
         date__lte=friday,
         status='scheduled',
-        subject_id__in=semester_subject_ids
+        subject_component__subject_id__in=semester_subject_ids
     ).delete()
 
     return JsonResponse({
@@ -3286,8 +3293,8 @@ def save_preference(request):
         date__gte=monday,
         date__lte=friday,
         status='scheduled',
-        subject_id__in=semester_subject_ids
-    ).select_related('session', 'subject')
+        subject_component__subject_id__in=semester_subject_ids
+    ).select_related('session', 'subject_component', 'subject_component__subject')
 
     if not current_classes.exists():
         return JsonResponse({'error': 'No scheduled classes found for this week.'}, status=400)
@@ -3302,7 +3309,7 @@ def save_preference(request):
         for cs in current_classes:
             timetable_preference.objects.create(
                 term=term_obj,
-                subject=cs.subject,
+                subject=cs.subject_component.subject,
                 lecturer=cs.lecturer,
                 session=cs.session,
                 is_active=True
@@ -3372,7 +3379,7 @@ def replicate_preference(request):
                 date__gte=target_monday,
                 date__lte=target_friday,
                 status='scheduled',
-                subject_id__in=semester_subject_ids
+                subject_component__subject_id__in=semester_subject_ids
             ).count()
             if existing_count > 0:
                 weeks_with_errors.append({'week': target_week_str, 'reason': 'Already has scheduled classes'})
@@ -3409,9 +3416,13 @@ def replicate_preference(request):
                     })
                     continue
 
+                sc = SubjectComponent.objects.filter(
+                    subject=pref.subject,
+                    class_type='Lab' if pref.session.facility.type == 'Lab' else 'Lecture'
+                ).first() or SubjectComponent.objects.filter(subject=pref.subject).first()
                 class_session.objects.create(
                     session=pref.session,
-                    subject=pref.subject,
+                    subject_component=sc,
                     lecturer=pref.lecturer,
                     term=term_obj,
                     date=target_date,
@@ -3497,7 +3508,7 @@ def get_missing_classes(request):
     missing = class_session.objects.filter(
         term=term_obj,
         status='cancelled'
-    ).select_related('session', 'session__facility', 'subject', 'lecturer')
+    ).select_related('session', 'session__facility', 'subject_component', 'subject_component__subject', 'lecturer')
 
     result = []
     for cs in missing:
@@ -3505,8 +3516,8 @@ def get_missing_classes(request):
             'id': cs.id,
             'date': cs.date.isoformat(),
             'day': cs.session.day_of_week,
-            'subject_code': cs.subject.subject_code,
-            'subject_name': cs.subject.subject_name,
+            'subject_code': cs.subject_component.subject.subject_code,
+            'subject_name': cs.subject_component.subject.subject_name,
             'lecturer': cs.lecturer.get_full_name(),
             'start_time': cs.session.start_time.strftime('%H:%M'),
             'end_time': cs.session.end_time.strftime('%H:%M'),
@@ -3528,7 +3539,7 @@ def rearrange_missing_class(request):
     cs_obj = get_object_or_404(class_session, id=class_session_id, status='cancelled')
 
     term_obj = cs_obj.term
-    subj = cs_obj.subject
+    subj = cs_obj.subject_component.subject
     lecturer_user = cs_obj.lecturer
 
     # Search within the same week first, then nearby weeks
