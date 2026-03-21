@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
     replicateBtn.addEventListener('click', () => {
         if (!termStart || !termEnd) { showInfo('Please select a term first.', 'warning'); return; }
         // Build week list
-        replicateWeekSelect.innerHTML = '<option value="">— Select a week —</option>';
+        replicateWeekSelect.innerHTML = '';
         const firstMonday = getMondayOfWeek(termStart);
         const lastMonday  = getMondayOfWeek(termEnd);
         let mon = firstMonday;
@@ -401,25 +401,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     confirmReplicateBtn.addEventListener('click', function () {
         const termId = selectedTermId;
-        const targetMonday = replicateWeekSelect.value;
-        if (!termId || !targetMonday) { showInfo('Please select a target week.', 'warning'); return; }
+        const selectedWeeks = Array.from(replicateWeekSelect.selectedOptions).map(o => o.value);
+        if (!termId || selectedWeeks.length === 0) { showInfo('Please select at least one target week.', 'warning'); return; }
 
         fetch('/academic/timetable/replicate/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
-            body: JSON.stringify({ term_id: termId, target_week: targetMonday, semester: selectedSemester })
+            body: JSON.stringify({ term_id: termId, target_weeks: selectedWeeks, semester: selectedSemester })
         })
         .then(r => r.json())
         .then(data => {
             replicateModal.style.display = 'none';
             if (data.error) { showInfo(data.error, 'error'); return; }
-            let msg = `Replicated ${data.created} session(s).`;
+            let msg = `Replicated ${data.created} session(s) across ${data.weeks_processed} week(s).`;
             if (data.skipped_classes && data.skipped_classes.length > 0) {
                 msg += ` ${data.skipped_classes.length} class(es) skipped.`;
             }
+            if (data.weeks_with_errors && data.weeks_with_errors.length > 0) {
+                msg += ` ${data.weeks_with_errors.length} week(s) had issues.`;
+            }
             showInfo(msg, 'success');
-            // Navigate to replicated week
-            currentWeekMonday = targetMonday;
             updateWeekNav();
             loadTimetable();
         })

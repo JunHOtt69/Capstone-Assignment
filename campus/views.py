@@ -3314,24 +3314,26 @@ def save_preference(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def replicate_preference(request):
-    """Replicate preference to a target week."""
+    """Replicate preference to one or more target weeks."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     term_id = data.get('term_id')
-    target_week_str = data.get('target_week')  # YYYY-MM-DD (Monday)
+    target_weeks = data.get('target_weeks', [])  # list of YYYY-MM-DD (Monday)
+    # Backward compat: accept single target_week too
+    if not target_weeks:
+        single = data.get('target_week')
+        if single:
+            target_weeks = [single]
     semester_param = data.get('semester')
+
+    if not target_weeks:
+        return JsonResponse({'error': 'No target weeks provided.'}, status=400)
 
     term_obj = get_object_or_404(academic_term, term_id=term_id)
     target_semester = int(semester_param) if semester_param else term_obj.current_semester
-    target_monday = parse_date(target_week_str)
-    if target_monday is None:
-        return JsonResponse({'error': 'Invalid date'}, status=400)
-
-    if not _is_teaching_date(term_obj, target_monday):
-        return JsonResponse({'error': 'Target week is outside the teaching period.'}, status=400)
 
     # Only replicate preferences for subjects in the selected semester
     semester_subject_ids = set(
@@ -3347,67 +3349,84 @@ def replicate_preference(request):
     if not prefs.exists():
         return JsonResponse({'error': 'No active preference found for this semester. Please save a preference first.'}, status=400)
 
-    # Check for existing classes in target week for this semester
-    target_friday = target_monday + timedelta(days=4)
-    existing_count = class_session.objects.filter(
-        term=term_obj,
-        date__gte=target_monday,
-        date__lte=target_friday,
-        status='scheduled',
-        subject_id__in=semester_subject_ids
-    ).count()
-    if existing_count > 0:
-        return JsonResponse({'error': 'Target week already has scheduled classes for this semester.'}, status=400)
-
-    # Get skipped dates for target week
-    skipped_dates = set(
-        skipped_date.objects.filter(
-            term=term_obj,
-            date__gte=target_monday,
-            date__lte=target_friday
-        ).values_list('date', flat=True)
-    )
-
-    created = 0
-    skipped_classes = []
+    total_created = 0
+    all_skipped_classes = []
+    weeks_with_errors = []
+    weeks_processed = 0
 
     with transaction.atomic():
-        for pref in prefs:
-            day_offset = _day_code_to_weekday_offset(pref.session.day_of_week)
-            target_date = target_monday + timedelta(days=day_offset)
-
-            if target_date in skipped_dates:
-                skipped_classes.append({
-                    'subject': pref.subject.subject_code,
-                    'day': DAY_NAMES.get(pref.session.day_of_week, ''),
-                    'date': target_date.isoformat(),
-                    'reason': 'Skipped date / Public holiday',
-                })
+        for target_week_str in target_weeks:
+            target_monday = parse_date(target_week_str)
+            if target_monday is None:
+                weeks_with_errors.append({'week': target_week_str, 'reason': 'Invalid date'})
                 continue
 
-            if not _is_teaching_date(term_obj, target_date):
-                skipped_classes.append({
-                    'subject': pref.subject.subject_code,
-                    'day': DAY_NAMES.get(pref.session.day_of_week, ''),
-                    'date': target_date.isoformat(),
-                    'reason': 'Outside teaching period',
-                })
+            if not _is_teaching_date(term_obj, target_monday):
+                weeks_with_errors.append({'week': target_week_str, 'reason': 'Outside teaching period'})
                 continue
 
-            class_session.objects.create(
-                session=pref.session,
-                subject=pref.subject,
-                lecturer=pref.lecturer,
+            # Check for existing classes in target week for this semester
+            target_friday = target_monday + timedelta(days=4)
+            existing_count = class_session.objects.filter(
                 term=term_obj,
-                date=target_date,
-                status='scheduled'
+                date__gte=target_monday,
+                date__lte=target_friday,
+                status='scheduled',
+                subject_id__in=semester_subject_ids
+            ).count()
+            if existing_count > 0:
+                weeks_with_errors.append({'week': target_week_str, 'reason': 'Already has scheduled classes'})
+                continue
+
+            # Get skipped dates for target week
+            skipped_dates = set(
+                skipped_date.objects.filter(
+                    term=term_obj,
+                    date__gte=target_monday,
+                    date__lte=target_friday
+                ).values_list('date', flat=True)
             )
-            created += 1
+
+            for pref in prefs:
+                day_offset = _day_code_to_weekday_offset(pref.session.day_of_week)
+                target_date = target_monday + timedelta(days=day_offset)
+
+                if target_date in skipped_dates:
+                    all_skipped_classes.append({
+                        'subject': pref.subject.subject_code,
+                        'day': DAY_NAMES.get(pref.session.day_of_week, ''),
+                        'date': target_date.isoformat(),
+                        'reason': 'Skipped date / Public holiday',
+                    })
+                    continue
+
+                if not _is_teaching_date(term_obj, target_date):
+                    all_skipped_classes.append({
+                        'subject': pref.subject.subject_code,
+                        'day': DAY_NAMES.get(pref.session.day_of_week, ''),
+                        'date': target_date.isoformat(),
+                        'reason': 'Outside teaching period',
+                    })
+                    continue
+
+                class_session.objects.create(
+                    session=pref.session,
+                    subject=pref.subject,
+                    lecturer=pref.lecturer,
+                    term=term_obj,
+                    date=target_date,
+                    status='scheduled'
+                )
+                total_created += 1
+
+            weeks_processed += 1
 
     return JsonResponse({
         'success': True,
-        'created': created,
-        'skipped_classes': skipped_classes,
+        'created': total_created,
+        'weeks_processed': weeks_processed,
+        'skipped_classes': all_skipped_classes,
+        'weeks_with_errors': weeks_with_errors,
     })
 
 
