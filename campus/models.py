@@ -81,7 +81,7 @@ class class_session(models.Model):
     ]
     id = models.AutoField(primary_key = True)
     session	= models.ForeignKey('session', on_delete=models.CASCADE)
-    subject	= models.ForeignKey('subject', on_delete=models.CASCADE)
+    subject_component = models.ForeignKey('SubjectComponent', on_delete=models.CASCADE)
     lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
     term = models.ForeignKey('academic_term', on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField(null=True, blank=True)
