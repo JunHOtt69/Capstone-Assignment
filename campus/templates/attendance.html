@@ -79,7 +79,7 @@
                         <p>{{ course.percentage }}%</p>
 
                     <div class="bar">
-                        <div class="bar-fill {% if course.percentage < 80%}low{%else%}good{%endif%}"style="width: {{course.percentage}}%;"></div>
+                        <div class="bar-fill {% if course.percentage < 80 %}low{% else %}good{% endif %}"style="width: {{ course.percentage }}%;"></div>
                     </div>
                     </div>
                 {% endfor %}
