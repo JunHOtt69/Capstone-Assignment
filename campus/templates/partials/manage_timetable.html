@@ -113,14 +113,13 @@
     <div id="replicateModal" class="ttModal" style="display:none;">
         <div class="ttModalContent">
             <div class="ttModalHeader">
-                <h3>Replicate Preference to Week</h3>
+                <h3>Replicate Preference to Week(s)</h3>
                 <button class="ttModalClose" id="closeReplicateModal">&times;</button>
             </div>
             <div class="ttModalBody">
                 <div class="formGroup">
-                    <label for="replicateWeekSelect">Target Week:</label>
-                    <select id="replicateWeekSelect" class="ttInput">
-                        <option value="">— Select a week —</option>
+                    <label for="replicateWeekSelect">Target Week(s): <small>(hold Ctrl/Cmd to select multiple)</small></label>
+                    <select id="replicateWeekSelect" class="ttInput" multiple style="min-height:180px;">
                     </select>
                 </div>
                 <button class="ttBtn ttBtnInfo" id="confirmReplicateBtn">Replicate</button>
