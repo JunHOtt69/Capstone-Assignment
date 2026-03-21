@@ -3705,7 +3705,7 @@ def announcement_manage(request):
         news_page = 1
         banner_page = 1
 
-    limit = 9
+    limit = 1
 
     news_total = news_qs.count()
     max_news_pages = max(1, math.ceil(news_total / limit))
@@ -3728,7 +3728,8 @@ def announcement_manage(request):
         'max_news_pages': max_news_pages,
         'current_banner_page': banner_page,
         'max_banner_pages': max_banner_pages,
-        'show_pagination': True 
+        'show_news_pagination': news_total > limit,
+        'show_banner_pagination': banner_total > limit,
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
