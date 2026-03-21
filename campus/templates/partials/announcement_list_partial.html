@@ -1,0 +1,14 @@
+{% for a in news_list %}
+    <div class="newsRow">
+        <div class="newsInfo">
+            <span class="subject">{{ a.subject }}</span>
+            <span class="date">{{ a.date_published|date:"d M Y" }}</span>
+        </div>
+        <div class="actions">
+            <a href="{% url 'announcements_edit' a.pk %}">Edit</a>
+            <button class="delete-btn" data-id="{{ a.pk }}">Delete</button>
+        </div>
+    </div>
+{% empty %}
+    <p>No normal news found.</p>
+{% endfor %}

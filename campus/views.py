@@ -3673,5 +3673,51 @@ def announcement_list(request):
     }
     return render(request, "announcement/announcement_list.html", context)
 
+@role_required(allowed_roles=['admin'])
+@transaction.atomic
 def announcement_manage(request):
-    return render(request, "announcement/announcement_manage.html")
+    news_qs = announcement.objects.filter(announcement_type='NORMAL').order_by('-date_published')
+    banner_qs = announcement.objects.filter(announcement_type='BANNER').order_by('-date_published')
+
+    try:
+        news_page = int(request.GET.get('news_page', 1))
+        banner_page = int(request.GET.get('banner_page', 1))
+    except (ValueError, TypeError):
+        news_page = 1
+        banner_page = 1
+
+    limit = 9
+
+    news_total = news_qs.count()
+    max_news_pages = max(1, math.ceil(news_total / limit))
+    if news_page > max_news_pages: news_page = max_news_pages
+    
+    news_start = (news_page - 1) * limit
+    news_list = news_qs[news_start : news_start + limit]
+
+    banner_total = banner_qs.count()
+    max_banner_pages = max(1, math.ceil(banner_total / limit))
+    if banner_page > max_banner_pages: banner_page = max_banner_pages
+    
+    banner_start = (banner_page - 1) * limit
+    banner_list = banner_qs[banner_start : banner_start + limit]
+
+    context = {
+        'news_list': news_list,
+        'banner_list': banner_list,
+        'current_news_page': news_page,
+        'max_news_pages': max_news_pages,
+        'current_banner_page': banner_page,
+        'max_banner_pages': max_banner_pages,
+        'show_pagination': True 
+    }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        target = request.GET.get('target')
+        
+        if target == 'news':
+            return render(request, 'partials/announcement_list_partial.html', context)
+        elif target == 'banner':
+            return render(request, 'partials/banner_list_partial.html', context)
+        
+    return render(request, "announcement/announcement_manage.html", context)

@@ -1,0 +1,13 @@
+{% for b in banner_list %}
+    <div class="bannerRow">
+        <div class="bannerContent">
+            {{ b.content|striptags|truncatechars:60 }}
+        </div>
+        <div class="actions">
+            <a href="{% url 'announcements_edit' b.announcement_id %}">Edit</a>
+            <button class="delete-btn" data-id="{{ b.announcement_id }}">Delete</button>
+        </div>
+    </div>
+{% empty %}
+    <p>No active banners found.</p>
+{% endfor %}
