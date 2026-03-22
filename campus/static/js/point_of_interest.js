@@ -275,9 +275,9 @@ document.addEventListener('DOMContentLoaded', function () {
 								poiData[key].images[idx] = { src: data.url, caption: imgData.caption };
 								populateEditorList();
 							} else {
-								alert('Upload failed');
+								showNotif('error', 'Upload failed');
 							}
-						}catch(err){ alert('Upload error: ' + err.message); }
+						}catch(err){ showNotif('error', 'Upload error: ' + err.message); }
 					});
 
 					// Caption change handler
@@ -322,9 +322,9 @@ document.addEventListener('DOMContentLoaded', function () {
 							addFile.value = '';
 							populateEditorList();
 						} else {
-							alert('Upload failed');
+							showNotif('error', 'Upload failed');
 						}
-					}catch(err){ alert('Upload error: ' + err.message); }
+					}catch(err){ showNotif('error', 'Upload error: ' + err.message); }
 				});
 
 				addImgRow.appendChild(addLabel);
@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		addCatBtn.addEventListener('click', ()=>{
 			const newLabel = document.getElementById('new-cat-label').value.trim();
-			if(!newLabel) return alert('Provide a category label');
+			if(!newLabel) return showNotif('warning', 'Provide a category label');
 			let baseKey = slugify(newLabel) || 'category';
 			let key = baseKey;
 			let i = 1;
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					body: JSON.stringify(poiData)
 				});
 				if(!res.ok) throw new Error('save failed');
-				alert('Saved');
+				showNotif('success', 'Saved');
 				renderButtons();
 				const prevActive = document.querySelector('.poi-cat-btn.active')?.dataset.cat;
 				let newActive = Object.keys(poiData)[0];
@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				renderCategory(newActive);
 				closeEditor();
 			}catch(e){
-				alert('Failed to save: ' + e.message);
+				showNotif('error', 'Failed to save: ' + e.message);
 			}
 		});
 	}

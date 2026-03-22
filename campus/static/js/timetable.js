@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const addSkipBtn = document.getElementById('addSkipBtn');
     const timetableGrid = document.getElementById('timetableGrid');
     const timetableBody = document.getElementById('timetableBody');
-    const infoBar = document.getElementById('infoBar');
+
     const skippedDatesSection = document.getElementById('skippedDatesSection');
     const skippedDatesList = document.getElementById('skippedDatesList');
 
@@ -100,10 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function cmpDate(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 
     function showInfo(msg, type) {
-        infoBar.textContent = msg;
-        infoBar.className = 'infoBar ' + type;
-        infoBar.style.display = 'block';
-        setTimeout(() => { infoBar.style.display = 'none'; }, 8000);
+        showNotif(type, msg);
     }
 
     /** Update week label and disable prev/next when at bounds. */
