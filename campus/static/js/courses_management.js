@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const courseNameLabel   = document.getElementById('courseNameLabel');
     const semesterLabel    = document.getElementById('semesterLabel');
     const totalSemLabel    = document.getElementById('totalSemLabel');
-    const infoBar          = document.getElementById('infoBar');
+
     const assignedSection  = document.getElementById('assignedSection');
     const addSubjectBtn    = document.getElementById('addSubjectBtn');
     const assignedBody     = document.getElementById('assignedBody');
@@ -40,10 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---- Info Bar ----
     function showInfo(msg, type) {
-        infoBar.textContent = msg;
-        infoBar.className = 'cmInfoBar ' + type;
-        infoBar.style.display = 'block';
-        setTimeout(function () { infoBar.style.display = 'none'; }, 4000);
+        showNotif(type, msg);
     }
 
     // ---- Component Tags HTML ----

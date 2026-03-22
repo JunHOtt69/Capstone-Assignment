@@ -2510,6 +2510,177 @@ def remove_subject_from_course(request):
 
 
 # ============================================================
+# SUBJECTS MANAGEMENT MODULE
+# ============================================================
+
+@role_required(allowed_roles=['admin'])
+def manage_subjects(request):
+    """Main subjects management page — create, edit, remove subjects."""
+    subjects_list = subject.objects.prefetch_related('components').all().order_by('subject_code')
+    context = {'subjects': subjects_list}
+    return render(request, 'partials/manage_subjects.html', context)
+
+
+@role_required(allowed_roles=['admin'])
+def get_subject_detail(request):
+    """Get a single subject with its components."""
+    subject_id = request.GET.get('subject_id')
+    if not subject_id:
+        return JsonResponse({'error': 'subject_id required'}, status=400)
+
+    subj = get_object_or_404(subject, subject_id=subject_id)
+    components = SubjectComponent.objects.filter(subject=subj)
+    comp_list = [{
+        'component_id': c.component_id,
+        'class_type': c.class_type,
+        'hours_per_class': c.hours_per_class,
+        'total_required_hours': c.total_required_hours,
+    } for c in components]
+
+    return JsonResponse({
+        'subject_id': subj.subject_id,
+        'subject_code': subj.subject_code,
+        'subject_name': subj.subject_name,
+        'components': comp_list,
+    })
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def create_subject(request):
+    """Create a new subject with optional components."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    code = data.get('subject_code', '').strip()
+    name = data.get('subject_name', '').strip()
+    components_data = data.get('components', [])
+
+    if not code or not name:
+        return JsonResponse({'error': 'Subject code and name are required.'}, status=400)
+
+    if subject.objects.filter(subject_code=code).exists():
+        return JsonResponse({'error': f'Subject code "{code}" already exists.'}, status=400)
+
+    with transaction.atomic():
+        subj = subject.objects.create(subject_code=code, subject_name=name)
+        for comp in components_data:
+            SubjectComponent.objects.create(
+                subject=subj,
+                class_type=comp.get('class_type', 'Lecture'),
+                hours_per_class=comp.get('hours_per_class', 2),
+                total_required_hours=comp.get('total_required_hours', 0),
+            )
+
+    return JsonResponse({'success': True, 'message': f'Subject "{code}" created successfully.'})
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def update_subject(request):
+    """Update an existing subject and its components (preserving timetable links)."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    subject_id = data.get('subject_id')
+    code = data.get('subject_code', '').strip()
+    name = data.get('subject_name', '').strip()
+    components_data = data.get('components', [])
+
+    if not subject_id or not code or not name:
+        return JsonResponse({'error': 'subject_id, code, and name are required.'}, status=400)
+
+    subj = get_object_or_404(subject, subject_id=subject_id)
+
+    # Check for duplicate code (exclude current)
+    if subject.objects.filter(subject_code=code).exclude(subject_id=subject_id).exists():
+        return JsonResponse({'error': f'Subject code "{code}" already exists.'}, status=400)
+
+    with transaction.atomic():
+        subj.subject_code = code
+        subj.subject_name = name
+        subj.save()
+
+        # Track which existing component IDs are kept
+        incoming_ids = set()
+        for comp in components_data:
+            comp_id = comp.get('component_id')
+            if comp_id:
+                # Update existing component in-place
+                try:
+                    existing = SubjectComponent.objects.get(component_id=comp_id, subject=subj)
+                    existing.class_type = comp.get('class_type', 'Lecture')
+                    existing.hours_per_class = comp.get('hours_per_class', 2)
+                    existing.total_required_hours = comp.get('total_required_hours', 0)
+                    existing.save()
+                    incoming_ids.add(comp_id)
+                except SubjectComponent.DoesNotExist:
+                    pass
+            else:
+                # Create new component
+                new_comp = SubjectComponent.objects.create(
+                    subject=subj,
+                    class_type=comp.get('class_type', 'Lecture'),
+                    hours_per_class=comp.get('hours_per_class', 2),
+                    total_required_hours=comp.get('total_required_hours', 0),
+                )
+                incoming_ids.add(new_comp.component_id)
+
+        # Only delete components that were removed AND have no timetable sessions
+        removed = SubjectComponent.objects.filter(subject=subj).exclude(component_id__in=incoming_ids)
+        has_sessions = removed.filter(class_session__isnull=False).distinct()
+        if has_sessions.exists():
+            # Keep components that have timetable sessions (don't cascade-delete them)
+            safe_to_delete = removed.exclude(component_id__in=has_sessions.values_list('component_id', flat=True))
+            safe_to_delete.delete()
+        else:
+            removed.delete()
+
+    return JsonResponse({'success': True, 'message': f'Subject "{code}" updated successfully.'})
+
+
+@role_required(allowed_roles=['admin'])
+def check_subject_usage(request):
+    """Check if a subject has timetable sessions before deletion."""
+    subject_id = request.GET.get('subject_id')
+    if not subject_id:
+        return JsonResponse({'error': 'subject_id required'}, status=400)
+
+    subj = get_object_or_404(subject, subject_id=subject_id)
+    session_count = class_session.objects.filter(subject_component__subject=subj).count()
+
+    return JsonResponse({
+        'subject_code': subj.subject_code,
+        'subject_name': subj.subject_name,
+        'timetable_sessions': session_count,
+    })
+
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def delete_subject(request):
+    """Delete a subject and all related data."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    subject_id = data.get('subject_id')
+    if not subject_id:
+        return JsonResponse({'error': 'subject_id required'}, status=400)
+
+    subj = get_object_or_404(subject, subject_id=subject_id)
+    code = subj.subject_code
+    subj.delete()
+
+    return JsonResponse({'success': True, 'message': f'Subject "{code}" deleted successfully.'})
+
+
+# ============================================================
 # DEPARTMENTS MANAGEMENT MODULE
 # ============================================================
 

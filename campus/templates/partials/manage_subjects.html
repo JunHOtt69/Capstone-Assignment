@@ -1,0 +1,126 @@
+{% extends "academic_management.html" %} 
+
+{% load static %}  
+
+{% block title %} Subjects Management {% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/subjects_management.css' %}">
+{% endblock %}
+
+{% block function_window %}
+<div class="subjectsContainer">
+    <!-- Header with Add button -->
+    <div class="sectionHeader">
+        <h3>All Subjects</h3>
+        <button class="cmBtn" id="addSubjectBtn">+ Create Subject</button>
+    </div>
+
+    <!-- Search -->
+    <div class="searchGroup">
+        <input type="text" id="subjectSearch" class="cmInput" placeholder="Search by code or name...">
+    </div>
+
+    <!-- Subjects Table -->
+    <div class="tableWrapper">
+        <table class="cmTable" id="subjectsTable">
+            <thead>
+                <tr>
+                    <th class="no-col">No.</th>
+                    <th>Code</th>
+                    <th>Subject Name</th>
+                    <th>Components</th>
+                    <th class="action-col-wide">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="subjectsBody">
+                {% for s in subjects %}
+                <tr data-id="{{ s.subject_id }}">
+                    <td class="no-col"></td>
+                    <td>{{ s.subject_code }}</td>
+                    <td>{{ s.subject_name }}</td>
+                    <td>
+                        <div class="componentTags">
+                            {% for c in s.components.all %}
+                            <span class="componentTag {{ c.class_type|lower }}">
+                                {{ c.class_type }} ({{ c.hours_per_class }}h)
+                            </span>
+                            {% empty %}
+                            <span class="componentTag">None</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td class="action-col-wide">
+                        <button class="editBtn" data-id="{{ s.subject_id }}">Edit</button>
+                        <button class="removeBtn" data-id="{{ s.subject_id }}">Delete</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="emptyRow"><td colspan="5" class="emptyMessage">No subjects found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Create / Edit Subject Modal -->
+    <div id="subjectModal" class="cmModal" style="display:none;">
+        <div class="cmModalContent">
+            <div class="cmModalHeader">
+                <h3 id="modalTitle">Create Subject</h3>
+                <button class="cmModalClose" id="closeModal">&times;</button>
+            </div>
+            <div class="cmModalBody">
+                <input type="hidden" id="editSubjectId" value="">
+
+                <div class="formGroup">
+                    <label for="subjectCode">Subject Code</label>
+                    <input type="text" id="subjectCode" class="cmInput" placeholder="e.g. CS101" maxlength="20">
+                </div>
+                <div class="formGroup">
+                    <label for="subjectName">Subject Name</label>
+                    <input type="text" id="subjectName" class="cmInput" placeholder="e.g. Introduction to Computer Science" maxlength="255">
+                </div>
+
+                <!-- Components Section -->
+                <div class="componentsSection">
+                    <div class="sectionHeader">
+                        <label>Components</label>
+                        <button type="button" class="cmBtn cmBtnSmall" id="addComponentBtn">+ Add</button>
+                    </div>
+                    <div id="componentsList"></div>
+                </div>
+
+                <div class="modalActions">
+                    <button class="cmBtn" id="saveSubjectBtn">Save</button>
+                    <button class="cmBtn cmBtnDanger" id="cancelBtn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="cmModal" style="display:none;">
+        <div class="cmModalContent cmModalSmall">
+            <div class="cmModalHeader">
+                <h3>Confirm Delete</h3>
+                <button class="cmModalClose" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="cmModalBody">
+                <p>Are you sure you want to delete <strong id="deleteSubjectName"></strong>?</p>
+                <p class="warningText" id="deleteWarningText"></p>
+                <input type="hidden" id="deleteSubjectId" value="">
+                <div class="modalActions">
+                    <button class="cmBtn cmBtnDanger" id="confirmDeleteBtn">Delete</button>
+                    <button class="cmBtn" id="cancelDeleteBtn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/subjects_management.js' %}"></script>
+{% endblock %}
