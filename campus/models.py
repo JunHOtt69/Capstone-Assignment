@@ -376,7 +376,7 @@ class attachments(models.Model):
 class AttendanceSession(models.Model):
     otp = models.CharField(max_length=4)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name="created_attendance_sessions")
-    subject = models.ForeignKey('subject', on_delete=models.CASCADE, null=True, blank=True, related_name="attendance_sessions") 
+    #subject = models.ForeignKey("subject", on_delete=models.CASCADE, null=True, blank=True, related_name="attendance_sessions") 
     created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
     is_active = models.BooleanField(default=True)

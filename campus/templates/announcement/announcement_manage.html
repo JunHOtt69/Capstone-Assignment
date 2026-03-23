@@ -16,28 +16,31 @@
         <section class="newsContainer">
             <div class="sectionHeader">
                 <div class="sectionTitle"><h3>Normal News</h3></div>
-                {% if show_news_pagination %}
-                    <div class="displayControl" data-current-page = "{{ current_news_page }}" data-max-pages="{{ max_news_pages }}" id="news_currentPage">
-                        <input type="hidden" id="maxNewsPages" name="maxNewsPages" value="{{ max_news_pages }}">
-                        <div class="pageWrapper">
-                            <button class="previous pageBtn"
-                                {% if current_news_page == 1 %}
-                                    disabled
-                                {% endif %}
-                            >&laquo;</button>
-                                
-                            <div class="pageNumbers">
-                                {{ current_news_page }} / {{ max_news_pages }}
-                            </div>
+                <div class="sectionControls">
+                    {% if show_news_pagination %}
+                        <div class="displayControl" data-current-page = "{{ current_news_page }}" data-max-pages="{{ max_news_pages }}" id="news_currentPage">
+                            <input type="hidden" id="maxNewsPages" name="maxNewsPages" value="{{ max_news_pages }}">
+                            <div class="pageWrapper">
+                                <button class="previous pageBtn"
+                                    {% if current_news_page == 1 %}
+                                        disabled
+                                    {% endif %}
+                                >&laquo;</button>
+                                    
+                                <div class="pageNumbers">
+                                    {{ current_news_page }} / {{ max_news_pages }}
+                                </div>
 
-                            <button class="next pageBtn"
-                                {% if current_news_page == max_news_pages %}
-                                    disabled
-                                {% endif %}
-                            >&raquo;</button>
+                                <button class="next pageBtn"
+                                    {% if current_news_page == max_news_pages %}
+                                        disabled
+                                    {% endif %}
+                                >&raquo;</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                    <a class="createBtn" href="{% url "announcements_form"?type=BANNER %}">+</a>
+                </div>
             </div>
             <div class="newsList" id="newsContainer">
                 {% include "partials/announcement_list_partial.html" %}
@@ -47,29 +50,31 @@
         <section class="bannerContainer">
             <div class="sectionHeader">
                 <div class="sectionTitle"><h3>Banners</h3></div>
-                {% if show_banner_pagination %}
-                    <div class="displayControl" data-current-page = "{{ current_banner_page }}" data-max-pages="{{ max_banner_pages }}" id="banner_currentPage">
-                        <input type="hidden" id="maxBannerPages" name="maxBannerPages" value="{{ max_banner_pages }}">
-                        <div class="pageWrapper">
-                            <button class="previous pageBtn"
-                                {% if current_banner_page == 1 %}
-                                    disabled
-                                {% endif %}
-                            >&laquo;</button>
-                                
-                            <div class="pageNumbers">
-                                {{ current_banner_page }} / {{ max_banner_pages }}
-                            </div>
+                <div class="sectionControls">
+                    {% if show_banner_pagination %}
+                        <div class="displayControl" data-current-page = "{{ current_banner_page }}" data-max-pages="{{ max_banner_pages }}" id="banner_currentPage">
+                            <input type="hidden" id="maxBannerPages" name="maxBannerPages" value="{{ max_banner_pages }}">
+                            <div class="pageWrapper">
+                                <button class="previous pageBtn"
+                                    {% if current_banner_page == 1 %}
+                                        disabled
+                                    {% endif %}
+                                >&laquo;</button>
+                                    
+                                <div class="pageNumbers">
+                                    {{ current_banner_page }} / {{ max_banner_pages }}
+                                </div>
 
-                            <button class="next pageBtn"
-                                {% if current_banner_page == max_banner_pages %}
-                                    disabled
-                                {% endif %}
-                            >&raquo;</button>
+                                <button class="next pageBtn"
+                                    {% if current_banner_page == max_banner_pages %}
+                                        disabled
+                                    {% endif %}
+                                >&raquo;</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
-                
+                    {% endif %}
+                    <a class="createBtn" href="{% url "announcements_form"?type=BANNER %}">+</a>
+                </div>
             </div>
             <div class="bannerList" id="bannerContainer">
                 {% include "partials/banner_list_partial.html" %}

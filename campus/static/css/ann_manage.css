@@ -62,6 +62,13 @@ hr{
     width:auto;
 }
 
+.sectionControls{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1vw;
+}
+
 .pageWrapper button{
     padding: 0.2vw;
     height: 1.5vw;
@@ -211,4 +218,20 @@ hr{
     color: rgba(var(--black), 1);
     background-color: greenyellow;
     border: 0.01vw solid rgba(var(--black), 1);
+}
+
+.createBtn{
+    padding: 0.2vw 0.5vw;
+    background-color: transparent;
+    text-decoration: none;
+    outline: none;
+    color: rgba(var(--black), 1);
+    cursor: pointer;
+    transition: background-color .2s, color .2s;
+    font-size: var(--h4-fontsize);
+    line-height: 1;
+}
+
+.createBtn:hover{
+    background-color: greenyellow;
 }
