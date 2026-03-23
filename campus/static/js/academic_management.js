@@ -1,6 +1,9 @@
 let currentNavDate = new Date();
 let selectedStartDate = null;
 let rules = {};
+let allTermsData = [];
+let currentSortColumn = null;
+let currentSortDirection = 'asc';
 
 const form = document.querySelector('form');
 
@@ -17,9 +20,58 @@ document.addEventListener('DOMContentLoaded', async function() {
         rules[r.rule_name] = parseInt(r.value_days);
     });
 
-    renderTable(terms_list);
+    allTermsData = terms_list;
+    renderTable(getFilteredTerms());
     renderOption();
     renderCalendar('Start');
+
+    // Filter listeners
+    const searchInput = document.getElementById('termSearchInput');
+    const statusFilter = document.getElementById('statusFilterSelect');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            renderTable(getFilteredTerms());
+        });
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => {
+            renderTable(getFilteredTerms());
+        });
+    }
+
+    // Edit modal listeners
+    const closeBtn = document.getElementById('closeEditModal');
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    const saveBtn = document.getElementById('saveEditBtn');
+
+    if (closeBtn) closeBtn.addEventListener('click', closeEditModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeEditModal);
+    if (saveBtn) saveBtn.addEventListener('click', saveTermEdit);
+
+    const modal = document.getElementById('editTermModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeEditModal();
+        });
+    }
+
+    // Delete modal listeners
+    const closeDeleteBtn = document.getElementById('closeDeleteModal');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+    if (closeDeleteBtn) closeDeleteBtn.addEventListener('click', closeDeleteModal);
+    if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+    if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', confirmDeleteTerm);
+
+    const deleteModal = document.getElementById('deleteTermModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) closeDeleteModal();
+        });
+    }
 
     const startDatePickr = this.getElementById('datePickrStart');
     startDatePickr.querySelector('#prevMonthStart').addEventListener('click', (event) => {
@@ -197,8 +249,68 @@ function renderOption(){
     });
 }
 
+function getFilteredTerms() {
+    let filtered = [...allTermsData];
+    const searchInput = document.getElementById('termSearchInput');
+    const statusFilter = document.getElementById('statusFilterSelect');
+
+    if (searchInput && searchInput.value.trim()) {
+        const query = searchInput.value.trim().toLowerCase();
+        filtered = filtered.filter(t =>
+            t.intake_code.toLowerCase().includes(query) ||
+            t.course__course_name.toLowerCase().includes(query)
+        );
+    }
+
+    if (statusFilter && statusFilter.value !== 'all') {
+        const isActive = statusFilter.value === 'active';
+        filtered = filtered.filter(t => t.is_active === isActive);
+    }
+
+    if (currentSortColumn) {
+        filtered.sort((a, b) => {
+            let valA = a[currentSortColumn];
+            let valB = b[currentSortColumn];
+
+            if (currentSortColumn === 'is_active') {
+                valA = valA ? 1 : 0;
+                valB = valB ? 1 : 0;
+            } else if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+
+            if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    return filtered;
+}
+
+function handleSort(column) {
+    if (currentSortColumn === column) {
+        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortColumn = column;
+        currentSortDirection = 'asc';
+    }
+    renderTable(getFilteredTerms());
+}
+
+function getSortIndicator(column) {
+    if (currentSortColumn !== column) return '';
+    return currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+}
+
 function renderTable(data) {
     const tableWrapper = document.querySelector('#tableWrapper');
+    const existingTable = tableWrapper.querySelector('table');
+    const existingEmpty = tableWrapper.querySelector('.emptyMessage');
+    if (existingTable) existingTable.remove();
+    if (existingEmpty) existingEmpty.remove();
+
     if(data.length > 0){
         const table = document.createElement('table');
         table.id = 'termsList';
@@ -206,14 +318,20 @@ function renderTable(data) {
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <th class="no-col">No.</th>
-            <th class="intake">Intake Code</th>
-            <th class="course">Course</th>
-            <th class="semester">Current Semester</th>
-            <th class="date">Start Date</th>
-            <th class="date">End Date</th>
-            <th class="status">Status</th>
+            <th class="intake sortable" data-sort="intake_code">Intake Code${getSortIndicator('intake_code')}</th>
+            <th class="course sortable" data-sort="course__course_name">Course${getSortIndicator('course__course_name')}</th>
+            <th class="semester sortable" data-sort="current_semester">Current Semester${getSortIndicator('current_semester')}</th>
+            <th class="date sortable" data-sort="start_date">Start Date${getSortIndicator('start_date')}</th>
+            <th class="date sortable" data-sort="end_date">End Date${getSortIndicator('end_date')}</th>
+            <th class="status sortable" data-sort="is_active">Status${getSortIndicator('is_active')}</th>
             <th class="action">Action</th>
         `;
+
+        thead.querySelectorAll('.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                handleSort(th.dataset.sort);
+            });
+        });
 
         const tbody = document.createElement('tbody');
         tbody.innerHTML = '';
@@ -227,10 +345,10 @@ function renderTable(data) {
                     <td class="semester">${term.current_semester}</td>
                     <td class="date">${term.start_date}</td>
                     <td class="date">${term.end_date}</td>
-                    <td class="status"><span class="status">${term.is_active ? 'Active' : 'Inactive'}</span></td>
+                    <td class="status"><span class="status ${term.is_active ? 'active' : 'inactive'}">${term.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td class="action">
                         <div class="inputWrapper">
-                            <button type="button">
+                            <button type="button" class="editBtn" onclick="openEditModal(${term.term_id})">
                             <svg id="Capa_1" viewBox="0 0 528.899 528.899">
                                 <g>
                                     <path d="M328.883,89.125l107.59,107.589l-272.34,272.34L56.604,361.465L328.883,89.125z M518.113,63.177l-47.981-47.981
@@ -238,6 +356,11 @@ function renderTable(data) {
                                         C532.495,100.753,532.495,77.559,518.113,63.177z M0.3,512.69c-1.958,8.812,5.998,16.708,14.811,14.565l119.891-29.069
                                         L27.473,390.597L0.3,512.69z"/>
                                 </g>
+                                </svg>
+                            </button>
+                            <button type="button" class="deleteBtn" onclick="openDeleteModal(${term.term_id})">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </button>
                         </div>
@@ -254,9 +377,140 @@ function renderTable(data) {
     else{
         const emptyMessage = document.createElement('p');
         emptyMessage.className = 'emptyMessage'
-        emptyMessage.innerHTML = 'Do not have any academic term available yet. Try to create one.'
+        emptyMessage.innerHTML = 'No academic terms match the current filters.'
         
         tableWrapper.appendChild(emptyMessage);
+    }
+}
+
+function openEditModal(termId) {
+    const term = allTermsData.find(t => t.term_id === termId);
+    if (!term) return;
+
+    document.getElementById('editTermId').value = term.term_id;
+    document.getElementById('editIntakeCode').textContent = term.intake_code;
+    document.getElementById('editCourseName').textContent = term.course__course_name;
+    document.getElementById('editSemester').value = term.current_semester;
+    document.getElementById('editStartDate').value = term.start_date;
+    document.getElementById('editEndDate').value = term.end_date;
+    document.getElementById('editStatus').value = term.is_active ? 'true' : 'false';
+    document.getElementById('editError').textContent = '';
+
+    document.getElementById('editTermModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editTermModal').classList.remove('active');
+}
+
+async function saveTermEdit() {
+    const termId = document.getElementById('editTermId').value;
+    const semester = document.getElementById('editSemester').value;
+    const startDate = document.getElementById('editStartDate').value;
+    const endDate = document.getElementById('editEndDate').value;
+    const isActive = document.getElementById('editStatus').value === 'true';
+    const errorEl = document.getElementById('editError');
+    errorEl.textContent = '';
+
+    if (!semester || parseInt(semester) < 1) {
+        errorEl.textContent = 'Semester must be at least 1.';
+        return;
+    }
+    if (!startDate || !endDate) {
+        errorEl.textContent = 'Both dates are required.';
+        return;
+    }
+    if (startDate >= endDate) {
+        errorEl.textContent = 'End date must be after start date.';
+        return;
+    }
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    try {
+        const response = await fetch('/update-term/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                term_id: parseInt(termId),
+                current_semester: parseInt(semester),
+                start_date: startDate,
+                end_date: endDate,
+                is_active: isActive
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            const term = allTermsData.find(t => t.term_id === parseInt(termId));
+            if (term) {
+                term.current_semester = parseInt(semester);
+                term.start_date = startDate;
+                term.end_date = endDate;
+                term.is_active = isActive;
+            }
+            closeEditModal();
+            renderTable(getFilteredTerms());
+            showNotif('success', 'Academic term updated successfully!');
+        } else {
+            errorEl.textContent = result.error || 'Failed to update term.';
+            showNotif('error', result.error || 'Failed to update term.');
+        }
+    } catch (err) {
+        errorEl.textContent = 'Network error. Please try again.';
+        showNotif('error', 'Network error. Please try again.');
+    }
+}
+
+function openDeleteModal(termId) {
+    const term = allTermsData.find(t => t.term_id === termId);
+    if (!term) return;
+
+    document.getElementById('deleteTermId').value = term.term_id;
+    document.getElementById('deleteIntakeCode').textContent = term.intake_code;
+    document.getElementById('deleteCourseName').textContent = term.course__course_name;
+    document.getElementById('deleteError').textContent = '';
+
+    document.getElementById('deleteTermModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteTermModal').classList.remove('active');
+}
+
+async function confirmDeleteTerm() {
+    const termId = document.getElementById('deleteTermId').value;
+    const errorEl = document.getElementById('deleteError');
+    errorEl.textContent = '';
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    try {
+        const response = await fetch('/delete-term/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({ term_id: parseInt(termId) })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            allTermsData = allTermsData.filter(t => t.term_id !== parseInt(termId));
+            closeDeleteModal();
+            renderTable(getFilteredTerms());
+            showNotif('success', 'Academic term deleted successfully!');
+        } else {
+            errorEl.textContent = result.error || 'Failed to delete term.';
+            showNotif('error', result.error || 'Failed to delete term.');
+        }
+    } catch (err) {
+        errorEl.textContent = 'Network error. Please try again.';
+        showNotif('error', 'Network error. Please try again.');
     }
 }
 
