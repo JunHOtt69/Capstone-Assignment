@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     if(saveBtn){
         saveBtn.addEventListener('click', (e) => {
-            // e.preventDefault();
+            e.preventDefault();
             const contentInput = document.querySelector('#id_content');
             const category =  document.querySelector('#id_category');
             const type = document.querySelector('#id_announcement_type');
@@ -109,46 +109,73 @@ document.addEventListener("DOMContentLoaded", async function() {
                 return;
             }
 
-            const loading = document.querySelector('.loading');
-            loading.classList.add('active');
-            // for(const [key, selector] of Object.entries(fieldSelectors)){
-            //     const element = document.querySelector(selector);
-            //     if (element) {
-            //         if (element.type === 'file') {
-            //             // Check if there are actually files selected
-            //             if (element.files.length > 0) {
-            //                 // Convert FileList to Array to see all names in console
-            //                 const fileNames = Array.from(element.files).map(f => f.name);
-            //                 console.log(`${key} (Multiple):`, fileNames);
-            //             } else {
-            //                 console.log(`${key}: No files uploaded`);
-            //             }
-            //         } else {
-            //             // Handle regular text/hidden inputs
-            //             console.log(key, element.value);
-            //         }
-            //     }
-            // }
+            // const loading = document.querySelector('.loading');
+            // loading.classList.add('active');
+            for(const [key, selector] of Object.entries(fieldSelectors)){
+                const element = document.querySelector(selector);
+                if (element) {
+                    if (element.type === 'file') {
+                        // Check if there are actually files selected
+                        if (element.files.length > 0) {
+                            // Convert FileList to Array to see all names in console
+                            const fileNames = Array.from(element.files).map(f => f.name);
+                            console.log(`${key} (Multiple):`, fileNames);
+                        } else {
+                            console.log(`${key}: No files uploaded`);
+                        }
+                    } else {
+                        // Handle regular text/hidden inputs
+                        console.log(key, element.value);
+                    }
+                }
+            }
         });
     }
 
     if(deleteBtn){
+        const type = document.querySelector('#id_announcement_type');
         deleteBtn.onclick = (e) => {
             e.preventDefault();
-            if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
+            if(type){
+                if (confirm("Are you sure you want to delete this Announcement? This cannot be undone.")) {
+                    const container = document.querySelector('.faqInfo');
+                    const id = container.dataset.id;
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/announcements/delete/${id}/`;
 
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = 'csrfmiddlewaretoken';
-                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                
-                form.appendChild(csrfInput);
-                document.body.appendChild(form);
-                
-                form.submit();
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    
+                    if(csrfToken){
+                        csrfInput.value = csrfToken.value;
+                        form.appendChild(csrfInput);
+                        document.body.appendChild(form);
+                        
+                        form.submit();
+                    }else{
+                        console.error("CSRF token not found. Make sure {% csrf_token %} is in your template.");
+                    }
+                }
+            }else{
+                if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
+
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    
+                    form.appendChild(csrfInput);
+                    document.body.appendChild(form);
+                    
+                    form.submit();
+                }
             }
         }
     }

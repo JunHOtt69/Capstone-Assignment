@@ -20,7 +20,7 @@
     </div>
     <form method="post" id="faq" enctype="multipart/form-data">
         {% csrf_token %}
-        <section class="faqInfo">
+        <section class="faqInfo" data-id="{% if instance %}{{ instance.pk }}{% endif %}">
             <div class="titleInputWrapper">
                 <span class="placeholder">Subject</span>
                 {{ form.subject }}
@@ -113,7 +113,7 @@
                 <div></div>
                 <div class="formBtnWrapper">
                     {% if instance %}
-                    <button class="deactive">Deactive</button>
+                    <button class="delete">Delete</button>
                     {% endif %}
                     <button class="cancel">Discard Changes</button>
                     <button class="save">Save</button>
