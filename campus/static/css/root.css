@@ -1073,9 +1073,19 @@ header li a{
         visibility .2s step-start;
 }
 
+.loading.filterLoad{
+    left: 0;
+    top: 0;
+}
+
 .loading.active.authLoad{
     backdrop-filter: blur(0.25vw);
     -webkit-backdrop-filter: blur(0.25vw);
+}
+
+.loading.active.filterLoad{
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
 }
 
 .loading.active{

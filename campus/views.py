@@ -3888,6 +3888,9 @@ def announcements_form(request, ann_id=None):
 
             is_for_students = request.POST.get('is_tp_visible') == 'True'
             intake_ids_raw = request.POST.get('academic_term', '')
+            academic_term_val = None
+            if not is_for_students and intake_ids_raw:
+                academic_term_val = intake_ids_raw
 
             announcementTarget.objects.update_or_create(
                 announcement=ann_obj,
@@ -3896,7 +3899,7 @@ def announcements_form(request, ann_id=None):
                     'is_for_lecturer': request.POST.get('is_lc_visible') == 'True',
                     'is_for_admins': request.POST.get('is_ad_visible') == 'True', 
                     'is_visitor_visible': request.POST.get('is_visitor_visible') == 'True', 
-                    'academic_term': intake_ids_raw if not is_for_students else None
+                    'academic_term': academic_term_val,
                 }
             )
 
@@ -3954,11 +3957,56 @@ def announcement_list(request):
     }
     return render(request, "announcement/announcement_list.html", context)
 
+def get_visibility_count(ann_type, field_key):
+    base_filter = announcementTarget.objects.filter(announcement__announcement_type=ann_type)
+    
+    if field_key == 'is_for_students':
+        return base_filter.filter(
+            Q(is_for_students=True) | Q(academic_term__isnull=False)
+        ).exclude(academic_term='').distinct().count()
+    
+    return base_filter.filter(**{field_key: True}).count()
+
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
 def announcement_manage(request):
-    news_qs = announcement.objects.filter(announcement_type='NORMAL').order_by('date_published')
-    banner_qs = announcement.objects.filter(announcement_type='BANNER').order_by('date_published')
+    news_qs = announcement.objects.filter(announcement_type='NORMAL').order_by('-date_published')
+    banner_qs = announcement.objects.filter(announcement_type='BANNER').order_by('-date_published')
+
+    target_groups = [
+        ('is_for_admins', 'Admins'),
+        ('is_for_lecturer', 'Lecturers'),
+        ('is_for_students', 'Students'),
+        ('is_visitor_visible', 'Visitors'),
+    ]
+
+    news_visibility_counts = {
+        key: get_visibility_count('NORMAL', key) for key, label in target_groups
+    }
+
+    banner_visibility_counts = {
+        key: get_visibility_count('BANNER', key) for key, label in target_groups
+    }
+
+    visible_news = request.GET.getlist('visible-news')
+    if visible_news:
+        news_query = Q()
+        for field in visible_news:
+            if field == 'is_for_students':
+                news_query |= Q(targets__is_for_students=True) | Q(targets__academic_term__isnull=False)
+            else:
+                news_query |= Q(**{f"targets__{field}": True})
+        news_qs = news_qs.filter(news_query).distinct()
+
+    visible_banner = request.GET.getlist('visible-banner')
+    if visible_banner:
+        banner_query = Q()
+        for field in visible_banner:
+            if field == 'is_for_students':
+                banner_query |= Q(targets__is_for_students=True) | Q(targets__academic_term__isnull=False)
+            else:
+                banner_query |= Q(**{f"targets__{field}": True})
+        banner_qs = banner_qs.filter(banner_query).distinct()
 
     try:
         news_page = int(request.GET.get('news_page', 1))
@@ -3984,6 +4032,9 @@ def announcement_manage(request):
     banner_list = banner_qs[banner_start : banner_start + limit]
 
     context = {
+        'target_groups': target_groups,
+        'news_visibility_counts': news_visibility_counts,
+        'banner_visibility_counts': banner_visibility_counts,
         'news_list': news_list,
         'banner_list': banner_list,
         'current_news_page': news_page,

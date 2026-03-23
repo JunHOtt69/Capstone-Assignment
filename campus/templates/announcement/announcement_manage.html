@@ -1,6 +1,7 @@
 {% extends "base.html" %} 
 {% load static %}  
 {% load chat_extras %}
+{% load faq_extras %}
 {% block title %}Announcements{% endblock %}
 
 {% block extra_head %}
@@ -40,6 +41,33 @@
                         </div>
                     {% endif %}
                     <a class="createBtn" href="{% url "announcements_form" %}?type=NORMAL" target="_blank">+</a>
+
+                    <div class="filterWrapper">
+                        <span class="filterIcon"><svg viewBox="0 0 214 204" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M206.263 5H7.01305C5.34379 5 4.40907 6.92419 5.44094 8.23631L83.468 107.456C83.7452 107.808 83.8959 108.244 83.8959 108.692V196.264C83.8959 197.751 85.4605 198.718 86.7903 198.053L127.79 177.553C128.468 177.214 128.896 176.521 128.896 175.764V108.696C128.896 108.245 129.048 107.808 129.327 107.455L207.831 8.24102C208.869 6.9298 207.935 5 206.263 5Z"/>
+                        </svg>
+                        </span>
+                        <div class="cbxContainer ">
+                            <div class="loading filterLoad">
+                                <div class="circles">
+                                    <span class="loader"></span>
+                                    <span class="loader"></span>
+                                    <span class="loader"></span>
+                                </div>
+                            </div>
+                            {% for field_name, label in target_groups %}
+                            <label class="cbxWrapper">
+                                <input type="checkbox" name="visible-news" value="{{ field_name }}" class="cbxInput">
+                                <div class="cbxTitle">
+                                    <span class="cbx"></span>
+                                    <span class="visibilityLabel">
+                                        {{ label }} ({{ news_visibility_counts|get_item:field_name|cool_number }})
+                                    </span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="newsList" id="newsContainer">
@@ -74,6 +102,33 @@
                         </div>
                     {% endif %}
                     <a class="createBtn" href="{% url "announcements_form" %}?type=BANNER" target="_blank">+</a>
+
+                    <div class="filterWrapper">
+                        <span class="filterIcon"><svg viewBox="0 0 214 204" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M206.263 5H7.01305C5.34379 5 4.40907 6.92419 5.44094 8.23631L83.468 107.456C83.7452 107.808 83.8959 108.244 83.8959 108.692V196.264C83.8959 197.751 85.4605 198.718 86.7903 198.053L127.79 177.553C128.468 177.214 128.896 176.521 128.896 175.764V108.696C128.896 108.245 129.048 107.808 129.327 107.455L207.831 8.24102C208.869 6.9298 207.935 5 206.263 5Z"/>
+                        </svg>
+                        </span>
+                        <div class="cbxContainer">
+                            <div class="loading filterLoad">
+                                <div class="circles">
+                                    <span class="loader"></span>
+                                    <span class="loader"></span>
+                                    <span class="loader"></span>
+                                </div>
+                            </div>
+                            {% for field_name, label in target_groups %}
+                            <label class="cbxWrapper">
+                                <input type="checkbox" name="visible-banner" value="{{ field_name }}" class="cbxInput">
+                                <div class="cbxTitle">
+                                    <span class="cbx"></span>
+                                    <span class="visibilityLabel">
+                                        {{ label }} ({{ banner_visibility_counts|get_item:field_name|cool_number }})
+                                    </span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="bannerList" id="bannerContainer">

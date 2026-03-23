@@ -35,8 +35,8 @@
                             {% endif %}
                             id="i-Dashboard">Dashboard</a>
                         </li>
-                        <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                            <a id="i-Announcements">Announcements</a>
+                        <li class="{% if request.resolver_match.url_name in 'announcement_manage, announcements_form, announcements_edit, announcement_list' %}active{% endif %}">
+                            <a id="i-Announcements" href="{% url "announcement_list" %}">Announcements</a>
                         </li>
                         
                         {% if user_role == 'student' or user_role == 'lecturer' %}
@@ -68,7 +68,7 @@
                         </li>
                     {% endif %}
                     
-                    <li class="{% if request.resolver_match.url_name in 'support_center, viewFAQ' %}active{% endif %}">
+                    <li class="{% if request.resolver_match.url_name in 'support_center, viewFAQ, faq_detail, viewFAQ, edit_faq, edit_existing_faq, feedbacks, review_feedback, submit_feedback' %}active{% endif %}">
                         <a href="
                             {% url 'viewFAQ' %}
                         "  id="i-Help">Help</a>

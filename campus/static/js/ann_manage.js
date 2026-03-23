@@ -50,3 +50,61 @@ document.addEventListener('DOMContentLoaded', function() {
         
     });
 });
+
+document.querySelectorAll('.filterWrapper').forEach(selectInput => {
+    const cbxContainer = selectInput.querySelector('.cbxContainer');
+    const loading = selectInput.querySelector('.loading');
+    const isNews = selectInput.closest('.newsContainer') !== null; 
+    const containerType = isNews ? 'news' : 'banner';
+    
+    selectInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cbxContainer.classList.add('active');
+    });
+
+    cbxContainer.addEventListener('change', () => {
+        loading.classList.add('active');
+        const selectedFilters = Array.from(cbxContainer.querySelectorAll('.cbxInput:checked'))
+            .map(cbx => cbx.value);
+
+        const params = new URLSearchParams(window.location.search);
+        
+        if (isNews) {
+            params.set('news_page', '1');
+            params.delete('visible-news'); 
+            selectedFilters.forEach(val => params.append('visible-news', val));
+        } else {
+            params.set('banner_page', '1');
+            params.delete('visible-banner');
+            selectedFilters.forEach(val => params.append('visible-banner', val));
+        }
+
+        fetch(`${window.location.pathname}?${params.toString()}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const targetSelector = isNews ? '#newsContainer' : '#bannerContainer';
+            console.log("isNews", isNews)
+            console.log(targetSelector)
+            document.querySelector(targetSelector).innerHTML = doc.querySelector(targetSelector).innerHTML;
+            
+            loading.classList.remove('active');
+            
+            window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
+        })
+        .catch(error => {
+            console.error('Filter Error:', error);
+            loading.classList.remove('active');
+        });
+    })
+});
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.cbxContainer.active').forEach(container => {
+        container.classList.remove('active');
+    });
+});
