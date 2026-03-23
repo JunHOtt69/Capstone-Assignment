@@ -21,7 +21,10 @@
         </div>
         <div class="actions">
             <a href="{% url 'announcements_edit' a.pk %}">Edit</a>
-            <button class="delete-btn" data-id="{{ a.pk }}">Delete</button>
+            <form action="{% url 'announcement_delete' a.pk %}?news_page={{ current_news_page }}&banner_page={{ current_banner_page }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                {% csrf_token %}
+                <button type="submit" class="delete-btn">Delete</button>
+            </form>
         </div>
     </div>
 {% empty %}

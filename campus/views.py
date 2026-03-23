@@ -3957,8 +3957,8 @@ def announcement_list(request):
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
 def announcement_manage(request):
-    news_qs = announcement.objects.filter(announcement_type='NORMAL').order_by('-date_published')
-    banner_qs = announcement.objects.filter(announcement_type='BANNER').order_by('-date_published')
+    news_qs = announcement.objects.filter(announcement_type='NORMAL').order_by('date_published')
+    banner_qs = announcement.objects.filter(announcement_type='BANNER').order_by('date_published')
 
     try:
         news_page = int(request.GET.get('news_page', 1))
@@ -4004,3 +4004,36 @@ def announcement_manage(request):
             return render(request, 'partials/banner_list_partial.html', context)
         
     return render(request, "announcement/announcement_manage.html", context)
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def announcement_delete(request, pk, page=1):
+    instance = get_object_or_404(announcement, pk=pk)
+    type = instance.announcement_type.capitalize()
+    instance.delete()
+
+    try:
+        news_page = int(request.GET.get('news_page', '1'))
+        banner_page = int(request.GET.get('banner_page', '1'))
+    except ValueError:
+        news_page = 1
+        banner_page = 1
+
+    if type == 'NORMAL':
+        remaining = announcement.objects.filter(announcement_type='NORMAL').count()
+        items_per_page = 10
+        max_page = math.ceil(remaining / items_per_page) if remaining > 0 else 1
+        
+        if news_page > max_page:
+            news_page = max_page
+    else:
+        remaining = announcement.objects.filter(announcement_type='BANNER').count()
+        items_per_banner_page = 10
+        max_banner_page = math.ceil(remaining / items_per_banner_page) if remaining > 0 else 1
+        
+        if banner_page > max_banner_page:
+            banner_page = max_banner_page
+
+
+    messages.success(request, f'Successfully deleted {type} post.')
+    return redirect(f"{reverse('announcement_manage')}?news_page={news_page}&banner_page={banner_page}")
