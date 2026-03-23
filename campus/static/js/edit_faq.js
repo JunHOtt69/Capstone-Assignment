@@ -58,13 +58,14 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     if(saveBtn){
         saveBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+            // e.preventDefault();
             const contentInput = document.querySelector('#id_content');
             const category =  document.querySelector('#id_category');
             const type = document.querySelector('#id_announcement_type');
             const titleInput = document.querySelector('#id_subject') || document.querySelector('#id_title');
             const bannerTextarea = document.getElementById('bannerText');
-            const isBanner = type? type.value === 'BANNER' : window.campusData.announcement_type == 'BANNER';
+            const announcementType = window.campusData?.announcement_type || "";
+            const isBanner = type? type.value === 'BANNER' : announcementType == 'BANNER';
             
             if (isBanner) {
                 contentInput.value = bannerTextarea.value;
@@ -109,26 +110,26 @@ document.addEventListener("DOMContentLoaded", async function() {
                 return;
             }
 
-            // const loading = document.querySelector('.loading');
-            // loading.classList.add('active');
-            for(const [key, selector] of Object.entries(fieldSelectors)){
-                const element = document.querySelector(selector);
-                if (element) {
-                    if (element.type === 'file') {
-                        // Check if there are actually files selected
-                        if (element.files.length > 0) {
-                            // Convert FileList to Array to see all names in console
-                            const fileNames = Array.from(element.files).map(f => f.name);
-                            console.log(`${key} (Multiple):`, fileNames);
-                        } else {
-                            console.log(`${key}: No files uploaded`);
-                        }
-                    } else {
-                        // Handle regular text/hidden inputs
-                        console.log(key, element.value);
-                    }
-                }
-            }
+            const loading = document.querySelector('.loading');
+            loading.classList.add('active');
+            // for(const [key, selector] of Object.entries(fieldSelectors)){
+            //     const element = document.querySelector(selector);
+            //     if (element) {
+            //         if (element.type === 'file') {
+            //             // Check if there are actually files selected
+            //             if (element.files.length > 0) {
+            //                 // Convert FileList to Array to see all names in console
+            //                 const fileNames = Array.from(element.files).map(f => f.name);
+            //                 console.log(`${key} (Multiple):`, fileNames);
+            //             } else {
+            //                 console.log(`${key}: No files uploaded`);
+            //             }
+            //         } else {
+            //             // Handle regular text/hidden inputs
+            //             console.log(key, element.value);
+            //         }
+            //     }
+            // }
         });
     }
 
@@ -413,7 +414,8 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (isNowTrue) {
                 selectedIds = [];
-                updateHiddenInput();
+                const academic_term_input = document.querySelector('#id_academic_term');
+                if(academic_term_input) updateHiddenInput();
             
                 if (selectedContainer) {
                     selectedContainer.innerHTML = '';
@@ -475,7 +477,9 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (isNowTrue) {
                 selectedIds = [];
-                updateHiddenInput();
+                const academic_term_input = document.querySelector('#id_academic_term');
+                if(academic_term_input) updateHiddenInput();
+                
             
                 if (selectedContainer) {
                     selectedContainer.innerHTML = '';
@@ -595,7 +599,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             academic_term_input.value = selectedIds.join(',');
         }
         
-        const savedIntakeString = window.campusData.savedIntakes;
+        const savedIntakeString = window.campusData?.savedIntakes || "";
         
         if (savedIntakeString) {
             const savedIds = savedIntakeString.split(',');

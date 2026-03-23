@@ -176,7 +176,7 @@
         <section class="contentInput">
             {{ form.content }}
             <div class="textAreaWrapper {% if not instance or instance.announcement_type == "BANNER" %}hide{% endif %}" id="newsInput">
-                <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
+                <div class="editor" id="editor"><p><br></p></div>
             </div>
             <div class="textAreaWrapper {% if not instance or instance.announcement_type == "NORMAL" %}hide{% endif %}" id="bannerInput">
                 <textarea id="bannerText" maxlength="200" placeholder="Enter scrolling banner text..."></textarea>
