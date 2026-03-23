@@ -9,7 +9,7 @@
 .attendance-container .overall-box {
   text-align: center; 
   border: 3px solid black;
-  background-color: yellowgreen;
+  background-color: greenyellow;
 }
 
 .attendance-container .current-sem-box{
@@ -18,7 +18,7 @@
     border: 3px solid black;
     border-radius: 12px;
     padding: 20px;
-    background-color: yellowgreen;
+    background-color: greenyellow;
     box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
     margin: 20px auto;
 }
@@ -32,7 +32,7 @@
 
 .attendance-container .sem-stats {
     text-align: center;
-    background-color: yellowgreen;
+    background-color: greenyellow;
     padding: 10px;
     border-radius: 8px;
 }
@@ -44,7 +44,7 @@
 .attendance-container .thick-line {
     border: none;
     height: 6px;
-    background-color: yellowgreen;
+    background-color: greenyellow;
     margin: 20px 0;
 }
 
@@ -54,7 +54,7 @@
     border: 3px solid black;
     border-radius: 12px;
     padding: 20px;
-    background-color: yellowgreen;
+    background-color: greenyellow;
     box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
     margin: 20px auto;
 }
