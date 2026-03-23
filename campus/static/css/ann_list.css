@@ -78,11 +78,14 @@ main{
     margin-bottom: 1vw;
 }
 
+.newsContent{
+    align-self: flex-start;
+}
+
 .newsContent p{
     margin-top: 0;
     margin-bottom: 0.5vw;
     text-align: justify;
-
 }
 
 .newsContent ol,
@@ -215,3 +218,4 @@ main{
     background-color: rgba(var(--dark-green), 1);
     filter: brightness(100%);
 }
+

@@ -19,7 +19,13 @@ const fieldSelectors = {
 window.attachQuillListeners = function(){
     const hiddenContent = document.querySelector('#id_content').value;
     if (hiddenContent && hiddenContent.trim() !== "") {
-        quill.root.innerHTML = hiddenContent;
+        if(window.campusData.announcement_type == "BANNER"){
+            const bannerText = document.getElementById('bannerText');
+            bannerText.value = hiddenContent;
+            updateBannerCounter();
+        }else{
+            quill.root.innerHTML = hiddenContent;
+        }
     }else {
         quill.setContents([]); 
     }
@@ -57,8 +63,11 @@ document.addEventListener("DOMContentLoaded", async function() {
             const category =  document.querySelector('#id_category');
             const type = document.querySelector('#id_announcement_type');
             const titleInput = document.querySelector('#id_subject') || document.querySelector('#id_title');
-
-            if (type && type.value === 'BANNER') {
+            const bannerTextarea = document.getElementById('bannerText');
+            const announcementType = window.campusData?.announcement_type || "";
+            const isBanner = type? type.value === 'BANNER' : announcementType == 'BANNER';
+            
+            if (isBanner) {
                 contentInput.value = bannerTextarea.value;
             } else {
                 contentInput.value = quill.root.innerHTML;
@@ -93,6 +102,14 @@ document.addEventListener("DOMContentLoaded", async function() {
                 isSubmitting = false;
                 alert("The announcement type cannot be empty!");
             }
+
+            if (!checkChanges()) {
+                e.preventDefault();
+                alert("No changes detected. Nothing to save!");
+                isSubmitting = false;
+                return;
+            }
+
             const loading = document.querySelector('.loading');
             loading.classList.add('active');
             // for(const [key, selector] of Object.entries(fieldSelectors)){
@@ -117,22 +134,49 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     if(deleteBtn){
+        const type = document.querySelector('#id_announcement_type');
         deleteBtn.onclick = (e) => {
             e.preventDefault();
-            if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
+            if(type){
+                if (confirm("Are you sure you want to delete this Announcement? This cannot be undone.")) {
+                    const container = document.querySelector('.faqInfo');
+                    const id = container.dataset.id;
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/announcements/delete/${id}/`;
 
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = 'csrfmiddlewaretoken';
-                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                
-                form.appendChild(csrfInput);
-                document.body.appendChild(form);
-                
-                form.submit();
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    
+                    if(csrfToken){
+                        csrfInput.value = csrfToken.value;
+                        form.appendChild(csrfInput);
+                        document.body.appendChild(form);
+                        
+                        form.submit();
+                    }else{
+                        console.error("CSRF token not found. Make sure {% csrf_token %} is in your template.");
+                    }
+                }
+            }else{
+                if (confirm("Are you sure you want to delete this FAQ? This cannot be undone.")) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/delete-faq/${deleteBtn.dataset.slug}/`;
+
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    
+                    form.appendChild(csrfInput);
+                    document.body.appendChild(form);
+                    
+                    form.submit();
+                }
             }
         }
     }
@@ -141,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const categoryInput = document.getElementById('id_category');
     const announcement_typeInput = document.getElementById('id_announcement_type');
     const selectInput = document.getElementById('categorySelect');
-    const selectedLabel = selectInput.querySelector('.selectedLabel');
+    const selectedLabel = document.querySelector('.selectInput .selectedLabel');
     const categoryOptions = document.getElementById('categoryOptions');
     const typeOptions = document.getElementById('typeOptions');
     const imageUploadContainer = document.querySelector('.imageUploadContainer');
@@ -212,6 +256,28 @@ document.addEventListener("DOMContentLoaded", async function() {
                 toggleInputFields(selectedValue);
             }
         });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeFromUrl = urlParams.get('type');
+    if (typeFromUrl && typeOptions) {
+        const targetRadio = typeOptions.querySelector(`input[value="${typeFromUrl}"]`);
+        
+        if (targetRadio) {
+            targetRadio.checked = true;
+
+            const chosenText = targetRadio.nextElementSibling.innerText;
+            const selectInput = targetRadio.closest('.selectInput');
+            const displayLabel = selectInput.querySelector('.selectedLabel label');
+
+            displayLabel.innerText = `Type: ${chosenText}`;
+            
+            const announcement_typeInput = document.getElementById('id_announcement_type');
+            if (announcement_typeInput) {
+                announcement_typeInput.value = typeFromUrl;
+                toggleInputFields(typeFromUrl);
+            }
+        }
     }
 
     const extraConfig = document.querySelector('.extraConfig ul');
@@ -300,9 +366,9 @@ document.addEventListener("DOMContentLoaded", async function() {
             const djangoInput = document.querySelector(`#id_${djangoId}`);
             const toggle = template.querySelector(toggleId);
             if (djangoInput && toggle){
+                
                 const val = djangoInput.value === 'True';
                 toggle.dataset.value = val;
-                
                 if(!val) allChecked = false;
             }
         });
@@ -348,7 +414,8 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (isNowTrue) {
                 selectedIds = [];
-                updateHiddenInput();
+                const academic_term_input = document.querySelector('#id_academic_term');
+                if(academic_term_input) updateHiddenInput();
             
                 if (selectedContainer) {
                     selectedContainer.innerHTML = '';
@@ -410,7 +477,9 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (isNowTrue) {
                 selectedIds = [];
-                updateHiddenInput();
+                const academic_term_input = document.querySelector('#id_academic_term');
+                if(academic_term_input) updateHiddenInput();
+                
             
                 if (selectedContainer) {
                     selectedContainer.innerHTML = '';
@@ -530,7 +599,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             academic_term_input.value = selectedIds.join(',');
         }
         
-        const savedIntakeString = window.campusData.savedIntakes;
+        const savedIntakeString = window.campusData?.savedIntakes || "";
         
         if (savedIntakeString) {
             const savedIds = savedIntakeString.split(',');
@@ -683,7 +752,11 @@ document.addEventListener('click', (e) => {
     const selectInput = document.getElementById('categorySelect');
     const options = document.getElementById('categoryOptions') || document.getElementById('typeOptions');
     
-    if(!selectInput.contains(e.target) && !options.contains(e.target)){
+    if(selectInput && 
+        options && 
+        !selectInput.contains(e.target) && 
+        !options.contains(e.target)
+    ){
         selectInput.classList.toggle('active', false);
     }
 });
@@ -691,6 +764,13 @@ document.addEventListener('click', (e) => {
 window.addEventListener('beforeunload', (event) => {
     if (isSubmitting) return;
 
+    if (checkChanges()) {
+        event.preventDefault();
+        event.returnValue = ''; 
+    }
+});
+
+function checkChanges(){
     let currentData = {};
     for(const [key, selector] of Object.entries(fieldSelectors)){
         const element = document.querySelector(selector);
@@ -703,11 +783,8 @@ window.addEventListener('beforeunload', (event) => {
         return initialData.hasOwnProperty(key) && currentData[key] !== initialData[key]
     });
 
-    if (hasChanged) {
-        event.preventDefault();
-        event.returnValue = ''; 
-    }
-});
+    return hasChanged;
+}
 
 
 const dropzoneTitle = document.querySelector('.dropzoneTitle');

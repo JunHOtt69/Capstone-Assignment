@@ -376,7 +376,7 @@ class attachments(models.Model):
 class AttendanceSession(models.Model):
     otp = models.CharField(max_length=4)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name="created_attendance_sessions")
-    subject = models.ForeignKey('subject', on_delete=models.CASCADE, null=True, blank=True, related_name="attendance_sessions") 
+    #subject = models.ForeignKey("subject", on_delete=models.CASCADE, null=True, blank=True, related_name="attendance_sessions") 
     created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
     is_active = models.BooleanField(default=True)
@@ -620,3 +620,18 @@ class announcementTarget(models.Model):
 
     def __str__(self):
         return f"Target for {self.announcement.subject}: {self.user_group}"
+
+    @property
+    def intake(self):
+        if not self.academic_term:
+            return []
+        
+        try:
+            term_ids = [tid.strip() for tid in self.academic_term.split(',') if tid.strip()]
+            
+            return list(academic_term.objects.filter(
+                term_id__in=term_ids
+            ).values_list('intake_code', flat=True))
+
+        except Exception:
+            return []

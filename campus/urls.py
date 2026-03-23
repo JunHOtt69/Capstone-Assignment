@@ -89,6 +89,7 @@ urlpatterns = [
     path('announcements/new/', views.announcements_form, name='announcements_form'),
     path('announcements/edit/<int:ann_id>/', views.announcements_form, name='announcements_edit'),
     path('announcements/manage/', views.announcement_manage, name='announcement_manage'),
+    path('announcements/delete/<int:pk>/', views.announcement_delete, name='announcement_delete'),
     path('announcements/', views.announcement_list, name='announcement_list'),
 
     # Help center
@@ -109,12 +110,12 @@ urlpatterns = [
     path('support/tickets/partial/', views.ticket_list_ajax, name='ticket_list_ajax'),
     path('support/tickets/take/<int:ticket_id>/', views.take_ownership, name='take_ownership'),
     path('support/tickets/<int:ticket_id>/sync/', views.sync_messages, name='sync_messages'),
-    
+    path('suggestions/', views.faq_suggestions,name='faq_suggestions'),
+
     path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
     path('config-bot/', views.config_bot,name='config_bot'),
     path('system-log/', views.system_log,name='system_log'),
-    path('suggestions/', views.faq_suggestions,name='faq_suggestions'),
-
+    
 
     #Facility
     path("facility/", views.facility_list, name="facility_list"),

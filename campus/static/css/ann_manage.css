@@ -62,6 +62,13 @@ hr{
     width:auto;
 }
 
+.sectionControls{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1vw;
+}
+
 .pageWrapper button{
     padding: 0.2vw;
     height: 1.5vw;
@@ -109,12 +116,17 @@ hr{
     font-size: var(--xs-fontsize);
 }
 
-.newsInfo{
+.newsInfo,
+.bannerInfo{
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.2vw;
+}
+
+.bannerInfo{
+    gap: 0.5vw;
 }
 
 .subject{
@@ -123,6 +135,33 @@ hr{
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.bannerContent{
+    width: 35vw;
+    max-width: 35vw;
+    white-space: normal;
+}
+
+.info, .visibleClass{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    flex-wrap: wrap;
+}
+
+.tag{
+    width: auto;
+    padding: 0.1vw 0.3vw;
+    background-color: rgba(var(--black), 0.1);
+    color: rgba(var(--black), 0.8);
+    font-size: var(--xs-fontsize);
+}
+
+.bannerContent{
+    width: auto;
+    overflow: visible;
 }
 
 .date{
@@ -179,4 +218,172 @@ hr{
     color: rgba(var(--black), 1);
     background-color: greenyellow;
     border: 0.01vw solid rgba(var(--black), 1);
+}
+
+.createBtn{
+    padding: 0.2vw 0.5vw;
+    background-color: transparent;
+    text-decoration: none;
+    outline: none;
+    color: rgba(var(--black), 1);
+    cursor: pointer;
+    transition: background-color .2s, color .2s;
+    font-size: var(--h4-fontsize);
+    line-height: 1;
+}
+
+.createBtn:hover{
+    background-color: greenyellow;
+}
+
+.filterWrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+}
+
+.filterIcon{
+    width: 1.5vw;
+    height: 1.5vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.2vw 0.3vw;
+    background-color: transparent;
+}
+
+.filterIcon path{
+    stroke: rgba(var(--black), 1);
+    stroke-width: 15;
+    transition: stroke .2s;
+}
+
+.filterIcon:hover path{
+    stroke: rgba(var(--dark-green), 1);
+}
+
+.cbxContainer{
+    width: 0;
+    max-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.2vw;
+    overflow: hidden;
+    overflow-y: auto;
+    z-index: 99;
+    border: 0.1vw solid rgba(var(--black), 1);
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    background-color: white;
+    top: 100%;
+    transform: translateX(calc(-50% + (1.5vw)/2));
+    font-size: var(--xs-fontsize);
+    padding: 0.2vw 0.5vw; 
+    box-shadow: 0 0.5vw 0.5vw rgba(var(--black), 0.1);
+}
+
+.cbxWrapper input[type="checkbox"]{
+    display: none;
+}
+
+.cbxContainer .cbxWrapper{
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    cursor: pointer;
+}
+
+.cbxContainer .cbxWrapper .cbxTitle{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.cbxTitle .categoryLabel,
+.cbxTitle .statusLabel{
+    line-height: 2;
+}
+
+.cbx{
+    display: inline-block;
+    position: relative;
+    left: 0;
+    top: 0;
+    flex: 0 0 0.8vw;
+    height: 0.8vw;
+    border: 0.1vw solid rgba(var(--black), 1);
+    background-color: white;
+    transition: 0.2s;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.cbx:hover{
+    background-color: rgba(217, 217, 217);
+}
+
+.cbx:after {
+  content: "";
+  position: absolute;
+  top: 0.02vw;
+  left: 0.18vw;
+  width: 0.2vw;
+  height: 0.4vw;
+  opacity: 1;
+  transform: rotate(45deg) scale(0);
+  border-right: 0.07vw solid white;
+  border-bottom: 0.07vw solid white;
+  transition: all 0.1s ease;
+  transition-delay: 0.15s;
+}
+
+.cbxWrapper input[type="checkbox"]:checked + .cbxTitle .cbx{
+    border-color: transparent;
+    background-color: black;
+}
+
+.cbxWrapper input[type="checkbox"]:checked + .cbxTitle .cbx::after{
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+}
+
+.cbxContainer.active{
+    opacity: 1;
+    pointer-events: auto;
+    animation: revealBorder2 0.3s ease-in-out forwards;
+}
+
+.visibilityLabel{
+    user-select: none;
+}
+
+@keyframes revealBorder2 {
+    0% {
+        left: 50%;
+        width: 0;
+        max-height: 0;
+    }
+    5%{
+        left: 43.75%;
+        width: 5%;
+        max-height: 0.1vw;
+    }
+    40% {
+        left: 0;
+        width: 7vw;
+        max-height: 0.1vw;
+    }
+    100% {
+        left: 0;
+        width: 7vw;
+        max-height: 10vw;
+    }
 }

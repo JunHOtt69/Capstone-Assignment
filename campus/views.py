@@ -3921,8 +3921,8 @@ def rearrange_missing_class(request):
 #announcement function
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
-def announcements_form(request, pk=None):
-    instance = get_object_or_404(announcement, pk=pk) if pk else None
+def announcements_form(request, ann_id=None):
+    instance = get_object_or_404(announcement, pk=ann_id) if ann_id else None
     target_instance = None
 
     if instance:
@@ -3948,6 +3948,9 @@ def announcements_form(request, pk=None):
 
             is_for_students = request.POST.get('is_tp_visible') == 'True'
             intake_ids_raw = request.POST.get('academic_term', '')
+            academic_term_val = None
+            if not is_for_students and intake_ids_raw:
+                academic_term_val = intake_ids_raw
 
             announcementTarget.objects.update_or_create(
                 announcement=ann_obj,
@@ -3956,7 +3959,7 @@ def announcements_form(request, pk=None):
                     'is_for_lecturer': request.POST.get('is_lc_visible') == 'True',
                     'is_for_admins': request.POST.get('is_ad_visible') == 'True', 
                     'is_visitor_visible': request.POST.get('is_visitor_visible') == 'True', 
-                    'academic_term': intake_ids_raw if not is_for_students else None
+                    'academic_term': academic_term_val,
                 }
             )
 
@@ -3966,7 +3969,16 @@ def announcements_form(request, pk=None):
             messages.error(request, "There was an error in the form. Please check your inputs.")
             print(form.errors)
     else:
-        form = newAnnouncemeentForm(instance=instance)
+        initial_data = {}
+        if target_instance:
+            initial_data = {
+                'is_ad_visible': target_instance.is_for_admins,
+                'is_lc_visible': target_instance.is_for_lecturer,
+                'is_tp_visible': target_instance.is_for_students,
+                'is_visitor_visible': target_instance.is_visitor_visible,
+                'academic_term': target_instance.academic_term,
+            }
+        form = newAnnouncemeentForm(instance=instance, initial=initial_data)
 
     available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
     context = {
@@ -4005,11 +4017,56 @@ def announcement_list(request):
     }
     return render(request, "announcement/announcement_list.html", context)
 
+def get_visibility_count(ann_type, field_key):
+    base_filter = announcementTarget.objects.filter(announcement__announcement_type=ann_type)
+    
+    if field_key == 'is_for_students':
+        return base_filter.filter(
+            Q(is_for_students=True) | Q(academic_term__isnull=False)
+        ).exclude(academic_term='').distinct().count()
+    
+    return base_filter.filter(**{field_key: True}).count()
+
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
 def announcement_manage(request):
     news_qs = announcement.objects.filter(announcement_type='NORMAL').order_by('-date_published')
     banner_qs = announcement.objects.filter(announcement_type='BANNER').order_by('-date_published')
+
+    target_groups = [
+        ('is_for_admins', 'Admins'),
+        ('is_for_lecturer', 'Lecturers'),
+        ('is_for_students', 'Students'),
+        ('is_visitor_visible', 'Visitors'),
+    ]
+
+    news_visibility_counts = {
+        key: get_visibility_count('NORMAL', key) for key, label in target_groups
+    }
+
+    banner_visibility_counts = {
+        key: get_visibility_count('BANNER', key) for key, label in target_groups
+    }
+
+    visible_news = request.GET.getlist('visible-news')
+    if visible_news:
+        news_query = Q()
+        for field in visible_news:
+            if field == 'is_for_students':
+                news_query |= Q(targets__is_for_students=True) | Q(targets__academic_term__isnull=False)
+            else:
+                news_query |= Q(**{f"targets__{field}": True})
+        news_qs = news_qs.filter(news_query).distinct()
+
+    visible_banner = request.GET.getlist('visible-banner')
+    if visible_banner:
+        banner_query = Q()
+        for field in visible_banner:
+            if field == 'is_for_students':
+                banner_query |= Q(targets__is_for_students=True) | Q(targets__academic_term__isnull=False)
+            else:
+                banner_query |= Q(**{f"targets__{field}": True})
+        banner_qs = banner_qs.filter(banner_query).distinct()
 
     try:
         news_page = int(request.GET.get('news_page', 1))
@@ -4018,7 +4075,7 @@ def announcement_manage(request):
         news_page = 1
         banner_page = 1
 
-    limit = 1
+    limit = 10
 
     news_total = news_qs.count()
     max_news_pages = max(1, math.ceil(news_total / limit))
@@ -4035,6 +4092,9 @@ def announcement_manage(request):
     banner_list = banner_qs[banner_start : banner_start + limit]
 
     context = {
+        'target_groups': target_groups,
+        'news_visibility_counts': news_visibility_counts,
+        'banner_visibility_counts': banner_visibility_counts,
         'news_list': news_list,
         'banner_list': banner_list,
         'current_news_page': news_page,
@@ -4046,11 +4106,45 @@ def announcement_manage(request):
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        print('ajax request')
         target = request.GET.get('target')
-        
+        print(target)
         if target == 'news':
             return render(request, 'partials/announcement_list_partial.html', context)
         elif target == 'banner':
             return render(request, 'partials/banner_list_partial.html', context)
         
     return render(request, "announcement/announcement_manage.html", context)
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def announcement_delete(request, pk, page=1):
+    instance = get_object_or_404(announcement, pk=pk)
+    type = instance.announcement_type.capitalize()
+    instance.delete()
+
+    try:
+        news_page = int(request.GET.get('news_page', '1'))
+        banner_page = int(request.GET.get('banner_page', '1'))
+    except ValueError:
+        news_page = 1
+        banner_page = 1
+
+    if type == 'NORMAL':
+        remaining = announcement.objects.filter(announcement_type='NORMAL').count()
+        items_per_page = 10
+        max_page = math.ceil(remaining / items_per_page) if remaining > 0 else 1
+        
+        if news_page > max_page:
+            news_page = max_page
+    else:
+        remaining = announcement.objects.filter(announcement_type='BANNER').count()
+        items_per_banner_page = 10
+        max_banner_page = math.ceil(remaining / items_per_banner_page) if remaining > 0 else 1
+        
+        if banner_page > max_banner_page:
+            banner_page = max_banner_page
+
+
+    messages.success(request, f'Successfully deleted {type} post.')
+    return redirect(f"{reverse('announcement_manage')}?news_page={news_page}&banner_page={banner_page}")

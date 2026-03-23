@@ -11,7 +11,7 @@
 {% block content %}
 <div class="faqPage">
     <div class="faqPageReturn" >
-        <span class="returnIcon" onclick="location.href='/announcements/';">
+        <span class="returnIcon" onclick="location.href='/announcements/manage';">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
             </svg>
@@ -20,11 +20,13 @@
     </div>
     <form method="post" id="faq" enctype="multipart/form-data">
         {% csrf_token %}
-        <section class="faqInfo">
+        <section class="faqInfo" data-id="{% if instance %}{{ instance.pk }}{% endif %}">
             <div class="titleInputWrapper">
                 <span class="placeholder">Subject</span>
                 {{ form.subject }}
             </div>
+
+            {% if not instance %}
             <div class="faqCategory">
                 <div class="selectInput"  id="categorySelect">
                     <div class="selectedLabel announcementType">
@@ -45,9 +47,11 @@
                         {% endfor %}
                     </div>
                 </div>
-                {{ form.announcement_type }}
             </div>
+            {% endif %}
 
+            {{ form.announcement_type }}
+            
             {% if instance %}
                 <div class="basicInfoWrapper">
                     <div class="Author">
@@ -65,6 +69,16 @@
                         <span class="value">
                             {% if instance.published_time %}
                                 {{ instance.published_time }}
+                            {% else %}
+                                Not Published Yet
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="announcement_type">
+                        <span>Announcement Type: </span>
+                        <span class="value">
+                            {% if instance.announcement_type %}
+                                {{ instance.announcement_type }}
                             {% else %}
                                 Not Published Yet
                             {% endif %}
@@ -99,7 +113,7 @@
                 <div></div>
                 <div class="formBtnWrapper">
                     {% if instance %}
-                    <button class="deactive">Deactive</button>
+                    <button class="delete">Delete</button>
                     {% endif %}
                     <button class="cancel">Discard Changes</button>
                     <button class="save">Save</button>
@@ -161,10 +175,10 @@
         </section>
         <section class="contentInput">
             {{ form.content }}
-            <div class="textAreaWrapper hide" id="newsInput">
-                <div class="editor" id="editor" contenteditable="true" placeholder=" "></div>
+            <div class="textAreaWrapper {% if not instance or instance.announcement_type == "BANNER" %}hide{% endif %}" id="newsInput">
+                <div class="editor" id="editor"><p><br></p></div>
             </div>
-            <div class="textAreaWrapper hide" id="bannerInput">
+            <div class="textAreaWrapper {% if not instance or instance.announcement_type == "NORMAL" %}hide{% endif %}" id="bannerInput">
                 <textarea id="bannerText" maxlength="200" placeholder="Enter scrolling banner text..."></textarea>
                 <div class="textCount">
                     <span id="charCount">200</span> characters remaining
@@ -181,7 +195,8 @@
     <script>
         window.campusData = {
             savedIntakes: "{{ targetInfo.academic_term|default:'' }}",
-            isStudentVisible: "{{ targetInfo.is_for_students|yesno:'true,false' }}"
+            isStudentVisible: "{{ targetInfo.is_for_students|yesno:'true,false' }}",
+            announcement_type: "{{ instance.announcement_type }}"
         };
         
         const quill= new Quill('#editor', {
@@ -196,18 +211,22 @@
             formats: ['bold', 'italic', 'underline', 'list']
         });
         attachQuillListeners();
-         
+        
         const bannerTextarea = document.getElementById('bannerText');
-        const charCountDisplay = document.getElementById('charCount');
-        const MAX_CHARS = 200;
+        bannerTextarea.addEventListener('input', updateBannerCounter);
 
-        bannerTextarea.addEventListener('input', function() {
+        function updateBannerCounter(){
             const announcement_typeInput = document.getElementById('id_announcement_type');
+            const isBanner = announcement_typeInput? announcement_typeInput.value === 'BANNER' : window.campusData.announcement_type == "BANNER";
+            const MAX_CHARS = 200;
             const hiddenContent = document.querySelector('#id_content');
-            if (announcement_typeInput.value === 'BANNER') {
-                hiddenContent.value = this.value;
+            const charCountDisplay = document.getElementById('charCount');
+            const bannerTextarea = document.getElementById('bannerText');
 
-                const remaining = MAX_CHARS - this.value.length;
+            if (isBanner) {
+                hiddenContent.value = bannerTextarea.value;
+
+                const remaining = MAX_CHARS - bannerTextarea.value.length;
                 charCountDisplay.innerText = remaining;
 
                 if (remaining <= 10) {
@@ -218,9 +237,7 @@
                     charCountDisplay.style.fontWeight = "normal";
                 }
             }
-        });
-
-
+        }
     </script>
 {% endblock %} 
 

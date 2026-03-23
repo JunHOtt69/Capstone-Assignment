@@ -25,6 +25,7 @@
                 <div class="newsContent">
                     {{ news.content|safe }}
                 </div>
+                {% if news.all_attachments.exists %}
                 <div class="newsAttachment">
                     <span class="arrow left">&lt;</span>
                     <span class="arrow right">&gt;</span>
@@ -47,6 +48,7 @@
                         {% endfor %}
                     </div>
                 </div>
+                {% endif %}
             </div>
             {% empty %}
             <p>No news updates available at the moment.</p>
