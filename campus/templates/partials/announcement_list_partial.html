@@ -2,7 +2,22 @@
     <div class="newsRow">
         <div class="newsInfo">
             <p class="subject">{{ a.subject }}</p>
-            <span class="date">{{ a.date_published|date:"d M Y" }}</span>
+            <div class="info">
+                <span class="date">{{ a.date_published|date:"d M Y" }}</span>
+                <div class="visibleClass">
+                    {% with target=a.targets.all.0 %}
+                        {% if target.is_for_students %}<span class="tag">Students</span>{% endif %}
+                        {% if target.is_for_lecturer %}<span class="tag">Lecturers</span>{% endif %}
+                        {% if target.is_for_admins %}<span class="tag">Admins</span>{% endif %}
+                        {% if target.is_visitor_visible %}<span class="tag">Visitors</span>{% endif %}
+                        {% if target.academic_term %}
+                        {% for intake in target.intake %}
+                                <span class="tag">{{ intake }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
         </div>
         <div class="actions">
             <a href="{% url 'announcements_edit' a.pk %}">Edit</a>

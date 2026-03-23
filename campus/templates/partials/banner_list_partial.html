@@ -1,7 +1,22 @@
 {% for b in banner_list %}
     <div class="bannerRow">
-        <div class="bannerContent">
-            {{ b.content|striptags|truncatechars:60 }}
+        <div class="bannerInfo">
+            <div class="bannerContent">
+                {{ b.content|striptags}}
+            </div>
+            <div class="visibleClass">
+                {% with target=b.targets.all.0 %}
+                    {% if target.is_for_students %}<span class="tag">Students</span>{% endif %}
+                    {% if target.is_for_lecturer %}<span class="tag">Lecturers</span>{% endif %}
+                    {% if target.is_for_admins %}<span class="tag">Admins</span>{% endif %}
+                    {% if target.is_visitor_visible %}<span class="tag">Visitors</span>{% endif %}
+                    {% if target.academic_term %}
+                        {% for intake in target.intake %}
+                            <span class="tag">{{ intake }}</span>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
         </div>
         <div class="actions">
             <a href="{% url 'announcements_edit' b.announcement_id %}">Edit</a>

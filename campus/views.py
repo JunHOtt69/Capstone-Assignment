@@ -3608,8 +3608,8 @@ def rearrange_missing_class(request):
 #announcement function
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
-def announcements_form(request, pk=None):
-    instance = get_object_or_404(announcement, pk=pk) if pk else None
+def announcements_form(request, ann_id=None):
+    instance = get_object_or_404(announcement, pk=ann_id) if ann_id else None
     target_instance = None
 
     if instance:
@@ -3653,7 +3653,16 @@ def announcements_form(request, pk=None):
             messages.error(request, "There was an error in the form. Please check your inputs.")
             print(form.errors)
     else:
-        form = newAnnouncemeentForm(instance=instance)
+        initial_data = {}
+        if target_instance:
+            initial_data = {
+                'is_ad_visible': target_instance.is_for_admins,
+                'is_lc_visible': target_instance.is_for_lecturer,
+                'is_tp_visible': target_instance.is_for_students,
+                'is_visitor_visible': target_instance.is_visitor_visible,
+                'academic_term': target_instance.academic_term,
+            }
+        form = newAnnouncemeentForm(instance=instance, initial=initial_data)
 
     available_term = list(academic_term.objects.values('term_id', 'intake_code').order_by('-start_date'))
     context = {
@@ -3705,7 +3714,7 @@ def announcement_manage(request):
         news_page = 1
         banner_page = 1
 
-    limit = 1
+    limit = 10
 
     news_total = news_qs.count()
     max_news_pages = max(1, math.ceil(news_total / limit))
@@ -3733,8 +3742,9 @@ def announcement_manage(request):
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        print('ajax request')
         target = request.GET.get('target')
-        
+        print(target)
         if target == 'news':
             return render(request, 'partials/announcement_list_partial.html', context)
         elif target == 'banner':

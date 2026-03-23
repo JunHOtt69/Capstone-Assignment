@@ -17,20 +17,20 @@
             <div class="sectionHeader">
                 <div class="sectionTitle"><h3>Normal News</h3></div>
                 {% if show_news_pagination %}
-                    <div class="displayControl">
+                    <div class="displayControl" data-current-page = "{{ current_news_page }}" data-max-pages="{{ max_news_pages }}" id="news_currentPage">
                         <input type="hidden" id="maxNewsPages" name="maxNewsPages" value="{{ max_news_pages }}">
                         <div class="pageWrapper">
-                            <button id="prevPage" class="pageBtn"
+                            <button class="previous pageBtn"
                                 {% if current_news_page == 1 %}
                                     disabled
                                 {% endif %}
                             >&laquo;</button>
                                 
-                            <div id="pageNumbers" class="pageNumbers">
+                            <div class="pageNumbers">
                                 {{ current_news_page }} / {{ max_news_pages }}
                             </div>
 
-                            <button id="nextPage" class="pageBtn"
+                            <button class="next pageBtn"
                                 {% if current_news_page == max_news_pages %}
                                     disabled
                                 {% endif %}
@@ -38,7 +38,6 @@
                         </div>
                     </div>
                 {% endif %}
-                
             </div>
             <div class="newsList" id="newsContainer">
                 {% include "partials/announcement_list_partial.html" %}
@@ -49,20 +48,20 @@
             <div class="sectionHeader">
                 <div class="sectionTitle"><h3>Banners</h3></div>
                 {% if show_banner_pagination %}
-                    <div class="displayControl">
+                    <div class="displayControl" data-current-page = "{{ current_banner_page }}" data-max-pages="{{ max_banner_pages }}" id="banner_currentPage">
                         <input type="hidden" id="maxBannerPages" name="maxBannerPages" value="{{ max_banner_pages }}">
                         <div class="pageWrapper">
-                            <button id="prevPage" class="pageBtn"
+                            <button class="previous pageBtn"
                                 {% if current_banner_page == 1 %}
                                     disabled
                                 {% endif %}
                             >&laquo;</button>
                                 
-                            <div id="pageNumbers" class="pageNumbers">
+                            <div class="pageNumbers">
                                 {{ current_banner_page }} / {{ max_banner_pages }}
                             </div>
 
-                            <button id="nextPage" class="pageBtn"
+                            <button class="next pageBtn"
                                 {% if current_banner_page == max_banner_pages %}
                                     disabled
                                 {% endif %}
@@ -80,5 +79,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    <!-- <script src="{% static 'js/ann_list.js' %}"></script> -->
+    <script src="{% static 'js/ann_manage.js' %}"></script>
 {% endblock %} 

@@ -619,3 +619,18 @@ class announcementTarget(models.Model):
 
     def __str__(self):
         return f"Target for {self.announcement.subject}: {self.user_group}"
+
+    @property
+    def intake(self):
+        if not self.academic_term:
+            return []
+        
+        try:
+            term_ids = [tid.strip() for tid in self.academic_term.split(',') if tid.strip()]
+            
+            return list(academic_term.objects.filter(
+                term_id__in=term_ids
+            ).values_list('intake_code', flat=True))
+
+        except Exception:
+            return []

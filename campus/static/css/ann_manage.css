@@ -109,12 +109,17 @@ hr{
     font-size: var(--xs-fontsize);
 }
 
-.newsInfo{
+.newsInfo,
+.bannerInfo{
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.2vw;
+}
+
+.bannerInfo{
+    gap: 0.5vw;
 }
 
 .subject{
@@ -123,6 +128,33 @@ hr{
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.bannerContent{
+    width: 35vw;
+    max-width: 35vw;
+    white-space: normal;
+}
+
+.info, .visibleClass{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    flex-wrap: wrap;
+}
+
+.tag{
+    width: auto;
+    padding: 0.1vw 0.3vw;
+    background-color: rgba(var(--black), 0.1);
+    color: rgba(var(--black), 0.8);
+    font-size: var(--xs-fontsize);
+}
+
+.bannerContent{
+    width: auto;
+    overflow: visible;
 }
 
 .date{
