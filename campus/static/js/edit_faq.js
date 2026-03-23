@@ -230,6 +230,28 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeFromUrl = urlParams.get('type');
+    if (typeFromUrl && typeOptions) {
+        const targetRadio = typeOptions.querySelector(`input[value="${typeFromUrl}"]`);
+        
+        if (targetRadio) {
+            targetRadio.checked = true;
+
+            const chosenText = targetRadio.nextElementSibling.innerText;
+            const selectInput = targetRadio.closest('.selectInput');
+            const displayLabel = selectInput.querySelector('.selectedLabel label');
+
+            displayLabel.innerText = `Type: ${chosenText}`;
+            
+            const announcement_typeInput = document.getElementById('id_announcement_type');
+            if (announcement_typeInput) {
+                announcement_typeInput.value = typeFromUrl;
+                toggleInputFields(typeFromUrl);
+            }
+        }
+    }
+
     const extraConfig = document.querySelector('.extraConfig ul');
     const commentIcon = extraConfig.querySelector('.commentIcon');
     const visibleIcon = extraConfig.querySelector('.visibleIcon');

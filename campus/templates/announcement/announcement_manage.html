@@ -39,7 +39,7 @@
                             </div>
                         </div>
                     {% endif %}
-                    <a class="createBtn" href="{% url "announcements_form"?type=BANNER %}">+</a>
+                    <a class="createBtn" href="{% url "announcements_form" %}?type=NORMAL" target="_blank">+</a>
                 </div>
             </div>
             <div class="newsList" id="newsContainer">
@@ -73,7 +73,7 @@
                             </div>
                         </div>
                     {% endif %}
-                    <a class="createBtn" href="{% url "announcements_form"?type=BANNER %}">+</a>
+                    <a class="createBtn" href="{% url "announcements_form" %}?type=BANNER" target="_blank">+</a>
                 </div>
             </div>
             <div class="bannerList" id="bannerContainer">
