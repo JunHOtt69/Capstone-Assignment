@@ -13,7 +13,7 @@
 <div class="attendance-container">
 <div class="student-box">
     <hr>
-    <h5><strong>Name:</strong> {{student.name}}</h5>
+    <h4><strong>Name:</strong> {{student.name|title}}</h4>
     <p><strong>Intake Code:</strong> {{student.intake_code}}</p>
     <hr>
 </div>
@@ -79,7 +79,7 @@
                         <p>{{ course.percentage }}%</p>
 
                     <div class="bar">
-                        <div class="bar-fill {% if course.percentage < 80%}low{%else%}good{%endif%}"style="width: {{course.percentage}}%;"></div>
+                        <div class="bar-fill {% if course.percentage < 80 %}low{% else %}good{% endif %}"style="width: {{ course.percentage }}%;"></div>
                     </div>
                     </div>
                 {% endfor %}

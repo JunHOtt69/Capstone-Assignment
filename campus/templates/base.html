@@ -271,6 +271,7 @@
     {% if user_role == 'student' %}
         <div class="functionG1">
             <span class="title">Attendance</span>
+            <span class="item"><a href="{% url 'attendance' %}">Attendance Page</a></span>
             <span class="item"><a href="{% url 'attendance_signup' %}">Enter Attendance Code</a></span>
             <span class="item"><a href="">My Attendance Rate</a></span>
         </div>
@@ -350,7 +351,7 @@
         {% if user_role == 'admin' %}
             
             <span class="item"><a href="{% url 'announcement_manage' %}">Manage Announcement</a></span>
-            <span class="item"><a href="{% url "announcements_form" %}">Publish Announcement</a></span>
+            <span class="item"><a href="{% url 'announcements_form' %}">Publish Announcement</a></span>
         {% endif %}
     </div>
     <div class="functionG2">
