@@ -47,7 +47,7 @@
                                 <a id="i-Attendance">Attendance</a>
                             </li>
                         {% endif %}
-                        <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
+                        <li class="{% if request.resolver_match.url_name in 'navigation, editmap, point_of_interest' %}active{% endif %}">
                             <a id="i-Services">Services</a>
                         </li>
                         {% if user_role == 'admin' %}
@@ -310,10 +310,26 @@
 
     <div class="functionG2">
         <span class="title"><a href="{% url 'academic_management' %}">Academic Management</a></span>
-        <span class="item"><a href="{% url 'manage_academic_term' %}">Academic term</a></span>
-        <span class="item"><a href="">Departments</a></span>
-        <span class="item"><a href="">Course</a></span>
-        <span class="item"><a href="{% url 'manage_timetable' %}">Timetable Scheduling</a></span>
+        <span class="item
+            {% if request.resolver_match.url_name == 'manage_academic_term' %}
+                active
+            {% endif %}
+        "><a href="{% url 'manage_academic_term' %}">Academic term</a></span>
+        <span class="item
+            {% if request.resolver_match.url_name == 'manage_departments' %}
+                active
+            {% endif %}
+        "><a href="{% url 'manage_departments' %}">Departments</a></span>
+        <span class="item
+            {% if request.resolver_match.url_name == 'manage_courses' %}
+                active
+            {% endif %}
+        "><a href="{% url 'manage_courses' %}">Course Management</a></span>
+        <span class="item
+            {% if request.resolver_match.url_name == 'manage_timetable' %}
+                active
+            {% endif %}
+        "><a href="{% url 'manage_timetable' %}">Timetable Scheduling</a></span>
     </div>
 </template>
 
@@ -321,25 +337,57 @@
     {% if user_role == 'admin' %}
         <div class="functionG1">
             <span class="title">Management &amp; Operations</span>
-            <span class="item"><a href="{% url 'review_booking_request' %}">Review Booking Request</a></span>
-            <span class="item"><a href="{% url 'point_of_interest' %}">Manage Point of Interest</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'review_booking_request' %}
+                active
+                {% endif %}
+            "><a href="{% url 'review_booking_request' %}">Review Booking Request</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'point_of_interest' %}
+                active
+                {% endif %}
+            "><a href="{% url 'point_of_interest' %}">Manage Point of Interest</a></span>
         </div>
 
         <div class="functionG2">
             <span class="title">Infrastructure &amp; Analytics</span>
-            <span class="item"><a href="{% url 'facility_status' %}">Facility Status</a></span>
-            <span class="item"><a href="{% url "editmap" %}">Campus Navigation Config</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'facility_status' %}
+                active
+                {% endif %}
+            "><a href="{% url 'facility_status' %}">Facility Status</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'editmap' %}
+                active
+                {% endif %}
+            "><a href="{% url "editmap" %}">Campus Navigation Config</a></span>
         </div>
     {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
             <span class="title">Campus Resources</span>
-            <span class="item"><a href="{% url 'facility_list' %}">Book Facility</a></span>
-            <span class="item"><a href="{% url 'my_bookings' %}">Booking History</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'facility_list' %}
+                active
+                {% endif %}
+            "><a href="{% url 'facility_list' %}">Book Facility</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'my_bookings' %}
+                active
+                {% endif %}
+            "><a href="{% url 'my_bookings' %}">Booking History</a></span>
         </div>
         <div class="functionG2">
             <span class="title">Campus Guide</span>
-            <span class="item"><a href="{% url "navigation" %}">Campus Navigation</a></span>
-            <span class="item"><a href="{% url "point_of_interest" %}">Point of Interest</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'navigation' %}
+                active
+                {% endif %}
+            "><a href="{% url "navigation" %}">Campus Navigation</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'point_of_interest' %}
+                active
+                {% endif %}
+            "><a href="{% url "point_of_interest" %}">Point of Interest</a></span>
         </div>
     {% endif %}
 </template>
@@ -347,11 +395,23 @@
 <template id="i-Announcements-dropdown">
     <div class="functionG1">
         <span class="title">Quick Actions</span>
-        <span class="item"><a href="{% url 'announcement_list' %}">View All Announcement</a></span>
+        <span class="item 
+            {% if request.resolver_match.url_name == 'announcement_list' %}
+                active
+            {% endif %}
+        "><a href="{% url 'announcement_list' %}">View All Announcement</a></span>
         {% if user_role == 'admin' %}
             
-            <span class="item"><a href="{% url 'announcement_manage' %}">Manage Announcement</a></span>
-            <span class="item"><a href="{% url 'announcements_form' %}">Publish Announcement</a></span>
+            <span class="item 
+                {% if request.resolver_match.url_name == 'announcement_manage' %}
+                active
+                {% endif %}
+            "><a href="{% url 'announcement_manage' %}">Manage Announcement</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'announcements_form' %}
+                active
+                {% endif %}
+            "><a href="{% url 'announcements_form' %}">Publish Announcement</a></span>
         {% endif %}
     </div>
     <div class="functionG2">

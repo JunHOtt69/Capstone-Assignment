@@ -28,7 +28,6 @@ urlpatterns = [
     path("navigation/", views.navigation, name="navigation"),
     path("editmap/", views.editmap, name="editmap"),
     path("navigation/map-data/", views.map_data, name="map_data"),
-    path("navigation/map-data/", views.map_data, name="map_data"),
     path("save-map/", views.save_map, name="save_map"),
     path("upload-map-image/", views.upload_map_image, name="upload_map_image"),
     path("point_of_interest/", views.point_of_interest, name="point_of_interest"),

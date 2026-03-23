@@ -532,7 +532,7 @@ class TicketActivity(models.Model):
 class timetable_preference(models.Model):
     id = models.AutoField(primary_key=True)
     term = models.ForeignKey('academic_term', on_delete=models.CASCADE, related_name='timetable_preferences')
-    subject = models.ForeignKey('subject', on_delete=models.CASCADE)
+    subject_component = models.ForeignKey('SubjectComponent', on_delete=models.CASCADE)
     lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
     session = models.ForeignKey('session', on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)

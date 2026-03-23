@@ -62,3 +62,4 @@ document.querySelectorAll('.newsAttachment').forEach(container => {
 
     if(items.length > 0) updateCarousel();
 });
+
