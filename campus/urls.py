@@ -56,6 +56,14 @@ urlpatterns = [
     path("academic/courses/assign/", views.assign_subject_to_course, name="assign_subject_to_course"),
     path("academic/courses/remove/", views.remove_subject_from_course, name="remove_subject_from_course"),
 
+    # Subjects management
+    path("academic/subjects/", views.manage_subjects, name="manage_subjects"),
+    path("academic/subjects/detail/", views.get_subject_detail, name="get_subject_detail"),
+    path("academic/subjects/create/", views.create_subject, name="create_subject"),
+    path("academic/subjects/update/", views.update_subject, name="update_subject"),
+    path("academic/subjects/delete/", views.delete_subject, name="delete_subject"),
+    path("academic/subjects/check-usage/", views.check_subject_usage, name="check_subject_usage"),
+
     # Departments management
     path("academic/departments/", views.manage_departments, name="manage_departments"),
     path("academic/departments/lecturers/", views.get_department_lecturers, name="get_department_lecturers"),

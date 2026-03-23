@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Mar 21, 2026 at 03:08 PM
+-- Generation Time: Mar 21, 2026 at 09:34 AM
 -- Server version: 8.4.8
 -- PHP Version: 8.3.30
 
@@ -18,27 +18,14 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `smart_campus`
+-- Database: smart_campus
 --
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `academic_rules`
+-- Dumping data for table academic_rules
 --
 
-CREATE TABLE `academic_rules` (
-  `id` int NOT NULL,
-  `rule_name` varchar(100) NOT NULL,
-  `value_days` int NOT NULL,
-  `description` longtext NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `academic_rules`
---
-
-INSERT INTO `academic_rules` (`id`, `rule_name`, `value_days`, `description`) VALUES
+REPLACE INTO academic_rules (id, rule_name, value_days, description) VALUES
 (1, 'Study Weeks', 14, '2 Week of study week before exams starting'),
 (2, 'Examination Period', 14, '2 week of examination week'),
 (3, 'Late Policy', 15, 'unit: minute'),
@@ -47,104 +34,40 @@ INSERT INTO `academic_rules` (`id`, `rule_name`, `value_days`, `description`) VA
 (6, 'Advance Booking Limit', 3, 'Day in advance a facility can be reserved'),
 (7, 'Mid-Semester Break', 7, '1 week of mid-semester break');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `academic_term`
+-- Dumping data for table academic_term
 --
 
-CREATE TABLE `academic_term` (
-  `term_id` int NOT NULL,
-  `intake_code` varchar(25) NOT NULL,
-  `current_semester` smallint UNSIGNED NOT NULL,
-  `is_active` tinyint(1) NOT NULL,
-  `start_date` date NOT NULL,
-  `end_date` date NOT NULL,
-  `course_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `academic_term`
---
-
-INSERT INTO `academic_term` (`term_id`, `intake_code`, `current_semester`, `is_active`, `start_date`, `end_date`, `course_id`) VALUES
+REPLACE INTO academic_term (term_id, intake_code, current_semester, is_active, start_date, end_date, course_id) VALUES
 (1, 'F-ICT-GEN-202601', 1, 1, '2026-01-05', '2026-04-27', 1),
 (2, 'D-ICT-SE-202601', 1, 1, '2026-01-05', '2026-05-11', 4),
 (3, 'B-CS-AI-202601', 1, 1, '2026-01-05', '2026-05-11', 2),
 (4, 'B-CS-CYB-202601', 1, 1, '2026-01-05', '2026-05-11', 3);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `admin_profiles`
+-- Dumping data for table admin_profiles
 --
 
-CREATE TABLE `admin_profiles` (
-  `id` int NOT NULL,
-  `ad_id` varchar(12) NOT NULL,
-  `user_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `admin_profiles`
---
-
-INSERT INTO `admin_profiles` (`id`, `ad_id`, `user_id`) VALUES
+REPLACE INTO admin_profiles (id, ad_id, user_id) VALUES
 (1, 'AD262069', 1),
 (5, 'AD264013', 42),
 (6, 'AD263133', 43),
 (7, 'AD266020', 44);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `auth_group`
+-- Dumping data for table auth_group
 --
 
-CREATE TABLE `auth_group` (
-  `id` int NOT NULL,
-  `name` varchar(150) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `auth_group`
---
-
-INSERT INTO `auth_group` (`id`, `name`) VALUES
+REPLACE INTO auth_group (id, name) VALUES
 (1, 'admin'),
 (2, 'lecturer'),
 (3, 'student');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `auth_group_permissions`
+-- Dumping data for table auth_permission
 --
 
-CREATE TABLE `auth_group_permissions` (
-  `id` bigint NOT NULL,
-  `group_id` int NOT NULL,
-  `permission_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `auth_permission`
---
-
-CREATE TABLE `auth_permission` (
-  `id` int NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `content_type_id` int NOT NULL,
-  `codename` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `auth_permission`
---
-
-INSERT INTO `auth_permission` (`id`, `name`, `content_type_id`, `codename`) VALUES
+REPLACE INTO auth_permission (id, name, content_type_id, codename) VALUES
 (1, 'Can add log entry', 1, 'add_logentry'),
 (2, 'Can change log entry', 1, 'change_logentry'),
 (3, 'Can delete log entry', 1, 'delete_logentry'),
@@ -298,31 +221,11 @@ INSERT INTO `auth_permission` (`id`, `name`, `content_type_id`, `codename`) VALU
 (151, 'Can delete subject component', 38, 'delete_subjectcomponent'),
 (152, 'Can view subject component', 38, 'view_subjectcomponent');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `auth_user`
+-- Dumping data for table auth_user
 --
 
-CREATE TABLE `auth_user` (
-  `id` int NOT NULL,
-  `password` varchar(128) NOT NULL,
-  `last_login` datetime(6) DEFAULT NULL,
-  `is_superuser` tinyint(1) NOT NULL,
-  `username` varchar(150) NOT NULL,
-  `first_name` varchar(150) NOT NULL,
-  `last_name` varchar(150) NOT NULL,
-  `email` varchar(254) NOT NULL,
-  `is_staff` tinyint(1) NOT NULL,
-  `is_active` tinyint(1) NOT NULL,
-  `date_joined` datetime(6) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `auth_user`
---
-
-INSERT INTO `auth_user` (`id`, `password`, `last_login`, `is_superuser`, `username`, `first_name`, `last_name`, `email`, `is_staff`, `is_active`, `date_joined`) VALUES
+REPLACE INTO auth_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined) VALUES
 (1, 'pbkdf2_sha256$1200000$ZgIbRoHmmBmVAfw6p3BEeB$eMGNFxeWZUz/MiOV7d1WeATz4q/Rrq5gaS2lIF80dUA=', '2026-03-21 08:44:02.744852', 1, 'limjunhong1015@gmail.com', 'Lim', 'Jun Hong', 'limjunhong1015@gmail.com', 1, 1, '2026-02-26 11:30:16.196969'),
 (18, 'pbkdf2_sha256$1200000$Jys4B4WnS6Y77PYnj420fW$tPY6U2PF03NNZQNsw5ckwdeFj+qfVYvLVOjHsmtcnFA=', '2026-03-14 16:08:19.733209', 0, 'mokyusheng@gmail.com', 'Mok', 'Yu Sheng', 'mokyusheng@gmail.com', 1, 1, '2026-03-01 17:06:16.433234'),
 (19, 'pbkdf2_sha256$1200000$FHRt0htUwRbwCLQ4fT38uT$QFjmLyJ4q18hLmP7VLchgNwmL57O+yiu+k7H75gRdWE=', '2026-03-20 08:52:29.612095', 0, 'ljack7599@gmail.com', 'Lee', 'Zhen Sheng', 'ljack7599@gmail.com', 0, 1, '2026-03-01 17:13:09.153354'),
@@ -361,23 +264,11 @@ INSERT INTO `auth_user` (`id`, `password`, `last_login`, `is_superuser`, `userna
 (53, 'pbkdf2_sha256$1200000$tyNvZ8OZoeKwLUEwpKEKJg$Re8vxCWaBIu3PIAQwb9Cs7JuLfdp4zz88LXWq0Y5HXU=', NULL, 0, 'lucassilva@student.campus.edu', 'Lucas', 'Silva', 'lucassilva@student.campus.edu', 0, 1, '2026-03-18 17:01:35.927513'),
 (54, 'pbkdf2_sha256$1200000$YAtqSbXaAjGUdHETt5JFGd$lAM+veDHR7hmwJZVv7nUY/PI5lsZn9Ehctt/GbRnHLU=', NULL, 0, 'nguyenminh@student.campus.edu', 'Nguyen', 'Minh', 'nguyenminh@student.campus.edu', 0, 1, '2026-03-18 17:01:35.953324');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `auth_user_groups`
+-- Dumping data for table auth_user_groups
 --
 
-CREATE TABLE `auth_user_groups` (
-  `id` bigint NOT NULL,
-  `user_id` int NOT NULL,
-  `group_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `auth_user_groups`
---
-
-INSERT INTO `auth_user_groups` (`id`, `user_id`, `group_id`) VALUES
+REPLACE INTO auth_user_groups (id, user_id, group_id) VALUES
 (32, 1, 1),
 (49, 18, 2),
 (50, 19, 3),
@@ -416,41 +307,11 @@ INSERT INTO `auth_user_groups` (`id`, `user_id`, `group_id`) VALUES
 (116, 53, 3),
 (118, 54, 3);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `auth_user_user_permissions`
+-- Dumping data for table booking
 --
 
-CREATE TABLE `auth_user_user_permissions` (
-  `id` bigint NOT NULL,
-  `user_id` int NOT NULL,
-  `permission_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `booking`
---
-
-CREATE TABLE `booking` (
-  `booking_id` int NOT NULL,
-  `booking_date` date NOT NULL,
-  `start_time` time(6) NOT NULL,
-  `end_time` time(6) NOT NULL,
-  `purpose` longtext,
-  `status` varchar(20) NOT NULL,
-  `created_at` datetime(6) NOT NULL,
-  `user_id` int NOT NULL,
-  `facility_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `booking`
---
-
-INSERT INTO `booking` (`booking_id`, `booking_date`, `start_time`, `end_time`, `purpose`, `status`, `created_at`, `user_id`, `facility_id`) VALUES
+REPLACE INTO booking (booking_id, booking_date, start_time, end_time, purpose, status, created_at, user_id, facility_id) VALUES
 (1, '2026-03-12', '10:00:00.000000', '12:30:00.000000', 'group discussion', 'Cancelled', '2026-03-11 09:55:10.061200', 19, 1),
 (2, '2026-03-13', '09:30:00.000000', '13:30:00.000000', 'Lab exercise', 'Cancelled', '2026-03-12 07:17:30.871436', 19, 2),
 (3, '2026-03-18', '08:30:00.000000', '16:40:00.000000', 'Event', 'Rejected', '2026-03-12 08:40:10.135065', 19, 3),
@@ -462,79 +323,33 @@ INSERT INTO `booking` (`booking_id`, `booking_date`, `start_time`, `end_time`, `
 (9, '2026-03-20', '10:30:00.000000', '12:30:00.000000', 'group discussion', 'Approved', '2026-03-17 13:24:45.366065', 19, 1),
 (10, '2026-03-20', '13:00:00.000000', '15:20:00.000000', 'group discussion', 'Approved', '2026-03-17 15:16:26.652696', 19, 1);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_announcement`
+-- Dumping data for table campus_announcement
 --
 
-CREATE TABLE `campus_announcement` (
-  `announcement_id` int NOT NULL,
-  `subject` varchar(255) NOT NULL,
-  `content` longtext NOT NULL,
-  `date_published` datetime(6) NOT NULL,
-  `is_active` tinyint(1) NOT NULL,
-  `announcement_type` varchar(10) NOT NULL,
-  `author_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_announcement`
---
-
-INSERT INTO `campus_announcement` (`announcement_id`, `subject`, `content`, `date_published`, `is_active`, `announcement_type`, `author_id`) VALUES
+REPLACE INTO campus_announcement (announcement_id, subject, content, date_published, is_active, announcement_type, author_id) VALUES
 (4, 'Greeting hari raya', 'Selamat Hari Raya Aidilfitri to all our staff and students—wishing you a joyous celebration filled with peace, prosperity, and cherished moments with loved ones!', '2026-03-19 18:19:26.507843', 1, 'BANNER', 1),
 (5, 'Student View only', 'New Feature Alert: Explore the campus like never before with our interactive Navigation Map! Find your way to lecture halls, cafes, and labs directly from your Student Dashboard. Try it now!', '2026-03-20 08:51:47.788977', 1, 'BANNER', 1),
 (7, 'Only Visitor View', 'Welcome To APU Smart Campus Management System. Visit Us at Our Open Day! 28–29 Mar & 4–5 Apr 2026', '2026-03-20 09:15:03.161020', 1, 'BANNER', 1),
 (10, 'Selamat Hari Raya Aidilfitri: Campus Holiday Notice', '<p>Dear Staff and Students,</p><p>In celebration of the upcoming <strong>Hari Raya Aidilfitri</strong>, please be informed that the campus will be closed for the festive break.</p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Holiday Start</strong>: Friday, 20th March 2026</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Campus Reopens</strong>: Wednesday, 25th March 2026</li></ol><p>All classes and administrative operations will be suspended during this period. We encourage everyone to take this time to rest, celebrate with loved ones, and stay safe.</p><p>To those traveling back to their hometowns, we wish you a safe journey (<em>Balik Kampung</em>). To all our Muslim friends and colleagues, <strong>Selamat Hari Raya Aidilfitri, Maaf Zahir dan Batin.</strong></p><p><br></p><p>Warm regards, </p><p><strong>Campus Administration</strong></p>', '2026-03-20 13:07:02.860193', 1, 'NORMAL', 1),
 (11, 'This is announcement.', '<p>This is announcements. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eligendi quisquam iste accusamus consectetur aspernatur hic, aliquid modi nihil veniam corrupti fugiat, molestias, eum harum. Cupiditate, ipsam quibusdam! Eius aut temporibus officiis nesciunt, quaerat voluptate. Totam, facilis dolor ipsam aliquam, nemo dolores animi repudiandae minus reiciendis asperiores dolore, in voluptatum?</p><p><br></p><p>Pariatur, consectetur excepturi cum blanditiis recusandae consequuntur. Soluta blanditiis cupiditate facilis iste provident sed veritatis natus ad, nesciunt architecto rerum eligendi maxime porro ipsa reiciendis vero minima.</p><p><br></p><p>A consequatur placeat minima ex, facilis quasi veniam odio laboriosam magni et similique necessitatibus itaque nesciunt, aliquam asperiores reiciendis eveniet atque iure ducimus laudantium quia ratione maxime deserunt accusantium. Earum obcaecati modi labore beatae incidunt vel, quaerat veniam, sed totam, pariatur ea animi saepe ratione explicabo debitis blanditiis! Deleniti, mollitia ea harum corrupti obcaecati, voluptates magnam odio neque distinctio quam dicta provident beatae, sunt suscipit! Necessitatibus ad nemo dolore culpa iste ea est odio illum facere quia quidem similique rerum temporibus ipsam doloribus, illo excepturi sequi dolores voluptatem aliquam itaque repellendus repudiandae. Maiores quidem blanditiis consequatur unde deserunt hic enim illum corrupti similique. Iure quam odio hic tenetur quibusdam iste facilis quisquam illum quaerat? Sint assumenda perferendis obcaecati autem facilis, dolores praesentium velit exercitationem?</p>', '2026-03-20 13:28:36.626470', 1, 'NORMAL', 1);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_announcementTarget`
+-- Dumping data for table campus_announcementTarget
 --
 
-CREATE TABLE `campus_announcementTarget` (
-  `target_id` int NOT NULL,
-  `is_for_students` tinyint(1) NOT NULL,
-  `is_for_lecturer` tinyint(1) NOT NULL,
-  `is_for_admins` tinyint(1) NOT NULL,
-  `is_visitor_visible` tinyint(1) NOT NULL,
-  `academic_term` varchar(50) DEFAULT NULL,
-  `announcement_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_announcementTarget`
---
-
-INSERT INTO `campus_announcementTarget` (`target_id`, `is_for_students`, `is_for_lecturer`, `is_for_admins`, `is_visitor_visible`, `academic_term`, `announcement_id`) VALUES
+REPLACE INTO campus_announcementTarget (target_id, is_for_students, is_for_lecturer, is_for_admins, is_visitor_visible, academic_term, announcement_id) VALUES
 (4, 1, 1, 1, 0, NULL, 4),
 (5, 1, 0, 0, 0, NULL, 5),
 (7, 0, 0, 0, 1, '', 7),
 (10, 1, 1, 1, 1, NULL, 10),
 (11, 1, 1, 1, 1, NULL, 11);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_attachments`
+-- Dumping data for table campus_attachments
 --
 
-CREATE TABLE `campus_attachments` (
-  `id` int NOT NULL,
-  `object_id` int UNSIGNED NOT NULL,
-  `file` varchar(100) NOT NULL,
-  `uploaded_at` datetime(6) NOT NULL,
-  `content_type_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_attachments`
---
-
-INSERT INTO `campus_attachments` (`id`, `object_id`, `file`, `uploaded_at`, `content_type_id`) VALUES
+REPLACE INTO campus_attachments (id, object_id, file, uploaded_at, content_type_id) VALUES
 (1, 5, 'attachments/faq_5_688b3fae.jpeg', '2026-03-08 06:18:32.637793', 26),
 (2, 14, 'attachments/faq_14_c32a7302.png', '2026-03-09 14:48:57.812824', 26),
 (3, 1, 'attachments/supportticket_1_20260312093214.jpeg', '2026-03-12 09:32:14.444013', 30),
@@ -550,64 +365,11 @@ INSERT INTO `campus_attachments` (`id`, `object_id`, `file`, `uploaded_at`, `con
 (25, 11, 'attachments/announcement_11_20260320132836_RweQ8zl.jpg', '2026-03-20 13:28:36.826362', 36),
 (26, 11, 'attachments/announcement_11_20260320132836_Vwdgu7F.jpg', '2026-03-20 13:28:36.882662', 36);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_attendanceMark`
+-- Dumping data for table campus_faq
 --
 
-CREATE TABLE `campus_attendanceMark` (
-  `id` bigint NOT NULL,
-  `status` varchar(10) NOT NULL,
-  `marked_at` datetime(6) NOT NULL,
-  `student_id` int NOT NULL,
-  `session_id` bigint NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `campus_AttendanceSession`
---
-
-CREATE TABLE `campus_AttendanceSession` (
-  `id` bigint NOT NULL,
-  `otp` varchar(4) NOT NULL,
-  `created_at` datetime(6) NOT NULL,
-  `expires_at` datetime(6) NOT NULL,
-  `is_active` tinyint(1) NOT NULL,
-  `created_by_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `campus_faq`
---
-
-CREATE TABLE `campus_faq` (
-  `id` int NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `content` longtext NOT NULL,
-  `category` varchar(3) NOT NULL,
-  `published_time` datetime(6) NOT NULL,
-  `last_edit` datetime(6) NOT NULL,
-  `is_visitor_visible` tinyint(1) NOT NULL,
-  `is_ad_visible` tinyint(1) NOT NULL,
-  `is_lc_visible` tinyint(1) NOT NULL,
-  `is_tp_visible` tinyint(1) NOT NULL,
-  `view_count` int UNSIGNED NOT NULL,
-  `n_likes` int UNSIGNED NOT NULL,
-  `n_dislikes` int UNSIGNED NOT NULL,
-  `slug` varchar(50) NOT NULL,
-  `author_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_faq`
---
-
-INSERT INTO `campus_faq` (`id`, `title`, `content`, `category`, `published_time`, `last_edit`, `is_visitor_visible`, `is_ad_visible`, `is_lc_visible`, `is_tp_visible`, `view_count`, `n_likes`, `n_dislikes`, `slug`, `author_id`) VALUES
+REPLACE INTO campus_faq (id, title, content, category, published_time, last_edit, is_visitor_visible, is_ad_visible, is_lc_visible, is_tp_visible, view_count, n_likes, n_dislikes, slug, author_id) VALUES
 (2, 'a', '<p>a</p>', 'GEN', '2026-03-08 05:29:50.563449', '2026-03-08 13:59:59.756067', 0, 0, 0, 0, 1, 0, 0, 'a', 1),
 (10, 'Studnet View Only', '<p>Student View</p>', 'ATT', '2026-03-08 14:40:44.998226', '2026-03-08 14:40:44.998254', 0, 0, 0, 1, 0, 0, 0, 'studnet-view-only', 1),
 (11, 'Admin View Only', '<p>Admin View Only\r\nEdited\r\n</p>', 'ANN', '2026-03-08 14:42:11.000142', '2026-03-08 17:00:07.546734', 0, 1, 0, 0, 4, 0, 0, 'admin-view-only', 1),
@@ -615,67 +377,11 @@ INSERT INTO `campus_faq` (`id`, `title`, `content`, `category`, `published_time`
 (13, 'Visitor View Only', '<p>Welcome Visitor </p>', 'BOK', '2026-03-08 14:42:55.721731', '2026-03-11 02:07:49.324706', 1, 0, 0, 0, 15, 0, 0, 'visitor-view-only', 1),
 (14, 'A long time ago', '<p><img src=\"/media/attachments/faq_14_c32a7302.png\"/></p><p>Testing </p><p>wwwwwwwwq\r\nass</p>', 'MAP', '2026-03-09 14:48:57.758969', '2026-03-09 14:48:57.822691', 0, 0, 1, 1, 0, 0, 0, 'a-long-time-ago', 1);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_faqreaction`
+-- Dumping data for table campus_subjectcomponent
 --
 
-CREATE TABLE `campus_faqreaction` (
-  `id` bigint NOT NULL,
-  `value` smallint NOT NULL,
-  `created_at` datetime(6) NOT NULL,
-  `updated_at` datetime(6) NOT NULL,
-  `faq_id` int NOT NULL,
-  `user_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `campus_mapedge`
---
-
-CREATE TABLE `campus_mapedge` (
-  `id` bigint NOT NULL,
-  `from_node_id` bigint NOT NULL,
-  `to_node_id` bigint NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `campus_mapnode`
---
-
-CREATE TABLE `campus_mapnode` (
-  `id` bigint NOT NULL,
-  `node_id` varchar(10) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `node_type` varchar(10) NOT NULL,
-  `x` int NOT NULL,
-  `y` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `campus_subjectcomponent`
---
-
-CREATE TABLE `campus_subjectcomponent` (
-  `component_id` int NOT NULL,
-  `hours_per_class` int NOT NULL,
-  `total_required_hours` int NOT NULL,
-  `class_type` varchar(20) NOT NULL,
-  `subject_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_subjectcomponent`
---
-
-INSERT INTO `campus_subjectcomponent` (`component_id`, `hours_per_class`, `total_required_hours`, `class_type`, `subject_id`) VALUES
+REPLACE INTO campus_subjectcomponent (component_id, hours_per_class, total_required_hours, class_type, subject_id) VALUES
 (1, 2, 24, 'Lecture', 1),
 (2, 2, 24, 'Tutorial', 1),
 (3, 2, 24, 'Lecture', 2),
@@ -846,29 +552,11 @@ INSERT INTO `campus_subjectcomponent` (`component_id`, `hours_per_class`, `total
 (168, 2, 24, 'Lecture', 91),
 (169, 2, 24, 'Tutorial', 91);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_supportticket`
+-- Dumping data for table campus_supportticket
 --
 
-CREATE TABLE `campus_supportticket` (
-  `id` bigint NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `category` varchar(3) NOT NULL,
-  `description` longtext NOT NULL,
-  `status` varchar(20) NOT NULL,
-  `created_at` datetime(6) NOT NULL,
-  `updated_at` datetime(6) NOT NULL,
-  `assigned_to_id` int DEFAULT NULL,
-  `created_by_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_supportticket`
---
-
-INSERT INTO `campus_supportticket` (`id`, `title`, `category`, `description`, `status`, `created_at`, `updated_at`, `assigned_to_id`, `created_by_id`) VALUES
+REPLACE INTO campus_supportticket (id, title, category, description, status, created_at, updated_at, assigned_to_id, created_by_id) VALUES
 (1, 'Testing feedback submission', 'ANN', '<p>aThis is description</p><ol><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>sdqwa</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span><span class=\"ql-size-large\">List 2</span></li></ol><p><img src=\"/media/attachments/supportticket_1_20260312093214.jpeg\"/></p><p><br/></p>', 'in_progress', '2026-03-12 09:32:13.610092', '2026-03-15 12:40:56.724271', 1, 18),
 (2, 'More style', 'MAP', '<p><span class=\"ql-size-small\">Testing</span></p><p>Testing</p><p><span class=\"ql-size-large\">Testing</span></p><p><span class=\"ql-size-huge\">Testing</span></p><p><strong>Testing</strong></p><p><em>Testing</em></p><p><u>Testing</u></p><p>Testing</p><p><a href=\"https://heroicons.com/outline\" rel=\"noopener noreferrer\" target=\"_blank\">Testing</a></p><p><img src=\"/media/attachments/supportticket_2_20260312155655.jpeg\"/></p>', 'resolved', '2026-03-12 15:56:54.888813', '2026-03-13 16:33:51.740110', NULL, 18),
 (3, 'Announcement not working', 'ANN', '<p>What is the announcement placement banner for? announcement didnt work. </p>', 'in_progress', '2026-03-15 12:47:22.320421', '2026-03-15 12:48:20.295355', 1, 19),
@@ -876,27 +564,11 @@ INSERT INTO `campus_supportticket` (`id`, `title`, `category`, `description`, `s
 (5, 'Testing Again', 'BOK', '<p>Testing AGAINNN</p>', 'resolved', '2026-03-15 16:17:18.252291', '2026-03-15 16:17:40.081229', 1, 19),
 (6, 'Navigation too good', 'MAP', '<p>Mok yu sheng well done </p>', 'in_progress', '2026-03-17 08:52:21.731296', '2026-03-17 09:44:09.226768', 1, 19);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_ticketactivity`
+-- Dumping data for table campus_ticketactivity
 --
 
-CREATE TABLE `campus_ticketactivity` (
-  `id` bigint NOT NULL,
-  `action` varchar(20) NOT NULL,
-  `old_value` varchar(255) DEFAULT NULL,
-  `new_value` varchar(255) DEFAULT NULL,
-  `timestamp` datetime(6) NOT NULL,
-  `ticket_id` bigint NOT NULL,
-  `user_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_ticketactivity`
---
-
-INSERT INTO `campus_ticketactivity` (`id`, `action`, `old_value`, `new_value`, `timestamp`, `ticket_id`, `user_id`) VALUES
+REPLACE INTO campus_ticketactivity (id, action, old_value, new_value, timestamp, ticket_id, user_id) VALUES
 (1, 'escalation', 'Open', 'Escalated / In Progress', '2026-03-13 16:02:27.433740', 2, 18),
 (2, 'escalation', 'Open', 'Escalated / In Progress', '2026-03-13 16:02:34.091941', 2, 18),
 (3, 'escalation', 'Open', 'Escalated / In Progress', '2026-03-13 16:02:47.173185', 2, 18),
@@ -920,26 +592,11 @@ INSERT INTO `campus_ticketactivity` (`id`, `action`, `old_value`, `new_value`, `
 (21, 'status_change', 'Open', 'In Pprogress', '2026-03-17 09:44:09.231612', 6, 1),
 (22, 'rejected_closure', NULL, NULL, '2026-03-17 09:45:54.160425', 6, 1);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `campus_ticketmessage`
+-- Dumping data for table campus_ticketmessage
 --
 
-CREATE TABLE `campus_ticketmessage` (
-  `id` bigint NOT NULL,
-  `content` longtext NOT NULL,
-  `sent_at` datetime(6) NOT NULL,
-  `is_admin_reply` tinyint(1) NOT NULL,
-  `sender_id` int NOT NULL,
-  `ticket_id` bigint NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `campus_ticketmessage`
---
-
-INSERT INTO `campus_ticketmessage` (`id`, `content`, `sent_at`, `is_admin_reply`, `sender_id`, `ticket_id`) VALUES
+REPLACE INTO campus_ticketmessage (id, content, sent_at, is_admin_reply, sender_id, ticket_id) VALUES
 (32, '<p>HELO</p>', '2026-03-13 12:55:47.836710', 0, 18, 2),
 (33, '<p>Hello</p><p><br></p>', '2026-03-13 14:35:41.498880', 0, 18, 2),
 (34, '<p>testing</p>', '2026-03-13 14:48:25.452028', 0, 18, 2),
@@ -952,70 +609,21 @@ INSERT INTO `campus_ticketmessage` (`id`, `content`, `sent_at`, `is_admin_reply`
 (41, '<p>halo</p>', '2026-03-17 09:40:48.401636', 1, 1, 6),
 (42, '<p>Why i cannot request to close ticket? </p><p><img src=\"/media/attachments/ticketmessage_42_20260317094659.png\"/></p>', '2026-03-17 09:46:55.579481', 0, 19, 6);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `class_session`
+-- Dumping data for table course
 --
 
-CREATE TABLE `class_session` (
-  `id` int NOT NULL,
-  `date` date DEFAULT NULL,
-  `status` varchar(20) NOT NULL,
-  `lecturer_id` int NOT NULL,
-  `term_id` int DEFAULT NULL,
-  `session_id` int NOT NULL,
-  `subject_component_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `course`
---
-
-CREATE TABLE `course` (
-  `course_id` int NOT NULL,
-  `course_code` varchar(20) NOT NULL,
-  `course_name` varchar(255) NOT NULL,
-  `total_credits_to_graduate` int NOT NULL,
-  `total_semester` int NOT NULL,
-  `semester_week` int NOT NULL,
-  `level` varchar(20) NOT NULL,
-  `year_taken` int NOT NULL,
-  `specialization` varchar(100) DEFAULT NULL,
-  `internship` tinyint(1) NOT NULL,
-  `dept_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `course`
---
-
-INSERT INTO `course` (`course_id`, `course_code`, `course_name`, `total_credits_to_graduate`, `total_semester`, `semester_week`, `level`, `year_taken`, `specialization`, `internship`, `dept_id`) VALUES
+REPLACE INTO course (course_id, course_code, course_name, total_credits_to_graduate, total_semester, semester_week, level, year_taken, specialization, internship, dept_id) VALUES
 (1, 'F-ICT-GEN', 'Foundation Programme (Computing & Technology Route)', 50, 3, 12, 'Foundation', 1, NULL, 0, 1),
 (2, 'B-CS-AI', 'Bachelor of Computer Science (Hons) (Artificial Intelligence)', 50, 7, 14, 'Degree', 3, 'Artificial Intelligence', 1, 2),
 (3, 'B-CS-CYB', 'Bachelor of Science (Honours) in Computer Science (Cyber Security)', 50, 7, 14, 'Degree', 3, 'Cyber Security', 1, 2),
 (4, 'D-ICT-SE', 'Diploma in Information & Communication Technology with a specialism in Software Engineering', 50, 6, 14, 'Diploma', 2, 'Software Engineering', 1, 1);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `course_enrollment`
+-- Dumping data for table course_enrollment
 --
 
-CREATE TABLE `course_enrollment` (
-  `id` int NOT NULL,
-  `enrollment_status` varchar(20) NOT NULL,
-  `student_id` int NOT NULL,
-  `term_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `course_enrollment`
---
-
-INSERT INTO `course_enrollment` (`id`, `enrollment_status`, `student_id`, `term_id`) VALUES
+REPLACE INTO course_enrollment (id, enrollment_status, student_id, term_id) VALUES
 (5, 'Active', 19, 1),
 (6, 'Active', 45, 2),
 (7, 'Active', 46, 3),
@@ -1028,24 +636,11 @@ INSERT INTO `course_enrollment` (`id`, `enrollment_status`, `student_id`, `term_
 (14, 'Active', 53, 2),
 (15, 'Active', 54, 3);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `course_subject`
+-- Dumping data for table course_subject
 --
 
-CREATE TABLE `course_subject` (
-  `id` int NOT NULL,
-  `recommended_semester` int NOT NULL,
-  `course_id` int NOT NULL,
-  `subject_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `course_subject`
---
-
-INSERT INTO `course_subject` (`id`, `recommended_semester`, `course_id`, `subject_id`) VALUES
+REPLACE INTO course_subject (id, recommended_semester, course_id, subject_id) VALUES
 (13, 1, 1, 1),
 (14, 1, 1, 2),
 (15, 1, 1, 3),
@@ -1176,61 +771,19 @@ INSERT INTO `course_subject` (`id`, `recommended_semester`, `course_id`, `subjec
 (161, 5, 4, 89),
 (162, 6, 4, 90);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `departments`
+-- Dumping data for table departments
 --
 
-CREATE TABLE `departments` (
-  `dept_id` int NOT NULL,
-  `dept_name` varchar(100) NOT NULL,
-  `dept_code` varchar(10) NOT NULL,
-  `head_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `departments`
---
-
-INSERT INTO `departments` (`dept_id`, `dept_name`, `dept_code`, `head_id`) VALUES
+REPLACE INTO departments (dept_id, dept_name, dept_code, head_id) VALUES
 (1, 'Information & Communication Technology', 'ICT', NULL),
 (2, 'Computer Science', 'CS', NULL);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `django_admin_log`
+-- Dumping data for table django_content_type
 --
 
-CREATE TABLE `django_admin_log` (
-  `id` int NOT NULL,
-  `action_time` datetime(6) NOT NULL,
-  `object_id` longtext,
-  `object_repr` varchar(200) NOT NULL,
-  `action_flag` smallint UNSIGNED NOT NULL,
-  `change_message` longtext NOT NULL,
-  `content_type_id` int DEFAULT NULL,
-  `user_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `django_content_type`
---
-
-CREATE TABLE `django_content_type` (
-  `id` int NOT NULL,
-  `app_label` varchar(100) NOT NULL,
-  `model` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `django_content_type`
---
-
-INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
+REPLACE INTO django_content_type (id, app_label, model) VALUES
 (1, 'admin', 'logentry'),
 (2, 'auth', 'group'),
 (3, 'auth', 'permission'),
@@ -1270,24 +823,11 @@ INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
 (5, 'contenttypes', 'contenttype'),
 (6, 'sessions', 'session');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `django_migrations`
+-- Dumping data for table django_migrations
 --
 
-CREATE TABLE `django_migrations` (
-  `id` bigint NOT NULL,
-  `app` varchar(255) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `applied` datetime(6) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `django_migrations`
---
-
-INSERT INTO `django_migrations` (`id`, `app`, `name`, `applied`) VALUES
+REPLACE INTO django_migrations (id, app, name, applied) VALUES
 (1, 'contenttypes', '0001_initial', '2026-02-03 16:04:14.786385'),
 (2, 'auth', '0001_initial', '2026-02-03 16:04:15.063123'),
 (3, 'admin', '0001_initial', '2026-02-03 16:04:15.143128'),
@@ -1330,26 +870,13 @@ INSERT INTO `django_migrations` (`id`, `app`, `name`, `applied`) VALUES
 (51, 'campus', '0013_remove_facilities_building_and_more', '2026-03-17 15:17:12.385372'),
 (52, 'campus', '0014_announcement_announcement_type_announcement_author_and_more', '2026-03-19 08:59:53.335540'),
 (53, 'campus', '0015_announcementtarget_is_visitor_visible', '2026-03-20 08:43:27.759520'),
-(54, 'campus', '0016_alter_announcement_author', '2026-03-20 09:07:09.288060'),
-(55, 'campus', '0002_remove_class_session_subject_and_more', '2026-03-21 09:43:40.599575');
-
--- --------------------------------------------------------
+(54, 'campus', '0016_alter_announcement_author', '2026-03-20 09:07:09.288060');
 
 --
--- Table structure for table `django_session`
+-- Dumping data for table django_session
 --
 
-CREATE TABLE `django_session` (
-  `session_key` varchar(40) NOT NULL,
-  `session_data` longtext NOT NULL,
-  `expire_date` datetime(6) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `django_session`
---
-
-INSERT INTO `django_session` (`session_key`, `session_data`, `expire_date`) VALUES
+REPLACE INTO django_session (session_key, session_data, expire_date) VALUES
 ('0epqg2lgmg2s9hs2ravf2py8hn0bci4k', 'e30:1vvDyh:rQYMMnzEesB1g0RPbsq1PZ6YjjWMEavlB1qicAtYDzE', '2026-03-11 12:26:55.402248'),
 ('2ma87up2v1sdyc49h9qa7zdyc0a81u7m', '.eJxVjEEOwiAQRe_C2hCgjGKX7j0DGZjBogZMaRON8e5a04Vu_3v_PYXHeRr83Hj0mUQvtNj8bgHjhcsC6IzlVGWsZRpzkIsiV9rksRJfD6v7FxiwDUt2q6BTjCkimI4_R-OSJWsTGu3AdojgKNgQolN7grRzgQDIaJs06W-0cWu5Fs_3Wx4folevN6fNP7Y:1vxl9M:rf5ZPl9KqjNjIez_22XMXIrlAPcBoPw2-M-tovqwVmU', '2026-03-18 12:16:24.925198'),
 ('39rfmbmswdgw3owh8vu1tva9wqc5zt01', 'e30:1vvZZx:0In_6ZxHPzr1ztsCxKWtYmM4DU7hRRrd7oAaCt1t2jg', '2026-03-12 11:30:49.123253'),
@@ -1373,23 +900,11 @@ INSERT INTO `django_session` (`session_key`, `session_data`, `expire_date`) VALU
 ('ydsmcc4rbenpgqg6vhmofg9tw66fozyn', '.eJxVjEEOwiAQRe_C2hCgjGKX7j0DGZjBogZMaRON8e5a04Vu_3v_PYXHeRr83Hj0mUQvtNj8bgHjhcsC6IzlVGWsZRpzkIsiV9rksRJfD6v7FxiwDUt2q6BTjCkimI4_R-OSJWsTGu3AdojgKNgQolN7grRzgQDIaJs06W-0cWu5Fs_3Wx4folevN6fNP7Y:1w1RZ1:1cBIwtBQwmaqUlaJD8C5DO-F0yH5Hz8W49dgIVoFvD0', '2026-03-28 16:10:07.253951'),
 ('z1ah4u2vmgfr6mxw6xrwr208ze73gn5c', '.eJxVjE0OwiAYBe_C2pBSoIUu3XsG8v2gRQ00pU00xrtrky50-2bevESAdRnDWuMcEotBKCcOvyMC3WLeCF8hX4qkkpc5odwUudMqT4Xj_bi7f4ER6vh9W-oQPWpyyrIH8r32DrADsK1WrEmjs-gVRq25jcp40_SKyJrOEPN5i9ZYayo5xMeU5qcYmvcHyaY_og:1vxRIa:vrqOpMF8VG2qqBr2IycN6HZ-xqyp34nvedp8ZzY1-zw', '2026-03-17 15:04:36.949528');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `facilities`
+-- Dumping data for table facilities
 --
 
-CREATE TABLE `facilities` (
-  `facility_id` int NOT NULL,
-  `facility_name` varchar(100) NOT NULL,
-  `type` varchar(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `facilities`
---
-
-INSERT INTO `facilities` (`facility_id`, `facility_name`, `type`) VALUES
+REPLACE INTO facilities (facility_id, facility_name, type) VALUES
 (1, 'Classroom 1', 'Classroom'),
 (2, 'Classroom 2', 'Classroom'),
 (3, 'Classroom 3', 'Classroom'),
@@ -1401,24 +916,11 @@ INSERT INTO `facilities` (`facility_id`, `facility_name`, `type`) VALUES
 (9, 'Lab 1', 'Lab'),
 (10, 'Lab 2', 'Lab');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `lecturer_assignment`
+-- Dumping data for table lecturer_assignment
 --
 
-CREATE TABLE `lecturer_assignment` (
-  `id` int NOT NULL,
-  `lecturer_id` int NOT NULL,
-  `term_id` int NOT NULL,
-  `subject_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `lecturer_assignment`
---
-
-INSERT INTO `lecturer_assignment` (`id`, `lecturer_id`, `term_id`, `subject_id`) VALUES
+REPLACE INTO lecturer_assignment (id, lecturer_id, term_id, subject_id) VALUES
 (1, 33, 1, 1),
 (2, 35, 1, 3),
 (3, 21, 1, 4),
@@ -1460,27 +962,11 @@ INSERT INTO `lecturer_assignment` (`id`, `lecturer_id`, `term_id`, `subject_id`)
 (39, 25, 2, 81),
 (40, 35, 2, 19);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `lecturer_profiles`
+-- Dumping data for table lecturer_profiles
 --
 
-CREATE TABLE `lecturer_profiles` (
-  `id` int NOT NULL,
-  `lc_id` varchar(12) NOT NULL,
-  `specialization` longtext,
-  `is_head` tinyint(1) NOT NULL,
-  `max_hours_per_week` int NOT NULL,
-  `dept_id` int DEFAULT NULL,
-  `user_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `lecturer_profiles`
---
-
-INSERT INTO `lecturer_profiles` (`id`, `lc_id`, `specialization`, `is_head`, `max_hours_per_week`, `dept_id`, `user_id`) VALUES
+REPLACE INTO lecturer_profiles (id, lc_id, specialization, is_head, max_hours_per_week, dept_id, user_id) VALUES
 (14, 'LC262996', NULL, 0, 20, NULL, 18),
 (15, 'LC263268', NULL, 0, 20, 1, 20),
 (16, 'LC265377', NULL, 0, 20, 1, 21),
@@ -1504,24 +990,11 @@ INSERT INTO `lecturer_profiles` (`id`, `lc_id`, `specialization`, `is_head`, `ma
 (34, 'LC267714', NULL, 0, 20, 2, 39),
 (35, 'LC267494', NULL, 0, 20, 2, 40);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `lecturer_subjects`
+-- Dumping data for table lecturer_subjects
 --
 
-CREATE TABLE `lecturer_subjects` (
-  `id` int NOT NULL,
-  `is_lead` tinyint(1) NOT NULL,
-  `user_id` int NOT NULL,
-  `subject_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `lecturer_subjects`
---
-
-INSERT INTO `lecturer_subjects` (`id`, `is_lead`, `user_id`, `subject_id`) VALUES
+REPLACE INTO lecturer_subjects (id, is_lead, user_id, subject_id) VALUES
 (1, 0, 30, 69),
 (2, 0, 30, 73),
 (3, 0, 30, 46),
@@ -1630,25 +1103,11 @@ INSERT INTO `lecturer_subjects` (`id`, `is_lead`, `user_id`, `subject_id`) VALUE
 (118, 0, 31, 2),
 (119, 0, 35, 19);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `session`
+-- Dumping data for table session
 --
 
-CREATE TABLE `session` (
-  `session_id` int NOT NULL,
-  `start_time` time(6) NOT NULL,
-  `end_time` time(6) NOT NULL,
-  `day_of_week` varchar(3) NOT NULL,
-  `facility_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `session`
---
-
-INSERT INTO `session` (`session_id`, `start_time`, `end_time`, `day_of_week`, `facility_id`) VALUES
+REPLACE INTO session (session_id, start_time, end_time, day_of_week, facility_id) VALUES
 (1, '08:30:00.000000', '10:30:00.000000', 'Fri', 7),
 (2, '10:45:00.000000', '12:45:00.000000', 'Fri', 7),
 (3, '13:30:00.000000', '15:30:00.000000', 'Fri', 7),
@@ -1850,36 +1309,11 @@ INSERT INTO `session` (`session_id`, `start_time`, `end_time`, `day_of_week`, `f
 (199, '13:30:00.000000', '15:30:00.000000', 'Mon', 10),
 (200, '15:45:00.000000', '17:45:00.000000', 'Mon', 10);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `skipped_date`
+-- Dumping data for table student_profiles
 --
 
-CREATE TABLE `skipped_date` (
-  `id` int NOT NULL,
-  `date` date NOT NULL,
-  `reason` varchar(255) NOT NULL,
-  `term_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_profiles`
---
-
-CREATE TABLE `student_profiles` (
-  `id` int NOT NULL,
-  `tp_id` varchar(12) NOT NULL,
-  `user_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `student_profiles`
---
-
-INSERT INTO `student_profiles` (`id`, `tp_id`, `user_id`) VALUES
+REPLACE INTO student_profiles (id, tp_id, user_id) VALUES
 (5, 'TP262993', 19),
 (6, 'TP261093', 45),
 (7, 'TP262280', 46),
@@ -1892,23 +1326,11 @@ INSERT INTO `student_profiles` (`id`, `tp_id`, `user_id`) VALUES
 (14, 'TP266492', 53),
 (15, 'TP269483', 54);
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `subject`
+-- Dumping data for table subject
 --
 
-CREATE TABLE `subject` (
-  `subject_id` int NOT NULL,
-  `subject_code` varchar(20) NOT NULL,
-  `subject_name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `subject`
---
-
-INSERT INTO `subject` (`subject_id`, `subject_code`, `subject_name`) VALUES
+REPLACE INTO subject (subject_id, subject_code, subject_name) VALUES
 (1, 'CS', 'Communication Skills'),
 (2, 'EAP', 'English For Academic Purposes'),
 (3, 'EWA', 'Essential Of Web Applications'),
@@ -2001,26 +1423,11 @@ INSERT INTO `subject` (`subject_id`, `subject_code`, `subject_name`) VALUES
 (90, 'INTN', 'Internship'),
 (91, 'FARS', 'Academic Research Skills (Foundation)');
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `timetable_preference`
+-- Dumping data for table timetable_preference
 --
 
-CREATE TABLE `timetable_preference` (
-  `id` int NOT NULL,
-  `is_active` tinyint(1) NOT NULL,
-  `lecturer_id` int NOT NULL,
-  `session_id` int NOT NULL,
-  `subject_id` int NOT NULL,
-  `term_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `timetable_preference`
---
-
-INSERT INTO `timetable_preference` (`id`, `is_active`, `lecturer_id`, `session_id`, `subject_id`, `term_id`) VALUES
+REPLACE INTO timetable_preference (id, is_active, lecturer_id, session_id, subject_id, term_id) VALUES
 (1, 1, 33, 49, 1, 1),
 (2, 1, 31, 70, 2, 1),
 (3, 1, 35, 93, 3, 1),
@@ -2041,787 +1448,6 @@ INSERT INTO `timetable_preference` (`id`, `is_active`, `lecturer_id`, `session_i
 (18, 1, 35, 62, 19, 2),
 (19, 1, 31, 83, 75, 2),
 (20, 1, 22, 104, 76, 2);
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `academic_rules`
---
-ALTER TABLE `academic_rules`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `academic_term`
---
-ALTER TABLE `academic_term`
-  ADD PRIMARY KEY (`term_id`),
-  ADD KEY `academic_term_course_id_d7195d48_fk_course_course_id` (`course_id`);
-
---
--- Indexes for table `admin_profiles`
---
-ALTER TABLE `admin_profiles`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `ad_id` (`ad_id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
-
---
--- Indexes for table `auth_group`
---
-ALTER TABLE `auth_group`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`);
-
---
--- Indexes for table `auth_group_permissions`
---
-ALTER TABLE `auth_group_permissions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_group_permissions_group_id_permission_id_0cd325b0_uniq` (`group_id`,`permission_id`),
-  ADD KEY `auth_group_permissio_permission_id_84c5c92e_fk_auth_perm` (`permission_id`);
-
---
--- Indexes for table `auth_permission`
---
-ALTER TABLE `auth_permission`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_permission_content_type_id_codename_01ab375a_uniq` (`content_type_id`,`codename`);
-
---
--- Indexes for table `auth_user`
---
-ALTER TABLE `auth_user`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`);
-
---
--- Indexes for table `auth_user_groups`
---
-ALTER TABLE `auth_user_groups`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_user_groups_user_id_group_id_94350c0c_uniq` (`user_id`,`group_id`),
-  ADD KEY `auth_user_groups_group_id_97559544_fk_auth_group_id` (`group_id`);
-
---
--- Indexes for table `auth_user_user_permissions`
---
-ALTER TABLE `auth_user_user_permissions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_user_user_permissions_user_id_permission_id_14a6b632_uniq` (`user_id`,`permission_id`),
-  ADD KEY `auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm` (`permission_id`);
-
---
--- Indexes for table `booking`
---
-ALTER TABLE `booking`
-  ADD PRIMARY KEY (`booking_id`),
-  ADD KEY `booking_user_id_1bd7cb6e_fk_auth_user_id` (`user_id`),
-  ADD KEY `booking_facility_id_42d1686e_fk_facilities_facility_id` (`facility_id`);
-
---
--- Indexes for table `campus_announcement`
---
-ALTER TABLE `campus_announcement`
-  ADD PRIMARY KEY (`announcement_id`),
-  ADD KEY `campus_announcement_author_id_d318111a_fk_admin_profiles_id` (`author_id`);
-
---
--- Indexes for table `campus_announcementTarget`
---
-ALTER TABLE `campus_announcementTarget`
-  ADD PRIMARY KEY (`target_id`),
-  ADD KEY `campus_announcementT_announcement_id_e00c8a39_fk_campus_an` (`announcement_id`);
-
---
--- Indexes for table `campus_attachments`
---
-ALTER TABLE `campus_attachments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `campus_attachments_content_type_id_59434c3f_fk_django_co` (`content_type_id`);
-
---
--- Indexes for table `campus_attendanceMark`
---
-ALTER TABLE `campus_attendanceMark`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `campus_attendanceMark_session_id_student_id_088e9a3f_uniq` (`session_id`,`student_id`),
-  ADD KEY `campus_attendanceMark_student_id_41b3fc90_fk_auth_user_id` (`student_id`);
-
---
--- Indexes for table `campus_AttendanceSession`
---
-ALTER TABLE `campus_AttendanceSession`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `campus_AttendanceSession_created_by_id_d4aa07a3_fk_auth_user_id` (`created_by_id`);
-
---
--- Indexes for table `campus_faq`
---
-ALTER TABLE `campus_faq`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `slug` (`slug`),
-  ADD KEY `campus_faq_author_id_40338233_fk_admin_profiles_id` (`author_id`);
-
---
--- Indexes for table `campus_faqreaction`
---
-ALTER TABLE `campus_faqreaction`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `campus_faqreaction_faq_id_user_id_5459a873_uniq` (`faq_id`,`user_id`),
-  ADD KEY `campus_faqreaction_user_id_fcac2efa_fk_auth_user_id` (`user_id`);
-
---
--- Indexes for table `campus_mapedge`
---
-ALTER TABLE `campus_mapedge`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `campus_mapedge_from_node_id_38e6c578_fk_campus_mapnode_id` (`from_node_id`),
-  ADD KEY `campus_mapedge_to_node_id_2d418755_fk_campus_mapnode_id` (`to_node_id`);
-
---
--- Indexes for table `campus_mapnode`
---
-ALTER TABLE `campus_mapnode`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `node_id` (`node_id`);
-
---
--- Indexes for table `campus_subjectcomponent`
---
-ALTER TABLE `campus_subjectcomponent`
-  ADD PRIMARY KEY (`component_id`),
-  ADD KEY `campus_subjectcompon_subject_id_1a51f80a_fk_subject_s` (`subject_id`);
-
---
--- Indexes for table `campus_supportticket`
---
-ALTER TABLE `campus_supportticket`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `campus_supportticket_assigned_to_id_3f04047f_fk_auth_user_id` (`assigned_to_id`),
-  ADD KEY `campus_supportticket_created_by_id_b8b775d6_fk_auth_user_id` (`created_by_id`);
-
---
--- Indexes for table `campus_ticketactivity`
---
-ALTER TABLE `campus_ticketactivity`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `campus_ticketactivit_ticket_id_cb69c7b5_fk_campus_su` (`ticket_id`),
-  ADD KEY `campus_ticketactivity_user_id_f186cdc8_fk_auth_user_id` (`user_id`);
-
---
--- Indexes for table `campus_ticketmessage`
---
-ALTER TABLE `campus_ticketmessage`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `campus_ticketmessage_sender_id_2832b0bf_fk_auth_user_id` (`sender_id`),
-  ADD KEY `campus_ticketmessage_ticket_id_598d09cd_fk_campus_su` (`ticket_id`);
-
---
--- Indexes for table `class_session`
---
-ALTER TABLE `class_session`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `class_session_lecturer_id_e46e0ca8_fk_auth_user_id` (`lecturer_id`),
-  ADD KEY `class_session_term_id_d48c351b_fk_academic_term_term_id` (`term_id`),
-  ADD KEY `class_session_session_id_d7e4974d_fk_session_session_id` (`session_id`),
-  ADD KEY `class_session_subject_component_id_4e50a4cf_fk_campus_su` (`subject_component_id`);
-
---
--- Indexes for table `course`
---
-ALTER TABLE `course`
-  ADD PRIMARY KEY (`course_id`),
-  ADD UNIQUE KEY `course_code` (`course_code`),
-  ADD KEY `course_dept_id_9e014c55_fk_departments_dept_id` (`dept_id`);
-
---
--- Indexes for table `course_enrollment`
---
-ALTER TABLE `course_enrollment`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `student_id` (`student_id`),
-  ADD KEY `course_enrollment_term_id_b4865087_fk_academic_term_term_id` (`term_id`);
-
---
--- Indexes for table `course_subject`
---
-ALTER TABLE `course_subject`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `course_subject_course_id_217feed5_fk_course_course_id` (`course_id`),
-  ADD KEY `course_subject_subject_id_938cf26b_fk_subject_subject_id` (`subject_id`);
-
---
--- Indexes for table `departments`
---
-ALTER TABLE `departments`
-  ADD PRIMARY KEY (`dept_id`),
-  ADD UNIQUE KEY `dept_code` (`dept_code`),
-  ADD UNIQUE KEY `head_id` (`head_id`);
-
---
--- Indexes for table `django_admin_log`
---
-ALTER TABLE `django_admin_log`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `django_admin_log_content_type_id_c4bce8eb_fk_django_co` (`content_type_id`),
-  ADD KEY `django_admin_log_user_id_c564eba6_fk_auth_user_id` (`user_id`);
-
---
--- Indexes for table `django_content_type`
---
-ALTER TABLE `django_content_type`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `django_content_type_app_label_model_76bd3d3b_uniq` (`app_label`,`model`);
-
---
--- Indexes for table `django_migrations`
---
-ALTER TABLE `django_migrations`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `django_session`
---
-ALTER TABLE `django_session`
-  ADD PRIMARY KEY (`session_key`),
-  ADD KEY `django_session_expire_date_a5c62663` (`expire_date`);
-
---
--- Indexes for table `facilities`
---
-ALTER TABLE `facilities`
-  ADD PRIMARY KEY (`facility_id`),
-  ADD UNIQUE KEY `facility_name` (`facility_name`);
-
---
--- Indexes for table `lecturer_assignment`
---
-ALTER TABLE `lecturer_assignment`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `lecturer_assignment_term_id_subject_id_18e2672b_uniq` (`term_id`,`subject_id`),
-  ADD KEY `lecturer_assignment_lecturer_id_2b0bbb97_fk_auth_user_id` (`lecturer_id`),
-  ADD KEY `lecturer_assignment_subject_id_2c1fa45c_fk_subject_subject_id` (`subject_id`);
-
---
--- Indexes for table `lecturer_profiles`
---
-ALTER TABLE `lecturer_profiles`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `lc_id` (`lc_id`),
-  ADD UNIQUE KEY `user_id` (`user_id`),
-  ADD KEY `lecturer_profiles_dept_id_df93f1c7_fk_departments_dept_id` (`dept_id`);
-
---
--- Indexes for table `lecturer_subjects`
---
-ALTER TABLE `lecturer_subjects`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `lecturer_subjects_user_id_c00072e6_fk_auth_user_id` (`user_id`),
-  ADD KEY `lecturer_subjects_subject_id_7b9e00bf_fk_subject_subject_id` (`subject_id`);
-
---
--- Indexes for table `session`
---
-ALTER TABLE `session`
-  ADD PRIMARY KEY (`session_id`),
-  ADD KEY `session_facility_id_1cd9cb0d_fk_facilities_facility_id` (`facility_id`);
-
---
--- Indexes for table `skipped_date`
---
-ALTER TABLE `skipped_date`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `skipped_date_term_id_date_b3e1643b_uniq` (`term_id`,`date`);
-
---
--- Indexes for table `student_profiles`
---
-ALTER TABLE `student_profiles`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `tp_id` (`tp_id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
-
---
--- Indexes for table `subject`
---
-ALTER TABLE `subject`
-  ADD PRIMARY KEY (`subject_id`),
-  ADD UNIQUE KEY `subject_code` (`subject_code`);
-
---
--- Indexes for table `timetable_preference`
---
-ALTER TABLE `timetable_preference`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `timetable_preference_lecturer_id_d227f3b4_fk_auth_user_id` (`lecturer_id`),
-  ADD KEY `timetable_preference_session_id_2fe4a9eb_fk_session_session_id` (`session_id`),
-  ADD KEY `timetable_preference_subject_id_cb2b0190_fk_subject_subject_id` (`subject_id`),
-  ADD KEY `timetable_preference_term_id_1e4decd7_fk_academic_term_term_id` (`term_id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `academic_rules`
---
-ALTER TABLE `academic_rules`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `academic_term`
---
-ALTER TABLE `academic_term`
-  MODIFY `term_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `admin_profiles`
---
-ALTER TABLE `admin_profiles`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `auth_group`
---
-ALTER TABLE `auth_group`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `auth_group_permissions`
---
-ALTER TABLE `auth_group_permissions`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `auth_permission`
---
-ALTER TABLE `auth_permission`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=153;
-
---
--- AUTO_INCREMENT for table `auth_user`
---
-ALTER TABLE `auth_user`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
-
---
--- AUTO_INCREMENT for table `auth_user_groups`
---
-ALTER TABLE `auth_user_groups`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
-
---
--- AUTO_INCREMENT for table `auth_user_user_permissions`
---
-ALTER TABLE `auth_user_user_permissions`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `booking`
---
-ALTER TABLE `booking`
-  MODIFY `booking_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT for table `campus_announcement`
---
-ALTER TABLE `campus_announcement`
-  MODIFY `announcement_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT for table `campus_announcementTarget`
---
-ALTER TABLE `campus_announcementTarget`
-  MODIFY `target_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT for table `campus_attachments`
---
-ALTER TABLE `campus_attachments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
-
---
--- AUTO_INCREMENT for table `campus_attendanceMark`
---
-ALTER TABLE `campus_attendanceMark`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `campus_AttendanceSession`
---
-ALTER TABLE `campus_AttendanceSession`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `campus_faq`
---
-ALTER TABLE `campus_faq`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
-
---
--- AUTO_INCREMENT for table `campus_faqreaction`
---
-ALTER TABLE `campus_faqreaction`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `campus_mapedge`
---
-ALTER TABLE `campus_mapedge`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `campus_mapnode`
---
-ALTER TABLE `campus_mapnode`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `campus_subjectcomponent`
---
-ALTER TABLE `campus_subjectcomponent`
-  MODIFY `component_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=170;
-
---
--- AUTO_INCREMENT for table `campus_supportticket`
---
-ALTER TABLE `campus_supportticket`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `campus_ticketactivity`
---
-ALTER TABLE `campus_ticketactivity`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
-
---
--- AUTO_INCREMENT for table `campus_ticketmessage`
---
-ALTER TABLE `campus_ticketmessage`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
-
---
--- AUTO_INCREMENT for table `class_session`
---
-ALTER TABLE `class_session`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `course`
---
-ALTER TABLE `course`
-  MODIFY `course_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `course_enrollment`
---
-ALTER TABLE `course_enrollment`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
-
---
--- AUTO_INCREMENT for table `course_subject`
---
-ALTER TABLE `course_subject`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
-
---
--- AUTO_INCREMENT for table `departments`
---
-ALTER TABLE `departments`
-  MODIFY `dept_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `django_admin_log`
---
-ALTER TABLE `django_admin_log`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `django_content_type`
---
-ALTER TABLE `django_content_type`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
-
---
--- AUTO_INCREMENT for table `django_migrations`
---
-ALTER TABLE `django_migrations`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
-
---
--- AUTO_INCREMENT for table `facilities`
---
-ALTER TABLE `facilities`
-  MODIFY `facility_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT for table `lecturer_assignment`
---
-ALTER TABLE `lecturer_assignment`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
-
---
--- AUTO_INCREMENT for table `lecturer_profiles`
---
-ALTER TABLE `lecturer_profiles`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
-
---
--- AUTO_INCREMENT for table `lecturer_subjects`
---
-ALTER TABLE `lecturer_subjects`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
-
---
--- AUTO_INCREMENT for table `session`
---
-ALTER TABLE `session`
-  MODIFY `session_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=201;
-
---
--- AUTO_INCREMENT for table `skipped_date`
---
-ALTER TABLE `skipped_date`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `student_profiles`
---
-ALTER TABLE `student_profiles`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
-
---
--- AUTO_INCREMENT for table `subject`
---
-ALTER TABLE `subject`
-  MODIFY `subject_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
-
---
--- AUTO_INCREMENT for table `timetable_preference`
---
-ALTER TABLE `timetable_preference`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `academic_term`
---
-ALTER TABLE `academic_term`
-  ADD CONSTRAINT `academic_term_course_id_d7195d48_fk_course_course_id` FOREIGN KEY (`course_id`) REFERENCES `course` (`course_id`);
-
---
--- Constraints for table `admin_profiles`
---
-ALTER TABLE `admin_profiles`
-  ADD CONSTRAINT `admin_profiles_user_id_13be83a2_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `auth_group_permissions`
---
-ALTER TABLE `auth_group_permissions`
-  ADD CONSTRAINT `auth_group_permissio_permission_id_84c5c92e_fk_auth_perm` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`),
-  ADD CONSTRAINT `auth_group_permissions_group_id_b120cbf9_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`);
-
---
--- Constraints for table `auth_permission`
---
-ALTER TABLE `auth_permission`
-  ADD CONSTRAINT `auth_permission_content_type_id_2f476e4b_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
-
---
--- Constraints for table `auth_user_groups`
---
-ALTER TABLE `auth_user_groups`
-  ADD CONSTRAINT `auth_user_groups_group_id_97559544_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`),
-  ADD CONSTRAINT `auth_user_groups_user_id_6a12ed8b_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `auth_user_user_permissions`
---
-ALTER TABLE `auth_user_user_permissions`
-  ADD CONSTRAINT `auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`),
-  ADD CONSTRAINT `auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `booking`
---
-ALTER TABLE `booking`
-  ADD CONSTRAINT `booking_facility_id_42d1686e_fk_facilities_facility_id` FOREIGN KEY (`facility_id`) REFERENCES `facilities` (`facility_id`),
-  ADD CONSTRAINT `booking_user_id_1bd7cb6e_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `campus_announcement`
---
-ALTER TABLE `campus_announcement`
-  ADD CONSTRAINT `campus_announcement_author_id_d318111a_fk_admin_profiles_id` FOREIGN KEY (`author_id`) REFERENCES `admin_profiles` (`id`);
-
---
--- Constraints for table `campus_announcementTarget`
---
-ALTER TABLE `campus_announcementTarget`
-  ADD CONSTRAINT `campus_announcementT_announcement_id_e00c8a39_fk_campus_an` FOREIGN KEY (`announcement_id`) REFERENCES `campus_announcement` (`announcement_id`);
-
---
--- Constraints for table `campus_attachments`
---
-ALTER TABLE `campus_attachments`
-  ADD CONSTRAINT `campus_attachments_content_type_id_59434c3f_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
-
---
--- Constraints for table `campus_attendanceMark`
---
-ALTER TABLE `campus_attendanceMark`
-  ADD CONSTRAINT `campus_attendanceMar_session_id_194ff134_fk_campus_At` FOREIGN KEY (`session_id`) REFERENCES `campus_AttendanceSession` (`id`),
-  ADD CONSTRAINT `campus_attendanceMark_student_id_41b3fc90_fk_auth_user_id` FOREIGN KEY (`student_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `campus_AttendanceSession`
---
-ALTER TABLE `campus_AttendanceSession`
-  ADD CONSTRAINT `campus_AttendanceSession_created_by_id_d4aa07a3_fk_auth_user_id` FOREIGN KEY (`created_by_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `campus_faq`
---
-ALTER TABLE `campus_faq`
-  ADD CONSTRAINT `campus_faq_author_id_40338233_fk_admin_profiles_id` FOREIGN KEY (`author_id`) REFERENCES `admin_profiles` (`id`);
-
---
--- Constraints for table `campus_faqreaction`
---
-ALTER TABLE `campus_faqreaction`
-  ADD CONSTRAINT `campus_faqreaction_faq_id_1978d533_fk_campus_faq_id` FOREIGN KEY (`faq_id`) REFERENCES `campus_faq` (`id`),
-  ADD CONSTRAINT `campus_faqreaction_user_id_fcac2efa_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `campus_mapedge`
---
-ALTER TABLE `campus_mapedge`
-  ADD CONSTRAINT `campus_mapedge_from_node_id_38e6c578_fk_campus_mapnode_id` FOREIGN KEY (`from_node_id`) REFERENCES `campus_mapnode` (`id`),
-  ADD CONSTRAINT `campus_mapedge_to_node_id_2d418755_fk_campus_mapnode_id` FOREIGN KEY (`to_node_id`) REFERENCES `campus_mapnode` (`id`);
-
---
--- Constraints for table `campus_subjectcomponent`
---
-ALTER TABLE `campus_subjectcomponent`
-  ADD CONSTRAINT `campus_subjectcompon_subject_id_1a51f80a_fk_subject_s` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`);
-
---
--- Constraints for table `campus_supportticket`
---
-ALTER TABLE `campus_supportticket`
-  ADD CONSTRAINT `campus_supportticket_assigned_to_id_3f04047f_fk_auth_user_id` FOREIGN KEY (`assigned_to_id`) REFERENCES `auth_user` (`id`),
-  ADD CONSTRAINT `campus_supportticket_created_by_id_b8b775d6_fk_auth_user_id` FOREIGN KEY (`created_by_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `campus_ticketactivity`
---
-ALTER TABLE `campus_ticketactivity`
-  ADD CONSTRAINT `campus_ticketactivit_ticket_id_cb69c7b5_fk_campus_su` FOREIGN KEY (`ticket_id`) REFERENCES `campus_supportticket` (`id`),
-  ADD CONSTRAINT `campus_ticketactivity_user_id_f186cdc8_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `campus_ticketmessage`
---
-ALTER TABLE `campus_ticketmessage`
-  ADD CONSTRAINT `campus_ticketmessage_sender_id_2832b0bf_fk_auth_user_id` FOREIGN KEY (`sender_id`) REFERENCES `auth_user` (`id`),
-  ADD CONSTRAINT `campus_ticketmessage_ticket_id_598d09cd_fk_campus_su` FOREIGN KEY (`ticket_id`) REFERENCES `campus_supportticket` (`id`);
-
---
--- Constraints for table `class_session`
---
-ALTER TABLE `class_session`
-  ADD CONSTRAINT `class_session_lecturer_id_e46e0ca8_fk_auth_user_id` FOREIGN KEY (`lecturer_id`) REFERENCES `auth_user` (`id`),
-  ADD CONSTRAINT `class_session_session_id_d7e4974d_fk_session_session_id` FOREIGN KEY (`session_id`) REFERENCES `session` (`session_id`),
-  ADD CONSTRAINT `class_session_subject_component_id_4e50a4cf_fk_campus_su` FOREIGN KEY (`subject_component_id`) REFERENCES `campus_subjectcomponent` (`component_id`),
-  ADD CONSTRAINT `class_session_term_id_d48c351b_fk_academic_term_term_id` FOREIGN KEY (`term_id`) REFERENCES `academic_term` (`term_id`);
-
---
--- Constraints for table `course`
---
-ALTER TABLE `course`
-  ADD CONSTRAINT `course_dept_id_9e014c55_fk_departments_dept_id` FOREIGN KEY (`dept_id`) REFERENCES `departments` (`dept_id`);
-
---
--- Constraints for table `course_enrollment`
---
-ALTER TABLE `course_enrollment`
-  ADD CONSTRAINT `course_enrollment_student_id_5b9d7470_fk_auth_user_id` FOREIGN KEY (`student_id`) REFERENCES `auth_user` (`id`),
-  ADD CONSTRAINT `course_enrollment_term_id_b4865087_fk_academic_term_term_id` FOREIGN KEY (`term_id`) REFERENCES `academic_term` (`term_id`);
-
---
--- Constraints for table `course_subject`
---
-ALTER TABLE `course_subject`
-  ADD CONSTRAINT `course_subject_course_id_217feed5_fk_course_course_id` FOREIGN KEY (`course_id`) REFERENCES `course` (`course_id`),
-  ADD CONSTRAINT `course_subject_subject_id_938cf26b_fk_subject_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`);
-
---
--- Constraints for table `departments`
---
-ALTER TABLE `departments`
-  ADD CONSTRAINT `departments_head_id_05e94922_fk_lecturer_profiles_id` FOREIGN KEY (`head_id`) REFERENCES `lecturer_profiles` (`id`);
-
---
--- Constraints for table `django_admin_log`
---
-ALTER TABLE `django_admin_log`
-  ADD CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`),
-  ADD CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `lecturer_assignment`
---
-ALTER TABLE `lecturer_assignment`
-  ADD CONSTRAINT `lecturer_assignment_lecturer_id_2b0bbb97_fk_auth_user_id` FOREIGN KEY (`lecturer_id`) REFERENCES `auth_user` (`id`),
-  ADD CONSTRAINT `lecturer_assignment_subject_id_2c1fa45c_fk_subject_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`),
-  ADD CONSTRAINT `lecturer_assignment_term_id_ee9f8658_fk_academic_term_term_id` FOREIGN KEY (`term_id`) REFERENCES `academic_term` (`term_id`);
-
---
--- Constraints for table `lecturer_profiles`
---
-ALTER TABLE `lecturer_profiles`
-  ADD CONSTRAINT `lecturer_profiles_dept_id_df93f1c7_fk_departments_dept_id` FOREIGN KEY (`dept_id`) REFERENCES `departments` (`dept_id`),
-  ADD CONSTRAINT `lecturer_profiles_user_id_8041d963_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `lecturer_subjects`
---
-ALTER TABLE `lecturer_subjects`
-  ADD CONSTRAINT `lecturer_subjects_subject_id_7b9e00bf_fk_subject_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`),
-  ADD CONSTRAINT `lecturer_subjects_user_id_c00072e6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `session`
---
-ALTER TABLE `session`
-  ADD CONSTRAINT `session_facility_id_1cd9cb0d_fk_facilities_facility_id` FOREIGN KEY (`facility_id`) REFERENCES `facilities` (`facility_id`);
-
---
--- Constraints for table `skipped_date`
---
-ALTER TABLE `skipped_date`
-  ADD CONSTRAINT `skipped_date_term_id_93518ab0_fk_academic_term_term_id` FOREIGN KEY (`term_id`) REFERENCES `academic_term` (`term_id`);
-
---
--- Constraints for table `student_profiles`
---
-ALTER TABLE `student_profiles`
-  ADD CONSTRAINT `student_profiles_user_id_37ebcf0c_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
--- Constraints for table `timetable_preference`
---
-ALTER TABLE `timetable_preference`
-  ADD CONSTRAINT `timetable_preference_lecturer_id_d227f3b4_fk_auth_user_id` FOREIGN KEY (`lecturer_id`) REFERENCES `auth_user` (`id`),
-  ADD CONSTRAINT `timetable_preference_session_id_2fe4a9eb_fk_session_session_id` FOREIGN KEY (`session_id`) REFERENCES `session` (`session_id`),
-  ADD CONSTRAINT `timetable_preference_subject_id_cb2b0190_fk_subject_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`subject_id`),
-  ADD CONSTRAINT `timetable_preference_term_id_1e4decd7_fk_academic_term_term_id` FOREIGN KEY (`term_id`) REFERENCES `academic_term` (`term_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,9 +1,9 @@
 /* ============================================================
-   COURSES MANAGEMENT STYLES
-   Matches the academic_management / manage_term styling
+   SUBJECTS MANAGEMENT STYLES
+   Matches the courses_management / academic_management styling
    ============================================================ */
 
-.coursesContainer {
+.subjectsContainer {
     width: 100%;
     padding: 0.5vw;
     display: flex;
@@ -11,27 +11,26 @@
     gap: 1vw;
 }
 
-/* ---- Controls ---- */
-.coursesControls {
+/* ---- Section Header ---- */
+.subjectsContainer .sectionHeader {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1vw;
-    align-items: flex-start;
-    border-bottom: 0.1vw solid rgba(var(--black), 1);
-    padding-bottom: 0.5vw;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
-.coursesControls .selectInput.inactive {
-    user-select: none;
-    pointer-events: none;
-    color: rgba(var(--black), 0.4);
+.subjectsContainer .sectionHeader h3 {
+    margin: 0;
+    font-size: var(--h4-fontsize);
+    color: rgba(var(--black), 1);
 }
 
-.coursesControls .selectInput.inactive path {
-    stroke: rgba(var(--black), 0.4);
+/* ---- Search ---- */
+.subjectsContainer .searchGroup {
+    margin-bottom: 0;
 }
 
-.cmInput {
+.subjectsContainer .cmInput {
     padding: 0.3vw 0.5vw;
     font-size: var(--p-fontsize);
     border: 0.1vw solid rgba(var(--black), 0.4);
@@ -40,34 +39,8 @@
     width: 100%;
 }
 
-/* ---- Course Info ---- */
-.courseInfo {
-    display: flex;
-    gap: 2.5vw;
-    font-size: var(--p-fontsize);
-    color: rgba(var(--black), 1);
-}
-
-.courseInfo p {
-    margin: 0;
-}
-
-/* ---- Section Header ---- */
-.sectionHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.sectionHeader h3 {
-    margin: 0;
-    font-size: var(--h4-fontsize);
-    color: rgba(var(--black), 1);
-}
-
 /* ---- Button ---- */
-.cmBtn {
+.subjectsContainer .cmBtn {
     padding: 0.3vw 0.7vw;
     border: 0.1vw solid rgba(var(--black), 0);
     background-color: rgba(var(--black), 1);
@@ -79,51 +52,46 @@
     outline: none;
 }
 
-.cmBtn:hover {
+.subjectsContainer .cmBtn:hover {
     border: 0.1vw solid rgba(var(--black), 1);
     background-color: greenyellow;
     color: rgba(var(--black), 1);
 }
 
-.cmBtnDanger {
+.subjectsContainer .cmBtnDanger {
     background-color: #c0392b;
 }
 
-.cmBtnDanger:hover {
+.subjectsContainer .cmBtnDanger:hover {
     background-color: #e74c3c;
     border-color: #c0392b;
     color: white;
 }
 
-.cmBtnAssign {
-    background-color: rgba(var(--dark-green), 1);
-}
-
-.cmBtnAssign:hover {
-    background-color: greenyellow;
-    border-color: rgba(var(--dark-green), 1);
-    color: rgba(var(--black), 1);
+.subjectsContainer .cmBtnSmall {
+    padding: 0.15vw 0.5vw;
+    font-size: var(--xs-fontsize);
 }
 
 /* ---- Table ---- */
-.tableWrapper {
+.subjectsContainer .tableWrapper {
     width: 100%;
 }
 
-.cmTable {
+.subjectsContainer .cmTable {
     width: 100%;
     border-collapse: collapse;
     border: 0.1vw solid rgba(var(--black), 1);
     counter-reset: rowNumber;
 }
 
-.cmTable thead {
+.subjectsContainer .cmTable thead {
     background-color: greenyellow;
     color: rgba(var(--black), 1);
     border-bottom: 0.1vw solid rgba(var(--black), 1);
 }
 
-.cmTable thead th {
+.subjectsContainer .cmTable thead th {
     padding: 0.3vw 0.5vw;
     height: 1.3vw;
     font-size: var(--p-fontsize);
@@ -131,7 +99,7 @@
     text-align: center;
 }
 
-.cmTable tbody tr {
+.subjectsContainer .cmTable tbody tr {
     counter-increment: rowNumber;
     width: 100%;
     border-bottom: 0.1vw solid rgba(var(--black), 0.4);
@@ -140,46 +108,48 @@
     height: 1.3vw;
 }
 
-.cmTable tbody tr:nth-child(even) {
+.subjectsContainer .cmTable tbody tr:nth-child(even) {
     background-color: rgba(var(--black), 0.05);
 }
 
-.cmTable tbody tr:last-child {
+.subjectsContainer .cmTable tbody tr:last-child {
     border-bottom: 0.1vw solid rgba(var(--black), 1);
 }
 
-.cmTable tbody tr:hover {
+.subjectsContainer .cmTable tbody tr:hover {
     background-color: rgba(var(--dark-green), 0.1);
 }
 
-.cmTable td {
+.subjectsContainer .cmTable td {
     padding: 0.2vw 0.5vw;
     text-align: center;
     font-size: var(--p-fontsize);
 }
 
-.cmTable th.no-col,
-.cmTable td.no-col {
+.subjectsContainer .cmTable th.no-col,
+.subjectsContainer .cmTable td.no-col {
     width: 5%;
     border-right: 0.1vw solid rgba(var(--black), 1);
 }
 
-.cmTable td.no-col::before {
+.subjectsContainer .cmTable td.no-col::before {
     content: counter(rowNumber);
     font-weight: 400;
     color: rgba(var(--black), 0.6);
 }
 
-.cmTable th.action-col,
-.cmTable td.action-col {
-    width: 8%;
+.subjectsContainer .cmTable th.action-col-wide,
+.subjectsContainer .cmTable td.action-col-wide {
+    width: 12%;
 }
 
-.cmTable td.action-col {
-    padding: 0;
+.subjectsContainer .cmTable td.action-col-wide {
+    padding: 0.2vw 0.3vw;
+    text-align: center;
+    vertical-align: middle;
 }
 
-.cmTable td.action-col button {
+.subjectsContainer .cmTable td.action-col-wide button {
     outline: none;
     border: none;
     background-color: rgba(var(--black), 1);
@@ -191,15 +161,15 @@
     transition: background-color 0.2s;
 }
 
-.cmTable td.action-col button:hover {
+.subjectsContainer .cmTable td.action-col-wide button:hover {
     background-color: rgba(var(--dark-green), 1);
 }
 
-.cmTable td.action-col button.removeBtn {
+.subjectsContainer .cmTable td.action-col-wide button.removeBtn {
     background-color: #c0392b;
 }
 
-.cmTable td.action-col button.removeBtn:hover {
+.subjectsContainer .cmTable td.action-col-wide button.removeBtn:hover {
     background-color: #e74c3c;
 }
 
@@ -239,20 +209,28 @@
     color: #b57d20;
 }
 
+.componentTag.practical {
+    background-color: #e8f0fe;
+    border-color: #a0b4e6;
+    color: #2b5ec0;
+}
+
+.componentTag.fieldwork {
+    background-color: #f0e8fe;
+    border-color: #b4a0e6;
+    color: #5e2bc0;
+}
+
 /* ---- Empty Message ---- */
 .emptyMessage {
     font-size: var(--p-fontsize);
     color: rgba(var(--black), 0.5);
     padding: 0.5vw 0;
-}
-
-/* ---- Search ---- */
-.searchGroup {
-    margin-bottom: 0.7vw;
+    text-align: center;
 }
 
 /* ---- Modal ---- */
-.cmModal {
+.subjectsContainer .cmModal {
     position: fixed;
     top: 0;
     left: 0;
@@ -265,17 +243,22 @@
     justify-content: center;
 }
 
-.cmModalContent {
+.subjectsContainer .cmModalContent {
     background: white;
     border: 0.1vw solid rgba(var(--black), 1);
-    width: 50vw;
-    height: 70vh;
+    width: 40vw;
+    max-height: 75vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-.cmModalHeader {
+.subjectsContainer .cmModalContent.cmModalSmall {
+    width: 30vw;
+    max-height: 40vh;
+}
+
+.subjectsContainer .cmModalHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -284,13 +267,13 @@
     background-color: greenyellow;
 }
 
-.cmModalHeader h3 {
+.subjectsContainer .cmModalHeader h3 {
     margin: 0;
     font-size: var(--h4-fontsize);
     color: rgba(var(--black), 1);
 }
 
-.cmModalClose {
+.subjectsContainer .cmModalClose {
     background: none;
     border: none;
     font-size: var(--h3-fontsize);
@@ -299,12 +282,103 @@
     transition: color 0.2s;
 }
 
-.cmModalClose:hover {
+.subjectsContainer .cmModalClose:hover {
     color: rgba(var(--black), 1);
 }
 
-.cmModalBody {
+.subjectsContainer .cmModalBody {
     padding: 0.7vw;
     overflow-y: auto;
     flex: 1;
+}
+
+/* ---- Form Groups ---- */
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2vw;
+    margin-bottom: 0.7vw;
+}
+
+.formGroup label {
+    font-size: var(--p-fontsize);
+    font-weight: 600;
+    color: rgba(var(--black), 1);
+}
+
+/* ---- Components Section in Modal ---- */
+.componentsSection {
+    margin-top: 0.5vw;
+    border-top: 0.1vw solid rgba(var(--black), 0.2);
+    padding-top: 0.5vw;
+}
+
+.componentsSection .sectionHeader {
+    margin-bottom: 0.5vw;
+}
+
+.componentsSection label {
+    font-size: var(--p-fontsize);
+    font-weight: 600;
+    color: rgba(var(--black), 1);
+}
+
+.componentRow {
+    display: flex;
+    gap: 0.5vw;
+    align-items: center;
+    margin-bottom: 0.4vw;
+    padding: 0.3vw;
+    border: 0.1vw solid rgba(var(--black), 0.15);
+    background: rgba(var(--black), 0.02);
+}
+
+.componentRow select,
+.componentRow input {
+    padding: 0.2vw 0.4vw;
+    font-size: var(--p-fontsize);
+    border: 0.1vw solid rgba(var(--black), 0.4);
+    outline: none;
+    font-family: "Nunito Sans", sans-serif;
+}
+
+.componentRow select {
+    flex: 2;
+}
+
+.componentRow input {
+    flex: 1;
+    width: 4vw;
+}
+
+.componentRow .removeComponentBtn {
+    background: none;
+    border: none;
+    color: #c0392b;
+    cursor: pointer;
+    font-size: var(--h4-fontsize);
+    font-weight: 700;
+    padding: 0 0.3vw;
+    transition: color 0.2s;
+}
+
+.componentRow .removeComponentBtn:hover {
+    color: #e74c3c;
+}
+
+/* ---- Modal Actions ---- */
+.modalActions {
+    display: flex;
+    gap: 0.5vw;
+    justify-content: flex-end;
+    margin-top: 1vw;
+    padding-top: 0.5vw;
+    border-top: 0.1vw solid rgba(var(--black), 0.2);
+}
+
+/* ---- Warning text ---- */
+.warningText {
+    font-size: var(--xs-fontsize);
+    color: #c0392b;
+    margin-top: 0.3vw;
 }
