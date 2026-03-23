@@ -172,8 +172,79 @@ def student_dashboard(request):
 #attendance function
 @login_required
 @role_required(['student'])
-def attendance(request): 
-    return render(request, "attendance.html")
+def attendance(request):
+    marks = AttendanceMark.objects.filter(student=request.user).order_by("-marked_at")
+
+    total_marks = marks.count()
+    present_count = marks.filter(status="PRESENT").count()
+    late_count = marks.filter(status="LATE").count()
+
+    overall_percentage = round((present_count / total_marks) * 100, 1) if total_marks > 0 else 0
+
+    intake_code = "N/A"
+    if hasattr(request.user, "student_profile"):
+        intake_code = request.user.student_profile.tp_id
+
+    current_sem = "N/A"
+    current_courses = []
+    previous_sem_data = []
+
+    enrollment = course_enrollment.objects.filter(student=request.user).select_related("term").first()
+
+    if enrollment and enrollment.term:
+        current_sem = enrollment.term.current_semester
+        current_course = enrollment.term.course
+
+        course_subjects = course_subject.objects.filter(
+            course=current_course,
+            recommended_semester=current_sem
+        ).select_related("subject")
+
+        current_courses = [
+            {
+                "name": cs.subject.subject_name,
+                "percentage": overall_percentage
+            }
+            for cs in course_subjects
+        ]
+
+#Previous semesters subjects
+        for sem in range(1, current_sem):
+            prev_subjects = course_subject.objects.filter(
+                course=current_course,
+                recommended_semester=sem
+            ).select_related("subject")
+
+            previous_sem_data.append({
+                "semester": sem,
+                "percentage": overall_percentage,
+                "courses": [
+                    {
+                        "name": ps.subject.subject_name,
+                        "percentage": overall_percentage
+                    }
+                    for ps in prev_subjects
+                ]
+            })
+
+    full_name = f"{request.user.first_name} {request.user.last_name}".strip()
+
+    if not full_name:
+        full_name = request.user.username
+
+    context = {
+        "student": {
+            "name": full_name,
+            "intake_code": intake_code,
+        },
+        "overall_percentage": overall_percentage,
+        "current_sem": current_sem,
+        "current_courses": current_courses,
+        "sem_percentage": overall_percentage,
+        "previous_sem_data": previous_sem_data,
+    }
+
+    return render(request, "attendance.html", context)
 
 @login_required
 @role_required(['student'])
