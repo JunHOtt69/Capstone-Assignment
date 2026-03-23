@@ -111,7 +111,7 @@ def announcement_banner(request):
                 show_this_one = True
 
             elif target.academic_term:
-                student_intake = str(user.student_profile.academic_term.term_id)
+                student_intake = str(user.course_enrollment.term.term_id)
                 allowed_intakes = target.academic_term.split(',')
                 if student_intake in allowed_intakes:
                     show_this_one = True

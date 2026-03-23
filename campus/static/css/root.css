@@ -728,6 +728,8 @@ header li a{
     gap: 4vw;
     width: max-content;
     animation: scroll-flexible 10s linear infinite;
+    animation-iteration-count: infinite !important;
+    animation-duration: 10s !important;
 }
 
 .banner span,
