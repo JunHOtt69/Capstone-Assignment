@@ -838,6 +838,7 @@ def manage_academic_term(request):
 @role_required(allowed_roles=['admin'])
 def get_terms(request):
     terms = list(academic_term.objects.select_related('course').values(
+        'term_id',
         'intake_code', 
         'course__course_name',
         'current_semester', 
@@ -855,6 +856,65 @@ def get_terms(request):
     }
 
     return JsonResponse(data)
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def update_term(request):
+    try:
+        data = json.loads(request.body)
+        term_id = data.get('term_id')
+        term = get_object_or_404(academic_term, term_id=term_id)
+
+        if 'current_semester' in data:
+            semester = int(data['current_semester'])
+            if semester < 1:
+                return JsonResponse({'success': False, 'error': 'Semester must be at least 1.'}, status=400)
+            term.current_semester = semester
+
+        if 'is_active' in data:
+            term.is_active = bool(data['is_active'])
+
+        if 'start_date' in data:
+            parsed = parse_date(data['start_date'])
+            if not parsed:
+                return JsonResponse({'success': False, 'error': 'Invalid start date.'}, status=400)
+            term.start_date = parsed
+
+        if 'end_date' in data:
+            parsed = parse_date(data['end_date'])
+            if not parsed:
+                return JsonResponse({'success': False, 'error': 'Invalid end date.'}, status=400)
+            term.end_date = parsed
+
+        if term.start_date and term.end_date and term.start_date >= term.end_date:
+            return JsonResponse({'success': False, 'error': 'End date must be after start date.'}, status=400)
+
+        term.save()
+        return JsonResponse({'success': True})
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@role_required(allowed_roles=['admin'])
+@require_POST
+def delete_term(request):
+    try:
+        data = json.loads(request.body)
+        term_id = data.get('term_id')
+        term = get_object_or_404(academic_term, term_id=term_id)
+
+        enrollments = course_enrollment.objects.filter(term=term).count()
+        sessions = class_session.objects.filter(term=term).count()
+
+        if enrollments > 0 or sessions > 0:
+            return JsonResponse({
+                'success': False,
+                'error': f'Cannot delete: this term has {enrollments} enrollment(s) and {sessions} class session(s) linked to it.'
+            }, status=400)
+
+        term.delete()
+        return JsonResponse({'success': True})
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 @role_required(allowed_roles=['admin'])
 def get_courses_by_level(request):
