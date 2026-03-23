@@ -91,7 +91,7 @@ class class_session(models.Model):
         db_table = 'class_session'
 
     def __str__(self):
-        return f"{self.subject} - {self.date} ({self.status})"
+        return f"{self.subject_component.subject} - {self.date} ({self.status})"
 
 class course(models.Model):
     LEVEL_CHOICES = [

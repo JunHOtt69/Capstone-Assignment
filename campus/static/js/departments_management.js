@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const deptOptions      = document.getElementById('deptOptions');
     const deptInfo         = document.getElementById('deptInfo');
     const deptNameLabel    = document.getElementById('deptNameLabel');
-    const infoBar          = document.getElementById('infoBar');
+
     const lecturersSection = document.getElementById('lecturersSection');
     const lecturersBody    = document.getElementById('lecturersBody');
     const emptyLecturers   = document.getElementById('emptyLecturers');
@@ -31,10 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---- Info Bar ----
     function showInfo(msg, type) {
-        infoBar.textContent = msg;
-        infoBar.className = 'cmInfoBar ' + type;
-        infoBar.style.display = 'block';
-        setTimeout(function () { infoBar.style.display = 'none'; }, 4000);
+        showNotif(type, msg);
     }
 
     // ---- Custom dropdown: department selection ----

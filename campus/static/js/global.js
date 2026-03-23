@@ -257,6 +257,36 @@ function removeNotification(notif) {
     }, 1000);
 }
 
+function showNotif(tag, message){
+    const notifContainer = document.querySelector('.notifContainer');
+    const notif = document.createElement('div');
+    notif.classList.add('notif');
+    notif.classList.add(tag);
+
+    const p = document.createElement('p');
+    p.classList.add('message');
+    p.textContent = message;
+
+    const closeBtn = document.createElement('span');
+    closeBtn.classList.add('closeBtn');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.addEventListener('click', () => {
+        notif.style.opacity = '0';
+        notif.style.transition = 'opacity 1s ease';
+        setTimeout(() => {
+            notif.remove();
+        }, 1000);
+    });
+
+    notif.appendChild(p);
+    notif.appendChild(closeBtn);
+    notifContainer.appendChild(notif);
+
+    setTimeout(() => {
+        removeNotification(notif);
+    }, 5000);
+}
+
 function formatCardId(container){
     const cardSpan = container.querySelector('#card_id');
     

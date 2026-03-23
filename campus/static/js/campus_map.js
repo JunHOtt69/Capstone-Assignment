@@ -147,24 +147,13 @@
     addOpt(startSelect,'','-- select start --'); 
     addOpt(endSelect,'','-- select end --');
     
-    // Get terminal nodes and sort by numeric value (extract numbers from names/IDs)
+    // Get terminal nodes and sort alphabetically + numerically (natural sort)
     const terminals = nodes
       .filter(n => n.type === 'terminal')
       .sort((a, b) => {
         const nameA = a.name || 'Node '+a.id;
         const nameB = b.name || 'Node '+b.id;
-        
-        // Extract numeric parts for natural sorting
-        const numA = parseInt(nameA.match(/\d+/)?.[0] || '0');
-        const numB = parseInt(nameB.match(/\d+/)?.[0] || '0');
-        
-        // If both have numbers, sort numerically
-        if (numA !== numB) {
-          return numA - numB;
-        }
-        
-        // Otherwise, sort alphabetically
-        return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+        return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
       });
     
     // Add sorted terminals to dropdowns
