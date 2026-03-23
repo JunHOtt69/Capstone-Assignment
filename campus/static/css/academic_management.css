@@ -101,7 +101,7 @@
 }
 
 .selectInput .selectedLabel label{
-    max-width: 12vw;
+    max-width: 18vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
