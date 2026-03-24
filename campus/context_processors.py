@@ -3,8 +3,10 @@ from barcode import get_barcode
 from barcode.writer import ImageWriter
 import io
 import base64
+from datetime import datetime
+from django.conf import settings
 from django.utils import timezone
-from .models import announcement, announcementTarget
+from .models import announcement, announcementTarget, class_session
 
 #returning card ID
 def card_context(request):
@@ -122,3 +124,46 @@ def announcement_banner(request):
                 "rolling_banner": banner, }
         
     return {"recent_news": recent_news, "rolling_banner": None}
+
+
+def today_schedule(request):
+    u = getattr(request, 'user', None)
+    if not u or not u.is_authenticated:
+        return {'classList': []}
+
+    if getattr(settings, 'DEBUG_DATE', None):
+        today = datetime.strptime(settings.DEBUG_DATE, '%Y-%m-%d').date()
+    else:
+        today = timezone.localdate()
+
+    # Determine classes for today based on role
+    if hasattr(u, 'student_profile') and hasattr(u, 'course_enrollment'):
+        sessions = class_session.objects.filter(
+            term=u.course_enrollment.term,
+            date=today,
+            status='scheduled',
+        ).select_related(
+            'session__facility', 'subject_component__subject'
+        ).order_by('session__start_time')
+    elif hasattr(u, 'lecturer_profile'):
+        sessions = class_session.objects.filter(
+            lecturer=u,
+            date=today,
+            status='scheduled',
+        ).select_related(
+            'session__facility', 'subject_component__subject'
+        ).order_by('session__start_time')
+    else:
+        return {'classList': []}
+
+    class_list = []
+    for cs in sessions:
+        start = cs.session.start_time.strftime('%I:%M %p')
+        end = cs.session.end_time.strftime('%I:%M %p')
+        class_list.append({
+            'class_time': f"{start} - {end}",
+            'class_code': cs.subject_component.subject.subject_code,
+            'classroom': cs.session.facility.facility_name,
+        })
+
+    return {'classList': class_list}

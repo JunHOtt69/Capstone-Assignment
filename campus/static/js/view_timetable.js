@@ -134,12 +134,22 @@ document.addEventListener('DOMContentLoaded', function () {
         initTerm(singleInput.value, singleInput.getAttribute('data-start'), singleInput.getAttribute('data-end'));
     }
 
+    // Lecturer mode — auto-load without term selection
+    const lecturerMode = document.getElementById('lecturerMode');
+    if (lecturerMode) {
+        initTerm(null, lecturerMode.getAttribute('data-start'), lecturerMode.getAttribute('data-end'));
+    }
+
     /* ── Load & render ── */
 
     function loadTimetable() {
-        if (!selectedTermId || !currentWeekMonday) return;
+        if (!currentWeekMonday) return;
+        if (selectedTermId === null && !document.getElementById('lecturerMode')) return;
 
-        fetch(`/timetable/data/?term_id=${encodeURIComponent(selectedTermId)}&week_start=${encodeURIComponent(currentWeekMonday)}`)
+        let url = `/timetable/data/?week_start=${encodeURIComponent(currentWeekMonday)}`;
+        if (selectedTermId) url += `&term_id=${encodeURIComponent(selectedTermId)}`;
+
+        fetch(url)
             .then(r => r.json())
             .then(data => {
                 if (data.error) {
@@ -194,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <div class="classType ${m.class_type.toLowerCase()}">${m.class_type}</div>
                             <div class="lecturerName">${m.lecturer}</div>
                             <div class="facilityName">${m.facility}</div>
+                            ${m.intake_code ? `<div class="intakeCode">${m.intake_code}</div>` : ''}
                             ${m.status !== 'scheduled' ? `<div class="sessionStatus ${m.status}">${m.status}</div>` : ''}
                         `;
                         td.appendChild(div);

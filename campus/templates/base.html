@@ -258,14 +258,29 @@
 
 <template id="i-Timetable-dropdown">
     <div class="functionG1">
-        <span class="title"><a href="{% url 'view_timetable' %}">View Timetable</a></span>
+        <span class="title"><a href="{% url 'view_timetable' %}">Quick Actions</a></span>
         <span class="item"><a href="{% url 'view_timetable' %}">Timetable</a></span>
+        <span class="item"><a href="{% url 'navigate_to_class' %}">Navigate to Classroom</a></span>
     </div>
     
     <div class="functionG2">
-        <span class="title">Quick Actions</span>
-        <span class="item"><a href="{% url 'navigate_to_class' %}">Navigate to Classroom</a></span>
-    </div>
+        <span class="title">Today's Schedule</span>
+        {% if classList %}
+            <div class="classWrapper">
+                {% for class in classList %}
+                    <div class="class">
+                        <span>{{ class.class_time }} - {{ class.class_code }} ({{ class.classroom }})</span>
+                        {% if user_role == 'student' %}
+                            <span>Attendance: {{ class.attendance_rate }}%</span>
+                        {% elif user_role == 'lecturer'%}
+                            <span>Student attendance: {{ class.attendance_rate }}%</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <span class="empty-state">No scheduled classes for today.</span>
+        {% endif %}
 </template>
 
 <template id="i-Attendance-dropdown">
@@ -475,25 +490,6 @@
                 active
                 {% endif %}
             "><a href="{% url "submit_feedback" %}">IT Support</a></span>
-        </div>
-        <div class="functionG2">
-            <span class="title">Today's Class</span>
-            {% if classList %}
-                <div class="classWrapper">
-                    {% for class in classList %}
-                        <div class="class">
-                            <span>{{ class.class_time }} - {{ class.class_code }} ({{ class.classroom }})</span>
-                            {% if user_role == 'student' %}
-                                <span>Attendance: {{ class.attendance_rate }}%</span>
-                            {% elif user_role == 'lecturer'%}
-                                <span>Student attendance: {{ class.attendance_rate }}%</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <span class="empty-state">No scheduled classes for today.</span>
-            {% endif %}
         </div>
     {% endif %}
 </template>
