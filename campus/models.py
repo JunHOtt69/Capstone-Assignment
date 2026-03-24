@@ -319,15 +319,13 @@ class attachments(models.Model):
         return self.extension in supported
 
 class AttendanceSession(models.Model):
-    otp = models.CharField(max_length=4)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name="created_attendance_sessions")
-    #subject = models.ForeignKey("subject", on_delete=models.CASCADE, null=True, blank=True, related_name="attendance_sessions") 
-    created_at = models.DateTimeField(default=timezone.now)
-    expires_at = models.DateTimeField()
-    is_active = models.BooleanField(default=True)
+    class_event = models.ForeignKey('class_session', on_delete=models.CASCADE, related_name="attendance_records")
+    lecturer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    is_open = models.BooleanField(default=False) 
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"OTP {self.otp} (active={self.is_active})"
+        return f"Attendance for {self.class_event}"
 
 class AttendanceMark(models.Model):
     STATUS_CHOICES = (
@@ -335,16 +333,12 @@ class AttendanceMark(models.Model):
         ("LATE", "Late"),
     )
     session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE, related_name="marks")
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="attendance_marks")
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-    marked_at = models.DateTimeField(default=timezone.now)
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="ABSENT")
 
     class Meta:
         unique_together = ("session", "student")
-
-    def __str__(self):
-        return f"{self.student} - {self.status}"
-
+        
 class booking(models.Model):
     booking_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -362,7 +356,8 @@ class booking(models.Model):
             ('Pending','Pending'),
             ('Approved','Approved'),
             ('Rejected', 'Rejected'),
-            ('Cancelled','Cancelled')
+            ('Cancelled','Cancelled'),
+            ('Expired', 'Expired'),
         ],
         default='Pending'
     )

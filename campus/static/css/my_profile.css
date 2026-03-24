@@ -1,0 +1,106 @@
+/* ============================================================
+   MY PROFILE STYLES
+   Matches the timetable / academic_management styling
+   ============================================================ */
+
+.profileContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5vw;
+}
+
+.profile-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5vw;
+    border-bottom: 0.1vw;
+    padding-top: 1vw;
+    padding-bottom: 0.8vw;
+}
+
+.profile-name {
+    font-size: 2vw;
+    font-weight: 800;
+    color: rgba(var(--black), 1);
+    letter-spacing: 0.05vw;
+}
+
+.profile-tags {
+    display: flex;
+    gap: 0.5vw;
+    align-items: center;
+}
+
+.tag {
+    padding: 0.2vw 0.6vw;
+    font-size: var(--p-fontsize);
+    font-weight: 700;
+    font-family: "Nunito Sans", sans-serif;
+}
+
+.tag-id {
+    background-color: rgba(var(--black), 1);
+    color: white;
+}
+
+.tag-intake {
+    background-color: transparent;
+    color: rgba(var(--black), 0.8);
+    border: 0.1vw solid rgba(var(--black), 0.3);
+}
+
+.profile-body {
+    display: flex;
+    gap: 3vw;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+}
+
+/* ── Profile Card (scaled-up version of dropdown card) ── */
+.profileCard {
+    width: 28vw;
+    max-width: 28vw;
+    height: 16vw;
+    opacity: 1;
+    transform: none;
+}
+
+.profileCard .cardHeader .imageWrappeer img {
+    width: 9vw;
+    height: 9vw;
+    object-fit: contain;
+}
+
+/* ── Profile Details ── */
+.profile-details {
+    flex: 1;
+    max-width: 30vw;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2vw;
+    padding-top: 0.3vw;
+}
+
+.detail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2vw;
+}
+
+.detail-label {
+    font-size: var(--xs-fontsize);
+    font-weight: 700;
+    color: rgba(var(--black), 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05vw;
+}
+
+.detail-value {
+    font-size: var(--p-fontsize);
+    font-weight: 600;
+    color: rgba(var(--black), 1);
+}

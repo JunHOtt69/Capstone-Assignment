@@ -465,6 +465,7 @@ p{
     flex-direction: column;
     gap: 0.3vw;
     padding-left: 1vw;
+    font-size: 13px;
 }
 
 .functionG2 .classWrapper .class::before{
@@ -992,7 +993,7 @@ header li a{
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     flex-shrink: 0;
     gap: 0.5vw;
 }
@@ -1010,7 +1011,7 @@ header li a{
     height: 1rem;
     background-color: transparent;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     overflow: hidden;
     font-size: var(--xs-fontsize);

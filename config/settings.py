@@ -71,6 +71,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'campus.context_processors.card_context',
                 'campus.context_processors.announcement_banner',
+                'campus.context_processors.today_schedule',
             ],
         },
     },
@@ -119,11 +120,16 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Kuala_Lumpur'
+# TIME_ZONE = 'Asia/Kuala_Lumpur'
 
 USE_I18N = True
 
 USE_TZ = True
+
+# Debug overrides for testing (set to None to use real time)
+# Example: DEBUG_DATE = '2026-03-24'  DEBUG_TIME = '10:00'
+DEBUG_DATE = None
+DEBUG_TIME = '10:00'
 
 
 # Static files (CSS, JavaScript, Images)

@@ -103,6 +103,18 @@ document.addEventListener('DOMContentLoaded', function () {
         showNotif(type, msg);
     }
 
+    /** Get today as YYYY-MM-DD string. */
+    function getTodayStr() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    }
+
+    /** Check if the displayed week is a future week (after the current week). */
+    function isFutureWeek() {
+        const todayMonday = getMondayOfWeek(getTodayStr());
+        return cmpDate(currentWeekMonday, todayMonday) > 0;
+    }
+
     /** Update week label and disable prev/next when at bounds. */
     function updateWeekNav() {
         if (!currentWeekMonday || !termStart || !termEnd) return;
@@ -115,6 +127,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const lastMonday = getMondayOfWeek(termEnd);
         nextWeekBtn.disabled = cmpDate(currentWeekMonday, lastMonday) >= 0;
+
+        // Disable generate & delete for current or past weeks
+        const future = isFutureWeek();
+        if (future) {
+            generateBtn.disabled = false;
+            deleteWeekBtn.disabled = false;
+            generateBtn.classList.remove('disabled');
+            deleteWeekBtn.classList.remove('disabled');
+            generateBtn.title = '';
+            deleteWeekBtn.title = '';
+        } else {
+            generateBtn.disabled = true;
+            deleteWeekBtn.disabled = true;
+            generateBtn.classList.add('disabled');
+            deleteWeekBtn.classList.add('disabled');
+            generateBtn.title = 'Cannot generate timetable for current or past weeks';
+            deleteWeekBtn.title = 'Cannot delete timetable for current or past weeks';
+        }
     }
 
     // Term selection
@@ -279,7 +309,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Generate timetable
-    generateBtn.addEventListener('click', function () {
+    generateBtn.addEventListener('click', function (e) {
+        if (generateBtn.disabled || generateBtn.classList.contains('disabled')) {
+            showInfo('Cannot generate timetable for current or past weeks.', 'error');
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
         const termId = selectedTermId;
         if (!termId) return;
 
@@ -317,7 +353,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Delete week timetable
-    deleteWeekBtn.addEventListener('click', function () {
+    deleteWeekBtn.addEventListener('click', function (e) {
+        if (deleteWeekBtn.disabled || deleteWeekBtn.classList.contains('disabled')) {
+            showInfo('Cannot delete timetable for current or past weeks.', 'error');
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
         const termId = selectedTermId;
         if (!termId) return;
 

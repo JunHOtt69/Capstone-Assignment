@@ -11,6 +11,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("about/", views.about, name="about"),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('profile/', views.my_profile, name='my_profile'),
 
     #dashboard
     path("account-error/", views.account_error, name="account_error"),

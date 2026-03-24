@@ -60,6 +60,8 @@
                             rejected
                             {% elif item.booking.status == "Cancelled" %}
                             cancelled
+                            {% elif item.booking.status == "Expired" %}
+                            expired
                             {% else %}
                             error
                             {% endif %}
@@ -68,21 +70,19 @@
                         </span>
                     </td>
 
-                    <td>
-                        {% if item.booking.status == "Pending" %}
-                            <a href="{% url 'approve_booking' item.booking.booking_id %}" class="btn btn-success btn-sm">
-                                Approve
-                            </a>
-                            <a href="{% url 'reject_booking' item.booking.booking_id %}" class="btn btn-danger btn-sm">
-                                Reject
-                            </a>
-                        {% else %}
-                            <button class="btn btn-secondary btn-sm" disabled>
-                                No Action
-                            </button>
-                        {% endif %}
-                    </td>
-                </tr>
+                        <td>
+                            {% if item.booking.status == "Pending" %}
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'approve_booking' item.booking.booking_id %}" class="btn btn-success btn-sm">
+                                        Approve
+                                    </a>
+                                    <a href="{% url 'reject_booking' item.booking.booking_id %}" class="btn btn-danger btn-sm">
+                                        Reject
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
 
                 {% empty %}
                 <tr>

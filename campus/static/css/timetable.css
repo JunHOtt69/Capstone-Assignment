@@ -5,7 +5,7 @@
 
 .timetableContainer {
     width: 100%;
-    padding: 2vw;
+    padding: 0.5vw;
     display: flex;
     flex-direction: column;
     gap: 1vw;
@@ -62,15 +62,19 @@
     color: rgba(var(--black), 1);
 }
 
-.ttBtn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
 
-.ttBtn:disabled:hover {
-    background-color: rgba(var(--black), 1);
-    color: white;
-    border-color: transparent;
+
+/* Disabled button state (class or attribute) */
+.ttBtn.disabled,
+.ttBtn:disabled {
+    opacity: 1;
+    background-color: #bdbdbd !important;
+    color: #f5f5f5 !important;
+    border: 0.1vw solid #bdbdbd !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    pointer-events: auto !important;
+    transition: none;
 }
 
 .ttBtnSm {
@@ -220,6 +224,13 @@
     margin-top: 0.1vw;
 }
 
+.sessionCell .intakeCode {
+    font-size: var(--xxs-fontsize);
+    color: rgba(var(--black), 0.6);
+    margin-top: 0.15vw;
+    font-weight: 600;
+}
+
 .sessionCell .sessionStatus {
     font-size: var(--xxs-fontsize);
     font-weight: 700;
@@ -244,6 +255,29 @@ td.conflict {
     color: rgba(var(--black), 0.2);
     font-style: italic;
     font-size: var(--p-fontsize);
+}
+
+/* ---- View Timetable (student / lecturer) padding ---- */
+.viewTimetable {
+    padding: 1.5vw 2vw;
+}
+
+.viewTimetable .timetableControls {
+    padding-bottom: 0.8vw;
+    align-items: center;
+}
+
+.viewTimetable .ttTable td {
+    padding: 0.5vw 0.6vw;
+}
+
+.viewTimetable .ttTable thead th {
+    padding: 0.5vw 0.7vw;
+}
+
+.viewTimetable .sessionCell {
+    padding: 0.4vw 0.6vw;
+    margin: 0.2vw 0;
 }
 
 /* ---- Skipped Dates Section ---- */
