@@ -3410,7 +3410,13 @@ def view_timetable(request):
     else:
         return redirect('home')
 
-    return render(request, "view_timetable.html", {'terms': terms})
+    context = {'terms': terms}
+    if 'lecturer' in user_groups:
+        if terms:
+            context['overall_start'] = min(t.start_date for t in terms).isoformat()
+            context['overall_end'] = max(t.end_date for t in terms).isoformat()
+        context['is_lecturer'] = True
+    return render(request, "view_timetable.html", context)
 
 
 @login_required
@@ -3420,10 +3426,11 @@ def get_my_timetable_data(request):
     term_id = request.GET.get('term_id')
     week_start = request.GET.get('week_start')
 
-    if not term_id:
-        return JsonResponse({'error': 'term_id required'}, status=400)
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
 
-    term_obj = get_object_or_404(academic_term, term_id=term_id)
+    if not term_id and 'lecturer' not in user_groups:
+        return JsonResponse({'error': 'term_id required'}, status=400)
 
     if week_start:
         monday = parse_date(week_start)
@@ -3433,19 +3440,40 @@ def get_my_timetable_data(request):
         monday = _get_monday_of_week(date.today())
 
     friday = monday + timedelta(days=4)
-    user = request.user
-    user_groups = set(user.groups.values_list('name', flat=True))
 
-    sessions_qs = class_session.objects.filter(
-        term=term_obj,
-        date__gte=monday,
-        date__lte=friday
-    ).select_related(
-        'session', 'session__facility',
-        'subject_component', 'subject_component__subject', 'lecturer'
-    ).order_by('date', 'session__start_time')
+    if 'lecturer' in user_groups:
+        # Lecturers: load all their classes across all active terms
+        sessions_qs = class_session.objects.filter(
+            lecturer=user,
+            date__gte=monday,
+            date__lte=friday,
+            term__is_active=True,
+        ).select_related(
+            'session', 'session__facility',
+            'subject_component', 'subject_component__subject', 'lecturer', 'term'
+        ).order_by('date', 'session__start_time')
+        sessions_qs = list(sessions_qs)
 
-    if 'student' in user_groups:
+        # Determine overall term bounds across all active terms
+        lec_terms = academic_term.objects.filter(
+            term_id__in=set(s.term_id for s in sessions_qs)
+        ) if sessions_qs else academic_term.objects.filter(
+            is_active=True,
+            term_id__in=class_session.objects.filter(lecturer=user).values_list('term_id', flat=True).distinct()
+        )
+        all_term_start = min((t.start_date for t in lec_terms), default=monday)
+        all_term_end = max((t.end_date for t in lec_terms), default=friday)
+    elif 'student' in user_groups:
+        term_obj = get_object_or_404(academic_term, term_id=term_id)
+        sessions_qs = class_session.objects.filter(
+            term=term_obj,
+            date__gte=monday,
+            date__lte=friday
+        ).select_related(
+            'session', 'session__facility',
+            'subject_component', 'subject_component__subject', 'lecturer'
+        ).order_by('date', 'session__start_time')
+
         enrollment = course_enrollment.objects.filter(student=user).select_related('term').first()
         if not enrollment or enrollment.term_id != term_obj.term_id:
             return JsonResponse({'error': 'Not enrolled in this term'}, status=403)
@@ -3457,8 +3485,8 @@ def get_my_timetable_data(request):
             ).values_list('subject_id', flat=True)
         )
         sessions_qs = [s for s in sessions_qs if s.subject_component.subject_id in semester_subject_ids]
-    elif 'lecturer' in user_groups:
-        sessions_qs = [s for s in sessions_qs if s.lecturer_id == user.id]
+        all_term_start = term_obj.start_date
+        all_term_end = term_obj.end_date
     else:
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
@@ -3504,12 +3532,13 @@ def get_my_timetable_data(request):
             'lecturer': cs.lecturer.get_full_name(),
             'facility': cs.session.facility.facility_name,
             'status': cs.status,
+            'intake_code': cs.term.intake_code if cs.term else '',
         })
 
     return JsonResponse({
         'timetable': timetable,
-        'term_start': term_obj.start_date.isoformat(),
-        'term_end': term_obj.end_date.isoformat(),
+        'term_start': all_term_start.isoformat(),
+        'term_end': all_term_end.isoformat(),
         'week_start': monday.isoformat(),
     })
 
