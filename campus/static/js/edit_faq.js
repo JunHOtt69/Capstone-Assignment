@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             const confirmDiscard = confirm("Are you sure you want to discard your changes? All unsaved progress will be lost.");
             
             if (confirmDiscard) {
+                isSubmitting = true;
                 window.location.reload();
             }
         });
@@ -605,8 +606,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             const savedIds = savedIntakeString.split(',');
             const cleanIds = savedIds.filter(id => id.trim() !== "");
 
-            console.log(savedIds);
-
             cleanIds.forEach(id => {
                 const option = intakeOptions.querySelector(`.option[data-id="${id}"]`);
                 
@@ -614,13 +613,6 @@ document.addEventListener("DOMContentLoaded", async function() {
                     option.click(); 
                 }
             });
-            
-            const intakeWrapper = template.querySelector('#intakeWrapper');
-            if (cleanIds.length > 0 && intakeWrapper) {
-                if (window.campusData.isStudentVisible === 'false') {
-                    intakeWrapper.style.display = 'flex';
-                }
-            }
         }
 
         configContent.innerHTML = ``;
