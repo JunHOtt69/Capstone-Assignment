@@ -551,7 +551,7 @@
         </div>
         <div class="profileG1">
             <span class="title">Quick Actions</span>
-            <span class="item"><a href="">My Profile</a></span>
+            <span class="item"><a href="{% url 'my_profile' %}">My Profile</a></span>
             <div class="logoutWrapper">
                 <form action="{% url 'logout' %}" method="post">
                     {% csrf_token %}

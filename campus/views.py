@@ -47,6 +47,10 @@ from .models import (
 def testing(request):
     return render(request, 'testing.html')
 
+@login_required
+def my_profile(request):
+    return render(request, 'my_profile.html')
+
 #logging function
 def record_admin_action(user_id, obj, action_flag, message="", manual_pk=None,   manual_repr=None):
     LogEntry.objects.create(
@@ -4027,6 +4031,11 @@ def generate_timetable(request):
     if not _is_teaching_date(term_obj, week_monday):
         return JsonResponse({'error': 'Target week falls outside the teaching period (study/exam week).'}, status=400)
 
+    # Prevent generating timetable for current or past weeks
+    current_monday = _get_monday_of_week(date.today())
+    if week_monday <= current_monday:
+        return JsonResponse({'error': 'Cannot generate timetable for the current or past weeks.'}, status=400)
+
     # ── 1. Build items to schedule ──────────────────────────────────
     cs_entries = course_subject.objects.filter(
         course=term_obj.course,
@@ -4331,6 +4340,11 @@ def delete_week_timetable(request):
     monday = parse_date(week_start_str)
     if monday is None:
         return JsonResponse({'error': 'Invalid date format'}, status=400)
+
+    # Prevent deleting timetable for current or past weeks
+    current_monday = _get_monday_of_week(date.today())
+    if monday <= current_monday:
+        return JsonResponse({'error': 'Cannot delete timetable for the current or past weeks.'}, status=400)
 
     friday = monday + timedelta(days=4)
 
