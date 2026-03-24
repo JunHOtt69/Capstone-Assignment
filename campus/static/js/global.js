@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         open(e, template, templateId, switchDropdown = false) {
             let timeout = 200;
-            console.log('currentContent: ',currentTemplateId);
             if(navOpened && currentTemplateId === templateId)return;
             if(switchDropdown && navOpened){
                 timeout = 0;
@@ -67,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 abortController.abort();
                 abortController = new AbortController();
                 currentTemplateId = templateId; 
-                console.log('rendering: ',currentTemplateId);
                 if(switchDropdown && navOpened){
                     if(template){
                         let currentContents = Array.from(navContent.querySelectorAll('.functionG1, .functionG2, .profileG1, .cardContainer'));
@@ -113,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                     }else{
                         navContent.innerHTML = ``;
-                        console.log('no template');
                         currentTemplateId = null;
                         navOpened = false;
                         requestAnimationFrame(() => {
@@ -153,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                     }else{
                         navContent.innerHTML = ``;
-                        console.log('no template');
                         currentTemplateId = null;
                         navOpened = false;
                         requestAnimationFrame(() => {
@@ -292,7 +288,6 @@ function formatCardId(container){
     
     if(cardSpan && !cardSpan.dataset.formatted){
         const idText = cardSpan.innerText.trim();
-        console.log(idText);
         cardSpan.innerHTML = idText
         .split('')
         .map(char => `<span>${char}</span>`)
