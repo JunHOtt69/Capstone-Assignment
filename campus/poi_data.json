@@ -1,39 +1,257 @@
 {
-  "testing": {
-    "label": "TESTING",
+  "centrepoint--atrium": {
+    "label": "Centrepoint & Atrium",
     "images": [
       {
-        "src": "/media/poi/a56f3037d76f41649adef15f3de5496c.jpg",
-        "caption": "Sayuri"
+        "src": "/media/poi/5797d953fd6246568148a68fd7bc2d4d.jpg",
+        "caption": "Centrepoint & Atrium"
       },
       {
-        "src": "/media/poi/0bc3e5a598a94451b61de38df8e6211f.jpg",
-        "caption": "Sugar"
+        "src": "/media/poi/4c1f94b649b442258e753c07c7db7000.jpg",
+        "caption": "Centrepoint & Atrium"
       },
       {
-        "src": "/media/poi/c5fed99567ba4c49af8c2deb264b5596.jpg",
-        "caption": "Rine"
+        "src": "/media/poi/d4ee318f7c3f4528a69a8901d93e9a94.png",
+        "caption": "Centrepoint & Atrium"
       },
       {
-        "src": "/media/poi/9eb4d6d31e594df6b1bd58e205aac834.jpg",
-        "caption": "Sanketsu Shoujo"
+        "src": "/media/poi/cdce1c1b3c154b9d8d17d11af3adfff8.png",
+        "caption": "Centrepoint & Atrium"
       },
       {
-        "src": "/media/poi/752a2ee3d12d446e944f9b2b3e6cf198.svg",
+        "src": "/media/poi/66ddda0be8c54e73aeaa050100caed49.png",
+        "caption": "Centrepoint & Atrium"
+      },
+      {
+        "src": "/media/poi/7c4d6807e2844fe09f1dd15e48fe6fb7.png",
+        "caption": "Centrepoint & Atrium"
+      },
+      {
+        "src": "/media/poi/faf497af8b644c6ea2552b453b5c840e.png",
+        "caption": "Centrepoint & Atrium"
+      },
+      {
+        "src": "/media/poi/6b4002fd07b047f0804f4b7fe58ebb6a.png",
+        "caption": "Centrepoint & Atrium"
+      }
+    ]
+  },
+  "classrooms": {
+    "label": "Classrooms",
+    "images": [
+      {
+        "src": "/media/poi/554ed12777234c5bb262de6128e01d61.jpg",
+        "caption": "Classroom"
+      },
+      {
+        "src": "/media/poi/40e218fcfad342ac9ffcc0efd8784b09.jpg",
+        "caption": "Classroom"
+      },
+      {
+        "src": "/media/poi/01ac7708fa9044e690d98e4d25cfd4fc.jpg",
+        "caption": "Classroom"
+      },
+      {
+        "src": "/media/poi/047a1f421d674dd196150543b6ad6224.jpg",
+        "caption": "Classroom"
+      }
+    ]
+  },
+  "auditoriums": {
+    "label": "Auditoriums",
+    "images": [
+      {
+        "src": "/media/poi/1f46cc87540145438a3e8fea6a014772.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/238cdb0220624e83a1103f885a0a8431.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/62db715c04fe4a6ba0e56a61341b0066.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/bdf9ccf5aa2645ce9c25f47d9bd5da0a.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/042331dbcffc409c8e60867a8519efdc.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/476cbede9b6f466990940addfbfb2212.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/b14d41f4d7c64d3fa0d296fc459dc7b9.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/e7a33ed453f34e1bafac7ba68174bf24.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/a6ad4a94acfa4f7e8109687667f61505.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/583ed662569547999f816ef5730f2fa6.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/3a89cb9929aa41389cc15557fd3004ba.jpg",
+        "caption": "Auditorium"
+      },
+      {
+        "src": "/media/poi/df248e1de35648288b92798ab9f5f1ea.jpg",
+        "caption": "Auditorium"
+      }
+    ]
+  },
+  "lab": {
+    "label": "Lab",
+    "images": [
+      {
+        "src": "/media/poi/8c37671bd1424c089a8ab5f1f53d6f99.jpg",
+        "caption": "Lab"
+      },
+      {
+        "src": "/media/poi/1fb9637fd9d84573aec2e46ec6b32d60.jpg",
+        "caption": "Lab"
+      },
+      {
+        "src": "/media/poi/8be32e03fbab4d2f89667b2be020c9a7.jpg",
+        "caption": "Lab"
+      },
+      {
+        "src": "/media/poi/ae8f2d81d18d4440b64908f4bbd1bf33.jpg",
+        "caption": "Lab"
+      }
+    ]
+  },
+  "library": {
+    "label": "Library",
+    "images": [
+      {
+        "src": "/media/poi/81f19dbf658a45059511c5d25aaa93e9.jpg",
+        "caption": "Library"
+      },
+      {
+        "src": "/media/poi/84d3b76b05314712a9570b1ae77e9e14.jpg",
+        "caption": "Library"
+      },
+      {
+        "src": "/media/poi/826e34392a4f47e58142c13f03b97a10.jpg",
+        "caption": "Library"
+      },
+      {
+        "src": "/media/poi/7ac222c17d1344578a2d4eaa066d7e4a.jpg",
+        "caption": "Library"
+      },
+      {
+        "src": "/media/poi/856edd00a05e4d4e98e1326677d9b746.jpg",
+        "caption": "Library"
+      },
+      {
+        "src": "/media/poi/84c60ae3ccc54da6b90cfdf3aa33b8f4.jpg",
+        "caption": "Library"
+      },
+      {
+        "src": "/media/poi/a20967285f5445f2a6ec7c33dd13b681.jpg",
+        "caption": "Library"
+      }
+    ]
+  },
+  "robotics-lab": {
+    "label": "Robotics Lab",
+    "images": [
+      {
+        "src": "/media/poi/ab0d265e55f947d8bacd76589589b796.jpg",
         "caption": ""
       }
     ]
   },
-  "test-2": {
-    "label": "test 2",
-    "images": []
+  "car-park": {
+    "label": "Car Park",
+    "images": [
+      {
+        "src": "/media/poi/afcbc01cfe0641f0a141e0291cb55bd8.jpg",
+        "caption": ""
+      }
+    ]
   },
-  "test-3": {
-    "label": "test 3",
-    "images": []
+  "surau": {
+    "label": "Surau",
+    "images": [
+      {
+        "src": "/media/poi/00b873f506064e0c9a80d7051cc0110b.jpg",
+        "caption": ""
+      }
+    ]
   },
-  "test-4": {
-    "label": "test 4",
-    "images": []
+  "psychology-centre": {
+    "label": "Psychology Centre",
+    "images": [
+      {
+        "src": "/media/poi/431804aff1e0411887cceb36b94a22a4.jpg",
+        "caption": ""
+      }
+    ]
+  },
+  "architecture-studio": {
+    "label": "Architecture Studio",
+    "images": [
+      {
+        "src": "/media/poi/61195dbfa1704f39b98441d7377a8367.jpg",
+        "caption": ""
+      }
+    ]
+  },
+  "sports--recreational-facilities": {
+    "label": "Sports & Recreational Facilities",
+    "images": [
+      {
+        "src": "/media/poi/816a2f01766d4b6bbef34acb32c9b5b6.jpg",
+        "caption": ""
+      }
+    ]
+  },
+  "residents-lounge": {
+    "label": "Resident's Lounge",
+    "images": [
+      {
+        "src": "/media/poi/3164e11d194c414ebd8172b94aae30bc.jpg",
+        "caption": ""
+      }
+    ]
+  },
+  "green-screen-studio": {
+    "label": "Green Screen Studio",
+    "images": [
+      {
+        "src": "/media/poi/60277e921dfd4d7fbfe8b9281e69e959.jpg",
+        "caption": ""
+      }
+    ]
+  },
+  "convenience-store": {
+    "label": "Convenience Store",
+    "images": [
+      {
+        "src": "/media/poi/42cf50c54d0443a1aa66476bd9db76d4.jpg",
+        "caption": ""
+      }
+    ]
+  },
+  "game-development-studio": {
+    "label": "Game Development Studio",
+    "images": [
+      {
+        "src": "/media/poi/0a410249a7e34e9f800b97d8a15e2f63.jpg",
+        "caption": ""
+      }
+    ]
   }
 }

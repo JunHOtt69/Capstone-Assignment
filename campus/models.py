@@ -541,7 +541,7 @@ class timetable_preference(models.Model):
         db_table = 'timetable_preference'
 
     def __str__(self):
-        return f"{self.term} - {self.subject} ({self.session.day_of_week})"
+        return f"{self.term} - {self.subject_component} ({self.session.day_of_week})"
 
 class lecturer_assignment(models.Model):
     id = models.AutoField(primary_key=True)
