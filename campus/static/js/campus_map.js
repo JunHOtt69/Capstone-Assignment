@@ -186,6 +186,58 @@
     // Initial draw with no path and no visible nodes
     draw(nodes, edges, pois, null);
 
+    // Check for navigate-to-class destination from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const destination = urlParams.get('destination');
+    if(destination){
+      // Find matching terminal node by name (case-insensitive)
+      const destNode = nodes.find(n => n.type === 'terminal' && n.name && n.name.toLowerCase() === destination.toLowerCase());
+      if(destNode){
+        endSelect.value = destNode.id;
+
+        // Pin the destination on the map immediately
+        clearSvg();
+        drawEdges(nodes, edges);
+        drawNodes(nodes, [destNode.id]);
+
+        // Highlight the destination node with a pulsing marker
+        const marker = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        marker.setAttribute('cx', destNode.x); marker.setAttribute('cy', destNode.y);
+        marker.setAttribute('r','14'); marker.setAttribute('fill','none');
+        marker.setAttribute('stroke','#ff6f00'); marker.setAttribute('stroke-width','3');
+        marker.setAttribute('opacity','0.8');
+        const anim = document.createElementNS('http://www.w3.org/2000/svg','animate');
+        anim.setAttribute('attributeName','r'); anim.setAttribute('values','14;22;14');
+        anim.setAttribute('dur','1.5s'); anim.setAttribute('repeatCount','indefinite');
+        marker.appendChild(anim);
+        svg.appendChild(marker);
+      }
+
+      // Show class info banner
+      const subjectName = urlParams.get('subject');
+      const startTime = urlParams.get('start_time');
+      const endTime = urlParams.get('end_time');
+      const isCurrent = urlParams.get('is_current') === '1';
+
+      const termName = urlParams.get('term');
+
+      const banner = document.createElement('div');
+      banner.className = 'navigate-class-banner';
+      const statusLabel = isCurrent ? 'Current Class' : 'Next Class';
+      banner.innerHTML = `
+        <div class="class-info">
+          <span class="class-status ${isCurrent ? 'ongoing' : 'upcoming'}">${statusLabel}</span>
+          <strong>${subjectName || ''}</strong>
+          ${termName ? `<span class="class-term">${termName}</span>` : ''}
+          <span class="class-time">${startTime || ''} - ${endTime || ''}</span>
+          <span class="class-location">📍 ${destination}</span>
+        </div>
+        <p class="class-hint">Select your current location above and click "Find Path" to navigate.</p>
+      `;
+      const toolbar = document.querySelector('.control-toolbar');
+      if(toolbar) toolbar.parentNode.insertBefore(banner, toolbar.nextSibling);
+    }
+
     findBtn.addEventListener('click', ()=>{
       const s = startSelect.value; 
       const e = endSelect.value;
