@@ -16,7 +16,7 @@ from django.urls import reverse_lazy
 from django.urls import reverse
 #from django.utils.decorators import method_decorator
 from django.contrib import messages
-from django.contrib.admin.models import LogEntry, ADDITION, ADDITION, CHANGE, DELETION
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
