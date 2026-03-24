@@ -6,7 +6,7 @@ from django.db.models import Q, Count, F
 from django.core.mail import EmailMultiAlternatives
 from django.core.files.base import ContentFile
 from django.core.exceptions import PermissionDenied
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes, force_str
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -15,7 +15,7 @@ from django.urls import reverse_lazy
 from django.urls import reverse
 #from django.utils.decorators import method_decorator
 from django.contrib import messages
-from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.admin.models import LogEntry, ADDITION, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
@@ -48,15 +48,12 @@ def testing(request):
     return render(request, 'testing.html')
 
 #logging function
-def record_admin_action(user_id, content_type_id, object_id, object_repr, action_flag, message=""):
-    """
-    Manually records an action into the django_admin_log.
-    """
-    LogEntry.objects.log_action(
+def record_admin_action(user_id, obj, action_flag, message=""):
+    LogEntry.objects.create(
         user_id=user_id,
-        content_type_id=content_type_id,
-        object_id=object_id,
-        object_repr=object_repr, # e.g., "Math 101 - Section A"
+        content_type_id=ContentType.objects.get_for_model(obj).pk,
+        object_id=obj.pk,
+        object_repr=force_str(obj), # e.g., "Math 101 - Section A"
         action_flag=action_flag, # Use ADDITION, CHANGE, or DELETION
         change_message=message    # e.g., "Updated room from L1 to L5"
     )
@@ -527,6 +524,13 @@ def create_user_manually(request):
                             )
                         except academic_term.DoesNotExist:
                             raise Exception(f"The selected academic term for student {i+1} does not exists. ")
+
+                    record_admin_action(
+                        user_id=request.user.id,
+                        obj= new_user,
+                        action_flag=ADDITION,
+                        message=f"Created {id_to_name.get(str(role_id))} account with ID {unique_id}"
+                    )
 
             email_errors = []
             for invite in users_to_invite:
