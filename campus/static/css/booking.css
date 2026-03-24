@@ -31,6 +31,7 @@ table{
     border-collapse: collapse;
     border: 0.1vw solid rgba(var(--black), 1);
     counter-reset: rowNumber;
+    table-layout: fixed;
 }
 
 
@@ -87,71 +88,91 @@ table tbody tr td{
     line-height: 1.5vw;
 }
 
-table tbody tr.escalated{
-    color: red;
-}
-
 table tbody th{
     text-align: center;
 }
 
-table thead th label{
-    display: block;
-    width: 100%;
-    cursor: pointer;
+table tbody td .statusBadge{
+    background-color: transparent;
+    padding: 0.2vw 0.5vw;
+    border-radius: 0.2vw;
+}
+
+table tbody td .statusBadge.approved{
+    border: 0.01vw solid rgba(var(--dark-green), 0.5);
+    background-color: greenyellow;
+}
+
+table tbody td .statusBadge.pending{
+    border: 0.01vw solid orangered;
+    background-color: orange;
+}
+
+table tbody td .statusBadge.rejected{
+    border: 0.01vw solid red;
+    background-color: red;
+}
+
+table tbody td .statusBadge.cancelled{
+    border: 0.01vw solid lightslategray;
+    background-color: lightslategray;
 }
 
 table thead th.no-col{
     width: 5%;
 }
 
-table thead th:has(.id) label,
-table thead th:has(.act) label{
-    cursor: default;
+table th.code, 
+table th.end,
+table th.start,
+table th.role{
+    width: 6%;
 }
 
-table th:has(.id){
-    width: 5%;
+
+table th.facility{
+    width: 8%;
 }
 
-table th:has(label.title){
+table th.date{
+    width: 8%;
+}
+
+table th.action,
+table th.status{
+    width: 8%;
+}
+
+table th.purpose{
     width: auto;
-} 
-
-table td:has(p.titleData){
-    max-width: 10vw;
 }
 
-table td p.titleData{
+table td label{
     width: 100%;
-    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+table td p{
+    width: 100%;
+    max-width: 37vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-align: left;
+    text-align: center;
     padding-left: 0.5vw;
+    background-color: transparent;
+    cursor: pointer;
 }
 
-table th:has(label.stat),
-table th:has(label.cat){
-    width: 10%;
-} 
-
-table th:has(label.ca){
-    width: 15%;
-} 
-
-table td:has(button),
-table th:has(label.act){
-    padding: 0 !important;
-    width: 10%;
+table td p.emptyPurpose{
+    color: rgba(var(--black), 0.4);
 }
 
-table .action .inputWrapper{
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    display: flex;
+table tr.active p{
+    white-space: normal;
+    cursor: default;
 }
 
 table td button{
