@@ -62,15 +62,19 @@
     color: rgba(var(--black), 1);
 }
 
-.ttBtn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
 
-.ttBtn:disabled:hover {
-    background-color: rgba(var(--black), 1);
-    color: white;
-    border-color: transparent;
+
+/* Disabled button state (class or attribute) */
+.ttBtn.disabled,
+.ttBtn:disabled {
+    opacity: 1;
+    background-color: #bdbdbd !important;
+    color: #f5f5f5 !important;
+    border: 0.1vw solid #bdbdbd !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    pointer-events: auto !important;
+    transition: none;
 }
 
 .ttBtnSm {

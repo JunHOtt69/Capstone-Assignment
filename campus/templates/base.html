@@ -483,7 +483,7 @@
         <div class="functionG2">
             <span class="title" style="visibility: hidden;">&nbsp;</span>
             <span class="item"><a href="">Facility Availability</a></span>
-            <span class="item"><a href="">My Profile</a></span>
+            <span class="item"><a href="{% url 'my_profile' %}">My Profile</a></span>
             <span class="item"><a href="{% url "submit_feedback" %}">IT Support</a></span>
         </div>
     {% endif %}
@@ -546,7 +546,7 @@
         </div>
         <div class="profileG1">
             <span class="title">Quick Actions</span>
-            <span class="item"><a href="">My Profile</a></span>
+            <span class="item"><a href="{% url 'my_profile' %}">My Profile</a></span>
             <div class="logoutWrapper">
                 <form action="{% url 'logout' %}" method="post">
                     {% csrf_token %}
