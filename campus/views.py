@@ -15,7 +15,7 @@ from django.urls import reverse_lazy
 from django.urls import reverse
 #from django.utils.decorators import method_decorator
 from django.contrib import messages
-from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
@@ -893,16 +893,16 @@ def manage_academic_term(request):
     if request.method == 'POST':
         form = AcademicTermForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_term = form.save()
 
-            # LogEntry.objects.log_action(
-            #     user_id=request.user.id,
-            #     content_type_id=ContentType.objects.get_for_model(academic_term).pk,
-            #     object_id=academic_term.pk,
-            #     object_repr=str(academic_term),
-            #     action_flag=ADDITION,
-            #     change_message=f"Created new Academic Term: {academic_term.course}"
-            # )
+            record_admin_action(
+                user_id=request.user.id,
+                content_type_id=ContentType.objects.get_for_model(academic_term).pk,
+                object_id=new_term.pk,
+                object_repr=str(new_term),
+                action_flag=ADDITION,
+                message=f"Created new Academic Term: {new_term.intake_code}"
+            )
 
             messages.success(request, "Academic Term created successfully!")
 
@@ -975,6 +975,16 @@ def update_term(request):
             return JsonResponse({'success': False, 'error': 'End date must be after start date.'}, status=400)
 
         term.save()
+
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(academic_term).pk,
+            object_id=term.pk,
+            object_repr=str(term),
+            action_flag=CHANGE,
+            message=f"Updated Academic Term: {term.intake_code}"
+        )
+
         return JsonResponse({'success': True})
     except (ValueError, TypeError) as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
@@ -995,6 +1005,15 @@ def delete_term(request):
                 'success': False,
                 'error': f'Cannot delete: this term has {enrollments} enrollment(s) and {sessions} class session(s) linked to it.'
             }, status=400)
+
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(academic_term).pk,
+            object_id=term.pk,
+            object_repr=str(term),
+            action_flag=DELETION,
+            message=f"Deleted Academic Term: {term.intake_code}"
+        )
 
         term.delete()
         return JsonResponse({'success': True})
@@ -1131,6 +1150,15 @@ def save_map(request):
         if image_data:
             message = "Map and image saved successfully!"
         
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(MapNode).pk,
+            object_id=0,
+            object_repr="Campus Map",
+            action_flag=CHANGE,
+            message=f"Updated campus map: {len(nodes_data)} node(s), {len(edges_data)} edge(s){' + new image' if image_data else ''}"
+        )
+        
         return JsonResponse({"message": message})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
@@ -1238,6 +1266,16 @@ def point_of_interest_save(request):
         # write file
         with open(data_path, 'w') as f:
             json.dump(payload, f, indent=2)
+        
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(User).pk,
+            object_id=0,
+            object_repr="Point of Interest Data",
+            action_flag=CHANGE,
+            message="Updated point of interest categories/images"
+        )
+        
         return JsonResponse({"status": "ok"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
@@ -1272,6 +1310,16 @@ def point_of_interest_upload(request):
             for chunk in upload.chunks():
                 f.write(chunk)
         url = os.path.join(media_url, 'poi', filename).replace('\\', '/')
+        
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(User).pk,
+            object_id=0,
+            object_repr="POI Image Upload",
+            action_flag=ADDITION,
+            message=f"Uploaded POI image: {orig}"
+        )
+        
         return JsonResponse({"url": url})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -2631,6 +2679,15 @@ def assign_subject_to_course(request):
         recommended_semester=int(semester)
     )
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(course_subject).pk,
+        object_id=course_obj.course_id,
+        object_repr=f"{course_obj.course_code} - Sem {semester}",
+        action_flag=ADDITION,
+        message=f"Assigned {subj.subject_code} to {course_obj.course_code} semester {semester}"
+    )
+
     return JsonResponse({'success': True, 'message': f'{subj.subject_code} assigned successfully.'})
 
 
@@ -2649,6 +2706,17 @@ def remove_subject_from_course(request):
 
     cs_entry = get_object_or_404(course_subject, id=cs_id)
     code = cs_entry.subject.subject_code
+    course_repr = f"{cs_entry.course.course_code} - Sem {cs_entry.recommended_semester}"
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(course_subject).pk,
+        object_id=cs_entry.course_id,
+        object_repr=course_repr,
+        action_flag=DELETION,
+        message=f"Removed {code} from {course_repr}"
+    )
+
     cs_entry.delete()
 
     return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
@@ -2719,6 +2787,15 @@ def create_subject(request):
                 total_required_hours=comp.get('total_required_hours', 0),
             )
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(subject).pk,
+        object_id=subj.subject_id,
+        object_repr=f"{code} - {name}",
+        action_flag=ADDITION,
+        message=f"Created subject {code} with {len(components_data)} component(s)"
+    )
+
     return JsonResponse({'success': True, 'message': f'Subject "{code}" created successfully.'})
 
 
@@ -2785,6 +2862,15 @@ def update_subject(request):
         else:
             removed.delete()
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(subject).pk,
+        object_id=subj.subject_id,
+        object_repr=f"{code} - {name}",
+        action_flag=CHANGE,
+        message=f"Updated subject {code}"
+    )
+
     return JsonResponse({'success': True, 'message': f'Subject "{code}" updated successfully.'})
 
 
@@ -2820,6 +2906,16 @@ def delete_subject(request):
 
     subj = get_object_or_404(subject, subject_id=subject_id)
     code = subj.subject_code
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(subject).pk,
+        object_id=subj.subject_id,
+        object_repr=f"{code} - {subj.subject_name}",
+        action_flag=DELETION,
+        message=f"Deleted subject {code}"
+    )
+
     subj.delete()
 
     return JsonResponse({'success': True, 'message': f'Subject "{code}" deleted successfully.'})
@@ -2914,6 +3010,15 @@ def assign_subject_to_lecturer(request):
 
     lecturer_subjects.objects.create(user=user_obj, subject=subj, is_lead=is_lead)
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(lecturer_subjects).pk,
+        object_id=user_obj.id,
+        object_repr=user_obj.get_full_name(),
+        action_flag=ADDITION,
+        message=f"Assigned {subj.subject_code} to lecturer {user_obj.get_full_name()}"
+    )
+
     return JsonResponse({'success': True, 'message': f'{subj.subject_code} assigned to {user_obj.get_full_name()}.'})
 
 
@@ -2932,6 +3037,17 @@ def remove_subject_from_lecturer(request):
 
     ls_entry = get_object_or_404(lecturer_subjects, id=ls_id)
     code = ls_entry.subject.subject_code
+    lecturer_name = ls_entry.user.get_full_name()
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(lecturer_subjects).pk,
+        object_id=ls_entry.user_id,
+        object_repr=lecturer_name,
+        action_flag=DELETION,
+        message=f"Removed {code} from lecturer {lecturer_name}"
+    )
+
     ls_entry.delete()
 
     return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
@@ -3520,6 +3636,15 @@ def generate_timetable(request):
                         facility_usage[sess_i.facility_id] = facility_usage.get(sess_i.facility_id, 0) + 1
                         improved = True
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(class_session).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - Week {week_monday}",
+        action_flag=ADDITION,
+        message=f"Generated timetable: {len(created_sessions)} session(s) created, {len(errors)} error(s)"
+    )
+
     return JsonResponse({
         'success': True,
         'created': len(created_sessions),
@@ -3564,6 +3689,15 @@ def delete_week_timetable(request):
         status='scheduled',
         subject_component__subject_id__in=semester_subject_ids
     ).delete()
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(class_session).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - Week {monday}",
+        action_flag=DELETION,
+        message=f"Deleted {deleted_count} scheduled session(s) for week {monday}"
+    )
 
     return JsonResponse({
         'success': True,
@@ -3626,6 +3760,15 @@ def save_preference(request):
                 session=cs.session,
                 is_active=True
             )
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(timetable_preference).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - Week {monday}",
+        action_flag=CHANGE,
+        message=f"Saved timetable preference for week {monday}"
+    )
 
     return JsonResponse({'success': True, 'message': 'Preference saved successfully.'})
 
@@ -3740,6 +3883,15 @@ def replicate_preference(request):
 
             weeks_processed += 1
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(class_session).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code}",
+        action_flag=ADDITION,
+        message=f"Replicated preference to {weeks_processed} week(s), {total_created} session(s) created"
+    )
+
     return JsonResponse({
         'success': True,
         'created': total_created,
@@ -3777,6 +3929,15 @@ def add_skipped_date(request):
         term=term_obj, date=skip_dt, status='scheduled'
     ).update(status='cancelled')
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(skipped_date).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - {skip_dt}",
+        action_flag=ADDITION,
+        message=f"Added skipped date {skip_dt} ({reason}), {cancelled} class(es) cancelled"
+    )
+
     return JsonResponse({
         'success': True,
         'message': f'Date {skip_dt} marked as skipped. {cancelled} class(es) cancelled.',
@@ -3803,6 +3964,15 @@ def remove_skipped_date(request):
     deleted, _ = skipped_date.objects.filter(term=term_obj, date=skip_dt).delete()
     if deleted == 0:
         return JsonResponse({'error': 'Skipped date not found.'}, status=400)
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(skipped_date).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - {skip_dt}",
+        action_flag=DELETION,
+        message=f"Removed skipped date {skip_dt}"
+    )
 
     return JsonResponse({'success': True, 'message': 'Skipped date removed.'})
 
@@ -3907,6 +4077,15 @@ def rearrange_missing_class(request):
             cs_obj.date = target_date
             cs_obj.status = 'rearranged'
             cs_obj.save()
+
+            record_admin_action(
+                user_id=request.user.id,
+                content_type_id=ContentType.objects.get_for_model(class_session).pk,
+                object_id=cs_obj.id,
+                object_repr=f"{subj.subject_code} - {target_date}",
+                action_flag=CHANGE,
+                message=f"Rearranged {subj.subject_code} to {DAY_NAMES.get(sess.day_of_week)} {target_date} at {sess.facility.facility_name}"
+            )
 
             return JsonResponse({
                 'success': True,
