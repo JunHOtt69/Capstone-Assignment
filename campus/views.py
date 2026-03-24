@@ -6,11 +6,12 @@ from django.db.models import Q, Count, F
 from django.core.mail import EmailMultiAlternatives
 from django.core.files.base import ContentFile
 from django.core.exceptions import PermissionDenied
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes, force_str
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.html import strip_tags
+from django.utils.text import slugify
 from django.urls import reverse_lazy
 from django.urls import reverse
 #from django.utils.decorators import method_decorator
@@ -48,17 +49,14 @@ def testing(request):
     return render(request, 'testing.html')
 
 #logging function
-def record_admin_action(user_id, content_type_id, object_id, object_repr, action_flag, message=""):
-    """
-    Manually records an action into the django_admin_log.
-    """
-    LogEntry.objects.log_action(
+def record_admin_action(user_id, obj, action_flag, message="", manual_pk=None,   manual_repr=None):
+    LogEntry.objects.create(
         user_id=user_id,
-        content_type_id=content_type_id,
-        object_id=object_id,
-        object_repr=object_repr, # e.g., "Math 101 - Section A"
-        action_flag=action_flag, # Use ADDITION, CHANGE, or DELETION
-        change_message=message    # e.g., "Updated room from L1 to L5"
+        content_type_id=ContentType.objects.get_for_model(obj).pk,
+        object_id=str(manual_pk) if manual_pk else str(obj.pk),
+        object_repr=manual_repr if manual_repr else force_str(obj),
+        action_flag=action_flag,
+        change_message=message   
     )
 
 #logout user when password resetting
@@ -528,6 +526,13 @@ def create_user_manually(request):
                         except academic_term.DoesNotExist:
                             raise Exception(f"The selected academic term for student {i+1} does not exists. ")
 
+                    record_admin_action(
+                        user_id=request.user.id,
+                        obj= new_user,
+                        action_flag=ADDITION,
+                        message=f"Created {id_to_name.get(str(role_id))} account with ID {unique_id}"
+                    )
+
             email_errors = []
             for invite in users_to_invite:
                 try: 
@@ -602,7 +607,20 @@ def user_crud(request):
         print("email", request.POST.get('email'))
         try:
             if action == "delete":
+                user_id = user.pk
+                user_str = str(user)
+                user_username = user.username
                 user.delete()
+                
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj= user,
+                    action_flag=DELETION,
+                    message=f"Permanently deleted user: {user_username}",
+                    manual_pk=user_id,
+                    manual_repr= user_str,
+                )
+
                 messages.success(request, f"User {user_fullname} has been permanently deleted.")
 
             elif action == 'save':
@@ -625,6 +643,13 @@ def user_crud(request):
                         enrollment = user.course_enrollment
                         enrollment.term = academic_term.objects.get(term_id=extra_id)
                         enrollment.save()
+
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj= user,
+                    action_flag=CHANGE,
+                    message=f"Updated user profile and credentials for {user.email}"
+                )
 
                 messages.success(request, f"User {user_fullname} updated successfully!")
 
@@ -843,6 +868,13 @@ def bulk_user_creation(request):
                 
                 created_count += 1
 
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj= new_user,
+                    action_flag=ADDITION,
+                    message=f"Created {role_name} account with ID {unique_id}"
+                )
+
             for invite in users_to_invite:
                 try:
                     link = build_set_password_link(request, invite['user'])
@@ -897,11 +929,9 @@ def manage_academic_term(request):
 
             record_admin_action(
                 user_id=request.user.id,
-                content_type_id=ContentType.objects.get_for_model(academic_term).pk,
-                object_id=new_term.pk,
-                object_repr=str(new_term),
+                obj= new_term,
                 action_flag=ADDITION,
-                message=f"Created new Academic Term: {new_term.intake_code}"
+                message=f"Created new academic term: {new_term.intake_code}"
             )
 
             messages.success(request, "Academic Term created successfully!")
@@ -975,14 +1005,11 @@ def update_term(request):
             return JsonResponse({'success': False, 'error': 'End date must be after start date.'}, status=400)
 
         term.save()
-
         record_admin_action(
             user_id=request.user.id,
-            content_type_id=ContentType.objects.get_for_model(academic_term).pk,
-            object_id=term.pk,
-            object_repr=str(term),
+            obj= term,
             action_flag=CHANGE,
-            message=f"Updated Academic Term: {term.intake_code}"
+            message=f"Updated details for academic term: {term.intake_code}"
         )
 
         return JsonResponse({'success': True})
@@ -1006,16 +1033,19 @@ def delete_term(request):
                 'error': f'Cannot delete: this term has {enrollments} enrollment(s) and {sessions} class session(s) linked to it.'
             }, status=400)
 
+        term_str = str(term)
+        term_intake_code = term.intake_code
+        term.delete()
+        
         record_admin_action(
             user_id=request.user.id,
-            content_type_id=ContentType.objects.get_for_model(academic_term).pk,
-            object_id=term.pk,
-            object_repr=str(term),
+            obj= term,
             action_flag=DELETION,
-            message=f"Deleted Academic Term: {term.intake_code}"
+            message=f"Permanently deleted academic term: {term_intake_code}",
+            manual_pk=term_id,
+            manual_repr= term_str,
         )
 
-        term.delete()
         return JsonResponse({'success': True})
     except (ValueError, TypeError) as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
@@ -1422,11 +1452,20 @@ def check_and_notify_expired():
         created_at__lt=expiry_threshold
     )
     superusers = User.objects.filter(is_superuser=True)
-
+    system_admin = User.objects.filter(is_superuser=True).first()
+    
     if stale_tickets.exists():
         for ticket in stale_tickets:
             ticket.status = 'expired'
             ticket.save()  
+
+            if system_admin:
+                record_admin_action(
+                    user_id=system_admin.id,
+                    obj= ticket,
+                    action_flag=CHANGE,
+                    message=f"Ticket automatically expired due to inactivity."
+                )
 
             try:
                 recipient1 = ticket.created_by
@@ -1453,6 +1492,7 @@ def check_and_notify_expired():
                     }
                     
                     subject = f"Feedback Ticket has expired - #T{ticket.id}"
+
 
                     for admin in superusers:
                         if admin.email:
@@ -1520,6 +1560,13 @@ def submit_feedback(request):
             files = request.FILES.getlist('extra_attachments')
             for f in files:
                 save_manual_attachment(ticket, f)
+
+            record_admin_action(
+                user_id=request.user.id,
+                obj= ticket,
+                action_flag=ADDITION,
+                message=f"Submitted a new support ticket: {ticket.title}"
+            )
 
             messages.success(request, "Ticket Submit Successfully")
             return redirect('review_feedback', ticket_id=ticket.id)
@@ -1651,10 +1698,17 @@ def take_ownership(request, ticket_id):
             user=request.user,
             action='status_change',
             old_value='Open',
-            new_value='In Pprogress'
+            new_value='In Progress'
         )
 
         recipient = ticket.created_by
+
+        record_admin_action(
+            user_id=request.user.id,
+            obj= ticket,
+            action_flag=CHANGE,
+            message=f"Took ownership to ticket #T{ticket.id}: {ticket.title}"
+        )
 
         try:
             template = 'ticket_update.html'
@@ -1893,6 +1947,12 @@ def ticket_action_ajax(request, ticket_id):
                 except Exception as e:
                         print(f"SMTP Error: {e}")
                         
+            record_admin_action(
+                user_id=request.user.id,
+                obj=ticket,
+                action_flag=CHANGE,
+                message=f"Escalated ticket #T{ticket.id}: {ticket.title}"
+            )
 
             messages.success(request, "Escalation request sent successfully!")
             return JsonResponse({"status": "success", "message": "Escalation request sent successfully."})
@@ -1914,6 +1974,13 @@ def ticket_action_ajax(request, ticket_id):
                     action='status_change',
                     old_value=old_status,
                     new_value='Closed',
+                )
+
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj=ticket,
+                    action_flag=CHANGE,
+                    message=f"Closed ticket #T{ticket.id} (Direct Admin Closure)"
                 )
             else:
                 TicketActivity.objects.create(
@@ -1977,6 +2044,13 @@ def ticket_action_ajax(request, ticket_id):
                 action='rejected_closure',
             )
             
+            record_admin_action(
+                user_id=request.user.id,
+                obj=ticket,
+                action_flag=CHANGE,
+                message=f"Rejected closure request for ticket #T{ticket.id}"
+            )
+
             try:
                 recipient = ticket.created_by
                 template = 'ticket_request_close_rejected.html'
@@ -2012,7 +2086,14 @@ def ticket_action_ajax(request, ticket_id):
                 old_value=old_status,
                 new_value='Resolved',
             )
-  
+
+            record_admin_action(
+                user_id=request.user.id,
+                obj=ticket,
+                action_flag=CHANGE,
+                message=f"Resolved ticket #T{ticket.id}: {ticket.title}"
+            )
+
             try:
                 recipient = ticket.created_by
                 template = 'ticket_resolved.html'
@@ -2049,6 +2130,23 @@ def ticket_action_ajax(request, ticket_id):
 
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
+
+
+#generate unique slug
+def generate_unique_slug(model_class, title, instance=None):
+    base_slug = slugify(title)
+    slug = base_slug
+    counter = 1
+    
+    queryset = model_class.objects.all()
+    if instance:
+        queryset = queryset.exclude(pk=instance.pk)
+        
+    while queryset.filter(slug=slug).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    return slug
+
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
 def edit_faq(request, slug=None): 
@@ -2063,6 +2161,7 @@ def edit_faq(request, slug=None):
         
         if form.is_valid():
             faq_obj = form.save(commit=False)
+            faq_obj.slug = generate_unique_slug(faq, faq_obj.title, instance=instance)
 
             if not instance:
                 faq_obj.author = request.user.admin_profile
@@ -2101,6 +2200,21 @@ def edit_faq(request, slug=None):
             if images_processed:
                 faq_obj.content = str(soup)
                 faq_obj.save()
+
+            if instance:
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj=faq_obj,
+                    action_flag=CHANGE,
+                    message=f"Updated FAQ: {faq_obj.title[:50]}"
+                )
+            else:
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj=faq_obj,
+                    action_flag=ADDITION,
+                    message=f"Created new FAQ: {faq_obj.title[:50]}"
+                )
 
             messages.success(request, "FAQ saved successfully!")
             return redirect('viewFAQ')
@@ -2227,14 +2341,36 @@ def faq_vote(request, slug):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def delete_faq(request, slug):
-    try:
-        post = get_object_or_404(faq, slug=slug)
-        post.delete()
-        messages.success(request, "FAQ deleted successfully!")
-        return redirect('viewFAQ')
-    except faq.DoesNotExist:
+    post = get_object_or_404(faq, slug=slug)
+
+    if not post:
         messages.error(request, "This FAQ was already deleted or does not exist.")
         return redirect('viewFAQ')
+    try:
+        post_id = post.id
+        post_str = str(post)
+        post_title = post.title[:50]
+        faq_type = ContentType.objects.get_for_model(post)
+        associated_files = attachments.objects.filter(content_type=faq_type, object_id=post_id)
+        
+        for attachment in associated_files:
+            attachment.file.delete() 
+            attachment.delete()
+
+        post.delete()
+        
+        record_admin_action(
+            user_id=request.user.id,
+            obj= post,
+            action_flag=DELETION,
+            message=f"Permanently deleted faq: {post_title}",
+            manual_pk=post_id,
+            manual_repr= post_str,
+        )
+
+        messages.success(request, "FAQ deleted successfully!")
+        return redirect('viewFAQ')
+    
     except DatabaseError:
         messages.error(request, "A database error occurred. Please try again later.")
     except Exception as e:
@@ -4327,6 +4463,7 @@ def announcements_form(request, ann_id=None):
 
         if form.is_valid():
             ann_obj = form.save(commit=False)
+
             if not instance:
                 ann_obj.author = request.user.admin_profile
             ann_obj.save()
@@ -4356,6 +4493,21 @@ def announcements_form(request, ann_id=None):
                     'academic_term': academic_term_val,
                 }
             )
+            
+            if instance:
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj=ann_obj,
+                    action_flag=CHANGE,
+                    message=f"Updated announcement: {ann_obj.subject[:50]}"
+                )
+            else:
+                record_admin_action(
+                    user_id=request.user.id,
+                    obj=ann_obj,
+                    action_flag=ADDITION,
+                    message=f"Published new announcement: {ann_obj.subject[:50]}"
+                )
 
             messages.success(request, f"Announcement {'updated' if instance else 'published'} successfully!")
             return redirect('announcement_list')
@@ -4515,7 +4667,21 @@ def announcement_manage(request):
 def announcement_delete(request, pk, page=1):
     instance = get_object_or_404(announcement, pk=pk)
     type = instance.announcement_type.capitalize()
+
+    instance_id = instance.announcement_id
+    instance_str = str(instance)
+    instance_subject = instance.subject[:50]
+    instance_type = instance.announcement_type
     instance.delete()
+    
+    record_admin_action(
+        user_id=request.user.id,
+        obj= instance,
+        action_flag=DELETION,
+        message=f"Permanently deleted {instance_type} announcement: {instance_subject}",
+        manual_pk=instance_id,
+        manual_repr= instance_str,
+    )
 
     try:
         news_page = int(request.GET.get('news_page', '1'))

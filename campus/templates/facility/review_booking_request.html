@@ -18,15 +18,15 @@
             <thead>
                 <tr>
                     <th class="no-col">No.</th>
-                    <th>Code</th>
-                    <th>Role</th>
-                    <th>Facility</th>
-                    <th>Date</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Purpose</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th class="code">Code</th>
+                    <th class="role">Role</th>
+                    <th class="facility">Facility</th>
+                    <th class="date">Date</th>
+                    <th class="start">Start</th>
+                    <th class="end">End</th>
+                    <th class="purpose">Purpose</th>
+                    <th class="status">Status</th>
+                    <th class="action">Action</th>
                 </tr>
             </thead>
 
@@ -41,20 +41,31 @@
                     <td>{{ item.booking.booking_date }}</td>
                     <td>{{ item.booking.start_time|time:"h:i a" }}</td>
                     <td>{{ item.booking.end_time|time:"h:i a" }}</td>
-                    <td>{{ item.booking.purpose }}</td>
-
+                    <td><label>
+                        <p {% if not item.booking.purpose %}class="emptyPurpose"{% endif %}>
+                            {% if item.booking.purpose %}
+                                {{ item.booking.purpose }}
+                            {% else %}
+                                **No purpose specified**
+                            {% endif %}
+                        </p>
+                    </label></td>
                     <td>
-                        {% if item.booking.status == "Approved" %}
-                            <span class="badge bg-success">{{ item.booking.status }}</span>
-                        {% elif item.booking.status == "Pending" %}
-                            <span class="badge bg-warning text-dark">{{ item.booking.status }}</span>
-                        {% elif item.booking.status == "Rejected" %}
-                            <span class="badge bg-danger">{{ item.booking.status }}</span>
-                        {% elif item.booking.status == "Cancelled" %}
-                            <span class="badge bg-secondary">{{ item.booking.status }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary">{{ item.booking.status }}</span>
-                        {% endif %}
+                        <span class="statusBadge
+                            {% if item.booking.status == "Approved" %}
+                            approved
+                            {% elif item.booking.status == "Pending" %}
+                            pending
+                            {% elif item.booking.status == "Rejected" %}
+                            rejected
+                            {% elif item.booking.status == "Cancelled" %}
+                            cancelled
+                            {% else %}
+                            error
+                            {% endif %}
+                        ">
+                            {{ item.booking.status }}
+                        </span>
                     </td>
 
                     <td>
@@ -83,3 +94,7 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/booking.js' %}"></script>
+{% endblock %} 
