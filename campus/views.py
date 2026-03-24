@@ -3712,7 +3712,7 @@ def replicate_preference(request):
 
                 if target_date in skipped_dates:
                     all_skipped_classes.append({
-                        'subject': pref.subject.subject_code,
+                        'subject': pref.subject_component.subject.subject_code,
                         'day': DAY_NAMES.get(pref.session.day_of_week, ''),
                         'date': target_date.isoformat(),
                         'reason': 'Skipped date / Public holiday',
@@ -3721,20 +3721,16 @@ def replicate_preference(request):
 
                 if not _is_teaching_date(term_obj, target_date):
                     all_skipped_classes.append({
-                        'subject': pref.subject.subject_code,
+                        'subject': pref.subject_component.subject.subject_code,
                         'day': DAY_NAMES.get(pref.session.day_of_week, ''),
                         'date': target_date.isoformat(),
                         'reason': 'Outside teaching period',
                     })
                     continue
 
-                sc = SubjectComponent.objects.filter(
-                    subject=pref.subject,
-                    class_type='Lab' if pref.session.facility.type == 'Lab' else 'Lecture'
-                ).first() or SubjectComponent.objects.filter(subject=pref.subject).first()
                 class_session.objects.create(
                     session=pref.session,
-                    subject_component=sc,
+                    subject_component=pref.subject_component,
                     lecturer=pref.lecturer,
                     term=term_obj,
                     date=target_date,
