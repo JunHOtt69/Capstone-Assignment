@@ -102,19 +102,32 @@
     </div>
 
     <section class="systemLogs">
-        <h3>Recent Admin Actions</h3>
-        <div class="logs">
-            {% for log in logs %}
-                <div class="log-item">
-                    <strong>{{ log.user.username }}</strong> 
-                    {{ log.get_action_flag_display|lower }}ed 
-                    "{{ log.object_repr }}" 
-                    <span>({{ log.action_time|timesince }} ago)</span>
-                </div>
-            {% empty %}
-                <p>No system logs available.</p>
-            {% endfor %}
-        </div>
+        <h3 class="sectionHeader">Recent Admin Actions</h3>
+        <table class="logs">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr class="log-item">
+                        <td>{{ log.action_time }}</td>
+                    
+                        <td>
+                            <strong>{{ log.user.username }}</strong> 
+                            {{ log.get_action_flag_display|lower }}ed 
+                            "{{ log.object_repr }}" 
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="2">No system logs available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </section>
 </div>
 {% endblock %} 

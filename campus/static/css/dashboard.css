@@ -208,6 +208,7 @@ main{
     position: relative;
     height: auto;
     gap: 1vw;
+    user-select: none;
 }
 
 .progressWrapper{
@@ -314,4 +315,58 @@ main{
 
 .tag.close{
     border-left: 0.2vw solid grey;
+}
+
+.systemLogs{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    background-color: rgba(var(--black), 0.1);
+    border-radius: 0.5vw;
+    height: auto;
+    padding: 1vw;
+    gap: 0.5vw;
+}
+
+.sectionHeader{
+    user-select: none;
+}
+
+.logs{
+    width: 100%;
+    background-color: transparent;
+    color: white;
+    font-size: var(--xs-fontsize);
+    border-collapse: collapse;
+    border: 0.1vw solid rgba(var(--black), 1);
+}
+
+.logs thead{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+.logs tr th{
+    font-size: var(--xs-fontsize);
+    font-weight: 400;
+    text-align: left;
+}
+
+.logs th,
+.logs td{
+    padding: 0.2vw 0.3vw;
+}
+
+.logs tbody tr{
+    transition: background-color .2s;
+    background-color: rgba(var(--black), 1);
+}
+
+.logs tbody tr:hover{
+    background-color: rgba(var(--black), 0.5);
+    width: 100%;
+    
 }
