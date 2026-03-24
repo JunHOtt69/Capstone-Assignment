@@ -1,88 +1,79 @@
-{% extends "base.html" %}
-{% load static %} 
+{% extends "base.html" %} 
+{% load static %}  
+{% block title %}My Bookings{% endblock %}
 
-{% block title %} Facility List {% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/booking.css' %}">
+{% endblock %}
 
 {% block content %}
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<div class="container mt-5">
-
-    <div class="d-flex justify-content-between mb-4">
-        <h2>Campus Facilities</h2>
-        <span class="text-muted">Select a facility below to make a booking</span>
+<div class="bookingList">
+    <div class="sectionHeader">
+        <h2 class="">My Bookings</h2>
+        <span class="subtitle">Select a facility below to make a booking</span>
     </div>
 
-    <form method="GET" class="mb-3">
-        <div class="input-group">
+    <form method="GET" class="searchWrapper">
+        <div class="searchBar">
             <input type="text" id="facilitySearch" name="q" class="form-control"
                 placeholder="Search facility"
                 value="{{ query }}">
-            <button class="btn btn-outline-secondary" type="submit">
-                Search
-            </button>
-
-            {% if query %}
-            <a href="{% url 'facility_list' %}" class="btn btn-outline-danger">Clear</a>
-            {% endif %}
         </div>
+        <button class="searchBtn" type="submit">
+            Search
+        </button>
+
+        {% if query %}
+        <a href="{% url 'facility_list' %}" class="clearBtn">Clear</a>
+        {% endif %}
     </form>
 
     {% if query %}
-    <p class="text-muted mb-3">
+    <p class="result">
         Showing results for "<strong>{{ query }}</strong>"
     </p>
     {% endif %}
 
-    <table class="table table-striped table-hover shadow">
+    <table>
         <thead class="table-dark">
             <tr>
                 <th>Facility Name</th>
                 <th>Type</th>
-                <th>Building</th>
-                <th>Level</th>
-                <th>Capacity</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
         </thead>
 
         <tbody id="facilityTableBody">
-        {% for facility in facilities %}
-        <tr class="facility-row">
-            <td>{{ facility.facility_name }}</td>
-            <td>{{ facility.type }}</td>
-            <td>{{ facility.building }}</td>
-            <td>{{ facility.level }}</td>
-            <td>{{ facility.capacity }}</td>
+            {% for facility in facilities %}
+            <tr class="facility-row">
+                <td>{{ facility.facility_name }}</td>
+                <td>{{ facility.type }}</td>
 
-            <!-- Status -->
-            <td>
-                <span class="badge bg-success">Available</span>
-            </td>
+                <td>
+                    <span class="statusBadge approved">Available</span>
+                </td>
 
-            <!-- Action -->
-            <td>
-                <a href="{% url 'booking_form' facility.facility_id %}" 
-                   class="btn btn-primary btn-sm">
-                    Book
-                </a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7" class="text-center text-muted">
-                No matching facilities found
-                <div class="mt-2">
-                    <a href="{% url 'facility_list' %}" 
-                       class="btn btn-sm btn-outline-primary">
-                        Show all facilities
+                <td>
+                    <a href="{% url 'booking_form' facility.facility_id %}" 
+                    class="bookBtn">
+                        Book
                     </a>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" >
+                    <div class="noResults">
+                        <p>No matching facilities found</p>
+                        <a href="{% url 'facility_list' %}" 
+                        class="">
+                            Show all facilities
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 
@@ -98,10 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
     noResultRow.id = "noResultRow";
     noResultRow.style.display = "none";
     noResultRow.innerHTML = `
-        <td colspan="7" class="text-center text-muted">
+        <td colspan="4" class="text-center text-muted">
             No matching facilities found
-            <div class="mt-2">
-                <a href="{% url 'facility_list' %}" class="btn btn-sm btn-outline-primary">
+            <div class="">
+                <a href="{% url 'facility_list' %}" class="">
                     Show all facilities
                 </a>
             </div>

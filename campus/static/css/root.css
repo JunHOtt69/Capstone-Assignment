@@ -465,7 +465,7 @@ p{
     flex-direction: column;
     gap: 0.3vw;
     padding-left: 1vw;
-    font-size: 13px;
+    font-size: var(--xs-fontsize);
 }
 
 .functionG2 .classWrapper .class::before{
