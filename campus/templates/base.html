@@ -453,7 +453,7 @@
             <span class="item"><a href="{% url "feedbacks" %}">Reply Feedback Ticket</a></span>
             <span class="item"><a href="{% url 'announcement_manage' %}">Manage Announcement</a></span>
             <span class="item"><a href="{% url "viewFAQ" %}">Manage FAQ Content</a></span>
-            <span class="item"><a href="">Timetable Scheduling</a></span>
+            <span class="item"><a href="{% url "manage_timetable" %}">Timetable Scheduling</a></span>
         </div>
     {% elif user_role == 'student' or user_role == 'lecturer' %}
         <div class="functionG1">
