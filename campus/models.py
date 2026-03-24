@@ -362,7 +362,8 @@ class booking(models.Model):
             ('Pending','Pending'),
             ('Approved','Approved'),
             ('Rejected', 'Rejected'),
-            ('Cancelled','Cancelled')
+            ('Cancelled','Cancelled'),
+            ('Expired', 'Expired'),
         ],
         default='Pending'
     )

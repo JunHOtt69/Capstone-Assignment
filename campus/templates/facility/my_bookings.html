@@ -36,8 +36,8 @@
                 <tr>
                     <td>{{ b.facility.facility_name }}</td>
                     <td>{{ b.booking_date }}</td>
-                    <td>{{ b.start_time }}</td>
-                    <td>{{ b.end_time }}</td>
+                    <td>{{ b.start_time|time:"h:i a" }}</td>
+                    <td>{{ b.end_time|time:"h:i a" }}</td>
 
                     <td>
                         {% if b.status == "Approved" %}
@@ -48,6 +48,8 @@
                             <span class="badge bg-danger">{{ b.status }}</span>
                         {% elif b.status == "Cancelled" %}
                             <span class="badge bg-secondary">{{ b.status }}</span>
+                        {% elif b.status == "Expired" %}
+                            <span class="badge bg-dark">{{ b.status }}</span>
                         {% endif %}
                     </td>
 
@@ -70,8 +72,20 @@
                             Rejected
                         </button>
 
+                    {% elif b.status == "Approved" %}
+                        <button class="btn btn-success btn-sm" disabled>
+                            Approved
+                        </button>
+
+                    {% elif b.status == "Expired" %}
+                        <button class="btn btn-dark btn-sm" disabled>
+                            Expired
+                        </button>
+
                     {% else %}
-                        
+                        <button class="btn btn-secondary btn-sm" disable>
+                            -
+                        </button>
                     {% endif %}
                 </td>
                 </tr>
