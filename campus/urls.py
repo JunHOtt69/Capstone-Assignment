@@ -73,6 +73,10 @@ urlpatterns = [
     path("academic/departments/subjects/assign/", views.assign_subject_to_lecturer, name="assign_subject_to_lecturer"),
     path("academic/departments/subjects/remove/", views.remove_subject_from_lecturer, name="remove_subject_from_lecturer"),
 
+    # My timetable (student / lecturer)
+    path("timetable/", views.view_timetable, name="view_timetable"),
+    path("timetable/data/", views.get_my_timetable_data, name="get_my_timetable_data"),
+
     # Timetable scheduling
     path("academic/timetable/", views.manage_timetable, name="manage_timetable"),
     path("academic/timetable/data/", views.get_timetable_data, name="get_timetable_data"),

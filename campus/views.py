@@ -3207,6 +3207,133 @@ def manage_timetable(request):
     return render(request, "partials/manage_timetable.html", context)
 
 
+@login_required
+@role_required(allowed_roles=['student', 'lecturer'])
+def view_timetable(request):
+    """Read-only timetable view for students and lecturers."""
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
+
+    if 'student' in user_groups:
+        enrollment = course_enrollment.objects.filter(student=user).select_related('term__course').first()
+        if not enrollment or not enrollment.term:
+            messages.info(request, "You are not enrolled in any active term.")
+            return redirect('student_dashboard')
+        terms = [enrollment.term]
+    elif 'lecturer' in user_groups:
+        term_ids = class_session.objects.filter(
+            lecturer=user
+        ).values_list('term_id', flat=True).distinct()
+        terms = academic_term.objects.filter(
+            term_id__in=term_ids, is_active=True
+        ).select_related('course').order_by('-start_date')
+    else:
+        return redirect('home')
+
+    return render(request, "view_timetable.html", {'terms': terms})
+
+
+@login_required
+@role_required(allowed_roles=['student', 'lecturer'])
+def get_my_timetable_data(request):
+    """Return timetable JSON filtered for the current student or lecturer."""
+    term_id = request.GET.get('term_id')
+    week_start = request.GET.get('week_start')
+
+    if not term_id:
+        return JsonResponse({'error': 'term_id required'}, status=400)
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+
+    if week_start:
+        monday = parse_date(week_start)
+        if monday is None:
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+    else:
+        monday = _get_monday_of_week(date.today())
+
+    friday = monday + timedelta(days=4)
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
+
+    sessions_qs = class_session.objects.filter(
+        term=term_obj,
+        date__gte=monday,
+        date__lte=friday
+    ).select_related(
+        'session', 'session__facility',
+        'subject_component', 'subject_component__subject', 'lecturer'
+    ).order_by('date', 'session__start_time')
+
+    if 'student' in user_groups:
+        enrollment = course_enrollment.objects.filter(student=user).select_related('term').first()
+        if not enrollment or enrollment.term_id != term_obj.term_id:
+            return JsonResponse({'error': 'Not enrolled in this term'}, status=403)
+        target_semester = term_obj.current_semester
+        semester_subject_ids = set(
+            course_subject.objects.filter(
+                course=term_obj.course,
+                recommended_semester=target_semester
+            ).values_list('subject_id', flat=True)
+        )
+        sessions_qs = [s for s in sessions_qs if s.subject_component.subject_id in semester_subject_ids]
+    elif 'lecturer' in user_groups:
+        sessions_qs = [s for s in sessions_qs if s.lecturer_id == user.id]
+    else:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    subject_ids = set(s.subject_component.subject_id for s in sessions_qs)
+    comp_map = {}
+    for comp in SubjectComponent.objects.filter(subject_id__in=subject_ids):
+        comp_map.setdefault(comp.subject_id, []).append(comp.class_type)
+
+    subj_dates = {}
+    for cs in sessions_qs:
+        subj_dates.setdefault(cs.subject_component.subject_id, []).append((cs.date, cs.id))
+    for sid in subj_dates:
+        subj_dates[sid].sort()
+
+    timetable = []
+    for cs in sessions_qs:
+        fac_type = cs.session.facility.type
+        components = comp_map.get(cs.subject_component.subject_id, [])
+        if fac_type == 'Lab':
+            ct = 'Lab'
+        elif fac_type == 'Auditorium':
+            ct = 'Lecture'
+        elif fac_type == 'Classroom':
+            if 'Tutorial' in components and 'Lecture' in components:
+                dates_for_subj = subj_dates.get(cs.subject_component.subject_id, [])
+                first_id = dates_for_subj[0][1] if dates_for_subj else None
+                ct = 'Lecture' if cs.id == first_id else 'Tutorial'
+            elif 'Tutorial' in components:
+                ct = 'Tutorial'
+            else:
+                ct = 'Lecture'
+        else:
+            ct = 'Lecture'
+
+        timetable.append({
+            'date': cs.date.isoformat(),
+            'day': cs.session.day_of_week,
+            'start_time': cs.session.start_time.strftime('%H:%M'),
+            'end_time': cs.session.end_time.strftime('%H:%M'),
+            'subject_code': cs.subject_component.subject.subject_code,
+            'subject_name': cs.subject_component.subject.subject_name,
+            'class_type': ct,
+            'lecturer': cs.lecturer.get_full_name(),
+            'facility': cs.session.facility.facility_name,
+            'status': cs.status,
+        })
+
+    return JsonResponse({
+        'timetable': timetable,
+        'term_start': term_obj.start_date.isoformat(),
+        'term_end': term_obj.end_date.isoformat(),
+        'week_start': monday.isoformat(),
+    })
+
+
 @role_required(allowed_roles=['admin'])
 def get_timetable_data(request):
     """Return timetable data as JSON for a given term and week."""
