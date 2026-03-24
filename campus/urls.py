@@ -26,6 +26,7 @@ urlpatterns = [
 
     #campus map
     path("navigation/", views.navigation, name="navigation"),
+    path("navigation/navigate-to-class/", views.navigate_to_class, name="navigate_to_class"),
     path("editmap/", views.editmap, name="editmap"),
     path("navigation/map-data/", views.map_data, name="map_data"),
     path("save-map/", views.save_map, name="save_map"),
@@ -71,6 +72,10 @@ urlpatterns = [
     path("academic/departments/subjects/available/", views.get_available_subjects_for_lecturer, name="get_available_subjects_for_lecturer"),
     path("academic/departments/subjects/assign/", views.assign_subject_to_lecturer, name="assign_subject_to_lecturer"),
     path("academic/departments/subjects/remove/", views.remove_subject_from_lecturer, name="remove_subject_from_lecturer"),
+
+    # My timetable (student / lecturer)
+    path("timetable/", views.view_timetable, name="view_timetable"),
+    path("timetable/data/", views.get_my_timetable_data, name="get_my_timetable_data"),
 
     # Timetable scheduling
     path("academic/timetable/", views.manage_timetable, name="manage_timetable"),

@@ -1099,6 +1099,88 @@ def map_data(request):
 def navigation(request): 
     return render(request, "navigation.html")
 
+@login_required
+@role_required(allowed_roles=['student', 'lecturer'])
+def navigate_to_class(request):
+    """Find the user's current or next class and redirect to navigation with the classroom pre-selected."""
+    now = timezone.localtime()
+    today = now.date()
+    current_time = now.time()
+
+    day_map = {0: 'MON', 1: 'TUE', 2: 'WED', 3: 'THU', 4: 'FRI', 5: 'SAT', 6: 'SUN'}
+    today_day = day_map.get(today.weekday())
+
+    if today_day not in ('MON', 'TUE', 'WED', 'THU', 'FRI'):
+        messages.info(request, "No classes scheduled on weekends.")
+        return redirect('navigation')
+
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
+
+    # Build queryset for today's scheduled classes
+    if 'student' in user_groups:
+        enrollment = course_enrollment.objects.filter(student=user).select_related('term').first()
+        if not enrollment or not enrollment.term:
+            messages.info(request, "You are not enrolled in any active term.")
+            return redirect('navigation')
+        today_classes = class_session.objects.filter(
+            term=enrollment.term,
+            date=today,
+            status='scheduled',
+            session__day_of_week=today_day,
+        ).select_related('session__facility', 'subject_component__subject')
+    elif 'lecturer' in user_groups:
+        today_classes = class_session.objects.filter(
+            lecturer=user,
+            date=today,
+            status='scheduled',
+            session__day_of_week=today_day,
+        ).select_related('session__facility', 'subject_component__subject', 'term')
+    else:
+        messages.info(request, "Navigate to Classroom is only available for students and lecturers.")
+        return redirect('navigation')
+
+    # Find current class (in progress, including late) or next upcoming class
+    current_class = None
+    next_class = None
+
+    for cs in today_classes.order_by('session__start_time'):
+        s = cs.session
+        if s.start_time <= current_time <= s.end_time:
+            # Class is currently in progress (user may be on time or late)
+            current_class = cs
+        elif s.start_time > current_time:
+            if next_class is None:
+                next_class = cs
+
+    target_class = current_class or next_class
+
+    if not target_class:
+        messages.info(request, "No more classes scheduled for today.")
+        return redirect('navigation')
+
+    facility_name = target_class.session.facility.facility_name
+    subject_name = target_class.subject_component.subject.subject_name
+    start_time = target_class.session.start_time.strftime('%H:%M')
+    end_time = target_class.session.end_time.strftime('%H:%M')
+    term_name = str(target_class.term) if target_class.term else ''
+
+    s = target_class.session
+    is_current = s.start_time <= current_time <= s.end_time
+
+    from urllib.parse import urlencode
+    url_params = {
+        'destination': facility_name,
+        'subject': subject_name,
+        'start_time': start_time,
+        'end_time': end_time,
+        'is_current': '1' if is_current else '0',
+    }
+    if 'lecturer' in user_groups and term_name:
+        url_params['term'] = term_name
+    params = urlencode(url_params)
+    return redirect(f"{reverse('navigation')}?{params}")
+
 @role_required(allowed_roles=['admin'])
 def editmap(request): 
     return render(request, "editmap.html")
@@ -1179,6 +1261,15 @@ def save_map(request):
         message = "Map saved successfully!"
         if image_data:
             message = "Map and image saved successfully!"
+        
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(MapNode).pk,
+            object_id=0,
+            object_repr="Campus Map",
+            action_flag=CHANGE,
+            message=f"Updated campus map: {len(nodes_data)} node(s), {len(edges_data)} edge(s){' + new image' if image_data else ''}"
+        )
         
         return JsonResponse({"message": message})
     except Exception as e:
@@ -1287,6 +1378,16 @@ def point_of_interest_save(request):
         # write file
         with open(data_path, 'w') as f:
             json.dump(payload, f, indent=2)
+        
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(User).pk,
+            object_id=0,
+            object_repr="Point of Interest Data",
+            action_flag=CHANGE,
+            message="Updated point of interest categories/images"
+        )
+        
         return JsonResponse({"status": "ok"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
@@ -1321,6 +1422,16 @@ def point_of_interest_upload(request):
             for chunk in upload.chunks():
                 f.write(chunk)
         url = os.path.join(media_url, 'poi', filename).replace('\\', '/')
+        
+        record_admin_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(User).pk,
+            object_id=0,
+            object_repr="POI Image Upload",
+            action_flag=ADDITION,
+            message=f"Uploaded POI image: {orig}"
+        )
+        
         return JsonResponse({"url": url})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -2786,6 +2897,15 @@ def assign_subject_to_course(request):
         recommended_semester=int(semester)
     )
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(course_subject).pk,
+        object_id=course_obj.course_id,
+        object_repr=f"{course_obj.course_code} - Sem {semester}",
+        action_flag=ADDITION,
+        message=f"Assigned {subj.subject_code} to {course_obj.course_code} semester {semester}"
+    )
+
     return JsonResponse({'success': True, 'message': f'{subj.subject_code} assigned successfully.'})
 
 
@@ -2804,6 +2924,17 @@ def remove_subject_from_course(request):
 
     cs_entry = get_object_or_404(course_subject, id=cs_id)
     code = cs_entry.subject.subject_code
+    course_repr = f"{cs_entry.course.course_code} - Sem {cs_entry.recommended_semester}"
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(course_subject).pk,
+        object_id=cs_entry.course_id,
+        object_repr=course_repr,
+        action_flag=DELETION,
+        message=f"Removed {code} from {course_repr}"
+    )
+
     cs_entry.delete()
 
     return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
@@ -2874,6 +3005,15 @@ def create_subject(request):
                 total_required_hours=comp.get('total_required_hours', 0),
             )
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(subject).pk,
+        object_id=subj.subject_id,
+        object_repr=f"{code} - {name}",
+        action_flag=ADDITION,
+        message=f"Created subject {code} with {len(components_data)} component(s)"
+    )
+
     return JsonResponse({'success': True, 'message': f'Subject "{code}" created successfully.'})
 
 
@@ -2940,6 +3080,15 @@ def update_subject(request):
         else:
             removed.delete()
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(subject).pk,
+        object_id=subj.subject_id,
+        object_repr=f"{code} - {name}",
+        action_flag=CHANGE,
+        message=f"Updated subject {code}"
+    )
+
     return JsonResponse({'success': True, 'message': f'Subject "{code}" updated successfully.'})
 
 
@@ -2975,6 +3124,16 @@ def delete_subject(request):
 
     subj = get_object_or_404(subject, subject_id=subject_id)
     code = subj.subject_code
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(subject).pk,
+        object_id=subj.subject_id,
+        object_repr=f"{code} - {subj.subject_name}",
+        action_flag=DELETION,
+        message=f"Deleted subject {code}"
+    )
+
     subj.delete()
 
     return JsonResponse({'success': True, 'message': f'Subject "{code}" deleted successfully.'})
@@ -3069,6 +3228,15 @@ def assign_subject_to_lecturer(request):
 
     lecturer_subjects.objects.create(user=user_obj, subject=subj, is_lead=is_lead)
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(lecturer_subjects).pk,
+        object_id=user_obj.id,
+        object_repr=user_obj.get_full_name(),
+        action_flag=ADDITION,
+        message=f"Assigned {subj.subject_code} to lecturer {user_obj.get_full_name()}"
+    )
+
     return JsonResponse({'success': True, 'message': f'{subj.subject_code} assigned to {user_obj.get_full_name()}.'})
 
 
@@ -3087,6 +3255,17 @@ def remove_subject_from_lecturer(request):
 
     ls_entry = get_object_or_404(lecturer_subjects, id=ls_id)
     code = ls_entry.subject.subject_code
+    lecturer_name = ls_entry.user.get_full_name()
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(lecturer_subjects).pk,
+        object_id=ls_entry.user_id,
+        object_repr=lecturer_name,
+        action_flag=DELETION,
+        message=f"Removed {code} from lecturer {lecturer_name}"
+    )
+
     ls_entry.delete()
 
     return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
@@ -3162,6 +3341,133 @@ def manage_timetable(request):
     terms = academic_term.objects.filter(is_active=True).select_related('course').order_by('-start_date')
     context = {'terms': terms}
     return render(request, "partials/manage_timetable.html", context)
+
+
+@login_required
+@role_required(allowed_roles=['student', 'lecturer'])
+def view_timetable(request):
+    """Read-only timetable view for students and lecturers."""
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
+
+    if 'student' in user_groups:
+        enrollment = course_enrollment.objects.filter(student=user).select_related('term__course').first()
+        if not enrollment or not enrollment.term:
+            messages.info(request, "You are not enrolled in any active term.")
+            return redirect('student_dashboard')
+        terms = [enrollment.term]
+    elif 'lecturer' in user_groups:
+        term_ids = class_session.objects.filter(
+            lecturer=user
+        ).values_list('term_id', flat=True).distinct()
+        terms = academic_term.objects.filter(
+            term_id__in=term_ids, is_active=True
+        ).select_related('course').order_by('-start_date')
+    else:
+        return redirect('home')
+
+    return render(request, "view_timetable.html", {'terms': terms})
+
+
+@login_required
+@role_required(allowed_roles=['student', 'lecturer'])
+def get_my_timetable_data(request):
+    """Return timetable JSON filtered for the current student or lecturer."""
+    term_id = request.GET.get('term_id')
+    week_start = request.GET.get('week_start')
+
+    if not term_id:
+        return JsonResponse({'error': 'term_id required'}, status=400)
+
+    term_obj = get_object_or_404(academic_term, term_id=term_id)
+
+    if week_start:
+        monday = parse_date(week_start)
+        if monday is None:
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+    else:
+        monday = _get_monday_of_week(date.today())
+
+    friday = monday + timedelta(days=4)
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
+
+    sessions_qs = class_session.objects.filter(
+        term=term_obj,
+        date__gte=monday,
+        date__lte=friday
+    ).select_related(
+        'session', 'session__facility',
+        'subject_component', 'subject_component__subject', 'lecturer'
+    ).order_by('date', 'session__start_time')
+
+    if 'student' in user_groups:
+        enrollment = course_enrollment.objects.filter(student=user).select_related('term').first()
+        if not enrollment or enrollment.term_id != term_obj.term_id:
+            return JsonResponse({'error': 'Not enrolled in this term'}, status=403)
+        target_semester = term_obj.current_semester
+        semester_subject_ids = set(
+            course_subject.objects.filter(
+                course=term_obj.course,
+                recommended_semester=target_semester
+            ).values_list('subject_id', flat=True)
+        )
+        sessions_qs = [s for s in sessions_qs if s.subject_component.subject_id in semester_subject_ids]
+    elif 'lecturer' in user_groups:
+        sessions_qs = [s for s in sessions_qs if s.lecturer_id == user.id]
+    else:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    subject_ids = set(s.subject_component.subject_id for s in sessions_qs)
+    comp_map = {}
+    for comp in SubjectComponent.objects.filter(subject_id__in=subject_ids):
+        comp_map.setdefault(comp.subject_id, []).append(comp.class_type)
+
+    subj_dates = {}
+    for cs in sessions_qs:
+        subj_dates.setdefault(cs.subject_component.subject_id, []).append((cs.date, cs.id))
+    for sid in subj_dates:
+        subj_dates[sid].sort()
+
+    timetable = []
+    for cs in sessions_qs:
+        fac_type = cs.session.facility.type
+        components = comp_map.get(cs.subject_component.subject_id, [])
+        if fac_type == 'Lab':
+            ct = 'Lab'
+        elif fac_type == 'Auditorium':
+            ct = 'Lecture'
+        elif fac_type == 'Classroom':
+            if 'Tutorial' in components and 'Lecture' in components:
+                dates_for_subj = subj_dates.get(cs.subject_component.subject_id, [])
+                first_id = dates_for_subj[0][1] if dates_for_subj else None
+                ct = 'Lecture' if cs.id == first_id else 'Tutorial'
+            elif 'Tutorial' in components:
+                ct = 'Tutorial'
+            else:
+                ct = 'Lecture'
+        else:
+            ct = 'Lecture'
+
+        timetable.append({
+            'date': cs.date.isoformat(),
+            'day': cs.session.day_of_week,
+            'start_time': cs.session.start_time.strftime('%H:%M'),
+            'end_time': cs.session.end_time.strftime('%H:%M'),
+            'subject_code': cs.subject_component.subject.subject_code,
+            'subject_name': cs.subject_component.subject.subject_name,
+            'class_type': ct,
+            'lecturer': cs.lecturer.get_full_name(),
+            'facility': cs.session.facility.facility_name,
+            'status': cs.status,
+        })
+
+    return JsonResponse({
+        'timetable': timetable,
+        'term_start': term_obj.start_date.isoformat(),
+        'term_end': term_obj.end_date.isoformat(),
+        'week_start': monday.isoformat(),
+    })
 
 
 @role_required(allowed_roles=['admin'])
@@ -3675,6 +3981,15 @@ def generate_timetable(request):
                         facility_usage[sess_i.facility_id] = facility_usage.get(sess_i.facility_id, 0) + 1
                         improved = True
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(class_session).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - Week {week_monday}",
+        action_flag=ADDITION,
+        message=f"Generated timetable: {len(created_sessions)} session(s) created, {len(errors)} error(s)"
+    )
+
     return JsonResponse({
         'success': True,
         'created': len(created_sessions),
@@ -3719,6 +4034,15 @@ def delete_week_timetable(request):
         status='scheduled',
         subject_component__subject_id__in=semester_subject_ids
     ).delete()
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(class_session).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - Week {monday}",
+        action_flag=DELETION,
+        message=f"Deleted {deleted_count} scheduled session(s) for week {monday}"
+    )
 
     return JsonResponse({
         'success': True,
@@ -3781,6 +4105,15 @@ def save_preference(request):
                 session=cs.session,
                 is_active=True
             )
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(timetable_preference).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - Week {monday}",
+        action_flag=CHANGE,
+        message=f"Saved timetable preference for week {monday}"
+    )
 
     return JsonResponse({'success': True, 'message': 'Preference saved successfully.'})
 
@@ -3895,6 +4228,15 @@ def replicate_preference(request):
 
             weeks_processed += 1
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(class_session).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code}",
+        action_flag=ADDITION,
+        message=f"Replicated preference to {weeks_processed} week(s), {total_created} session(s) created"
+    )
+
     return JsonResponse({
         'success': True,
         'created': total_created,
@@ -3932,6 +4274,15 @@ def add_skipped_date(request):
         term=term_obj, date=skip_dt, status='scheduled'
     ).update(status='cancelled')
 
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(skipped_date).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - {skip_dt}",
+        action_flag=ADDITION,
+        message=f"Added skipped date {skip_dt} ({reason}), {cancelled} class(es) cancelled"
+    )
+
     return JsonResponse({
         'success': True,
         'message': f'Date {skip_dt} marked as skipped. {cancelled} class(es) cancelled.',
@@ -3958,6 +4309,15 @@ def remove_skipped_date(request):
     deleted, _ = skipped_date.objects.filter(term=term_obj, date=skip_dt).delete()
     if deleted == 0:
         return JsonResponse({'error': 'Skipped date not found.'}, status=400)
+
+    record_admin_action(
+        user_id=request.user.id,
+        content_type_id=ContentType.objects.get_for_model(skipped_date).pk,
+        object_id=term_obj.term_id,
+        object_repr=f"{term_obj.intake_code} - {skip_dt}",
+        action_flag=DELETION,
+        message=f"Removed skipped date {skip_dt}"
+    )
 
     return JsonResponse({'success': True, 'message': 'Skipped date removed.'})
 
@@ -4062,6 +4422,15 @@ def rearrange_missing_class(request):
             cs_obj.date = target_date
             cs_obj.status = 'rearranged'
             cs_obj.save()
+
+            record_admin_action(
+                user_id=request.user.id,
+                content_type_id=ContentType.objects.get_for_model(class_session).pk,
+                object_id=cs_obj.id,
+                object_repr=f"{subj.subject_code} - {target_date}",
+                action_flag=CHANGE,
+                message=f"Rearranged {subj.subject_code} to {DAY_NAMES.get(sess.day_of_week)} {target_date} at {sess.facility.facility_name}"
+            )
 
             return JsonResponse({
                 'success': True,
