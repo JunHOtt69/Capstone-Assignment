@@ -2825,10 +2825,6 @@ def delete_subject(request):
     return JsonResponse({'success': True, 'message': f'Subject "{code}" deleted successfully.'})
 
 
-# ============================================================
-# DEPARTMENTS MANAGEMENT MODULE
-# ============================================================
-
 @role_required(allowed_roles=['admin'])
 def manage_departments(request):
     """Main departments management page — manage lecturer subject qualifications."""
@@ -3625,7 +3621,7 @@ def save_preference(request):
         for cs in current_classes:
             timetable_preference.objects.create(
                 term=term_obj,
-                subject=cs.subject_component.subject,
+                subject_component=cs.subject_component,
                 lecturer=cs.lecturer,
                 session=cs.session,
                 is_active=True
@@ -3667,7 +3663,7 @@ def replicate_preference(request):
     )
 
     prefs = timetable_preference.objects.filter(
-        term=term_obj, is_active=True, subject_id__in=semester_subject_ids
+        term=term_obj, is_active=True, subject_component__subject_id__in=semester_subject_ids
     ).select_related('session', 'subject')
     if not prefs.exists():
         return JsonResponse({'error': 'No active preference found for this semester. Please save a preference first.'}, status=400)
