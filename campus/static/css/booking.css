@@ -118,6 +118,11 @@ table tbody td .statusBadge.cancelled{
     background-color: lightslategray;
 }
 
+table tbody td .statusBadge.expired{
+    border: 0.01vw solid yellow;
+    background-color: yellow;
+}
+
 table thead th.no-col{
     width: 5%;
 }

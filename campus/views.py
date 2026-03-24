@@ -26,11 +26,10 @@ from django.contrib.auth.views import LoginView, PasswordResetView, PasswordRese
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from datetime import timedelta, date
+from datetime import datetime, time, date, timedelta
 from bs4 import BeautifulSoup
 import os
 import uuid
-import datetime
 import random
 import json
 import base64
@@ -175,7 +174,51 @@ def account_error(request):
 
 @role_required(allowed_roles=['admin'])
 def admin_dashboard(request):
-    return render(request, "dashboards/admin_dashboard.html")
+    total_users = User.objects.filter(is_active=True).count()
+    active_students = User.objects.filter(groups__name='student', is_active=True).count()
+    active_lecturers = User.objects.filter(groups__name='lecturer', is_active=True).count()
+    active_admins = User.objects.filter(groups__name='admin', is_active=True).count()
+
+    status_counts = SupportTicket.objects.values('status').annotate(total=Count('status'))
+    counts = {item['status']: item['total'] for item in status_counts}
+
+    escalated_count = SupportTicket.objects.filter(
+        status='in_progress',
+        activities__action='escalation'
+        ).distinct().count()
+
+    in_progress_non_escalated = SupportTicket.objects.filter(
+        status='in_progress'
+    ).exclude(
+        activities__action='escalation'
+    ).distinct().count()
+
+    total = SupportTicket.objects.count()
+
+    recent_logs = LogEntry.objects.select_related('user', 'content_type').all()[:10]
+
+    context = {
+        'admin_name': request.user.get_full_name() or request.user.username,
+        'today': timezone.now(),
+        'stats': {
+            'total': total_users,
+            'students': active_students,
+            'lecturers': active_lecturers,
+            'admins': active_admins,
+        },
+        'tickets': {
+            'total': total,
+            'rate': round((counts.get('resolved', 0) / total * 100), 1) if total > 0 else 0,
+            'in_progress_non_escalated': in_progress_non_escalated,
+            'in_progress': counts.get('in_progress', 0),
+            'resolved': counts.get('resolved', 0),
+            'closed': counts.get('closed', 0),
+            'escalated': escalated_count,
+        },
+        'logs': recent_logs,
+    }
+    
+    return render(request, "dashboards/admin_dashboard.html", context)
 
 @role_required(allowed_roles=['lecturer'])
 def lecturer_dashboard(request):
@@ -2667,8 +2710,104 @@ def send_booking_update_email(recipient, sub, booking_obj, context, template):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
+def get_blocked_slots(facility, selected_date):
+    blocked_slots = []
+
+    class_sessions = class_session.objects.filter(
+        session__facility=facility,
+        date=selected_date,
+        status="scheduled"
+    ).select_related("session").order_by("session__start_time")
+
+    for cs in class_sessions:
+        blocked_slots.append((
+            cs.session.start_time,
+            cs.session.end_time
+        ))
+
+    bookings_qs = booking.objects.filter(
+        facility=facility,
+        booking_date=selected_date,
+        status__in=["Pending", "Approved"]
+    ).order_by("start_time")
+
+    for b in bookings_qs:
+        blocked_slots.append((b.start_time, b.end_time))
+
+    blocked_slots.sort(key=lambda x: x[0])
+
+    return blocked_slots
+
+def merge_slots(slots):
+    if not slots:
+        return []
+    
+    merged = [slots[0]]
+
+    for current_start, current_end in slots[1:]:
+        last_start, last_end = merged[-1]
+
+        if current_start <= last_end:
+            merged[-1] = (last_start, max(last_end, current_end))
+        else:
+            merged.append((current_start, current_end))
+
+    return merged
+
+def get_available_slots(facility, selected_date):
+    day_start = time(8, 30)
+    day_end = time(17, 30)
+
+    blocked_slots = get_blocked_slots(facility, selected_date)
+    merged_blocked = merge_slots(blocked_slots)
+
+    available_slots = []
+    current_start = day_start
+
+    for blocked_start, blocked_end in merged_blocked:
+        if blocked_start > current_start:
+            available_slots.append((current_start, blocked_start))
+
+        if blocked_end > current_start:
+            current_start = blocked_end
+
+    if current_start < day_end:
+        available_slots.append((current_start, day_end))
+
+    return available_slots
+
+def update_expired_bookings():
+    now = datetime.now()
+
+    active_bookings = booking.objects.filter(
+        status__in=["Pending", "Approved"]
+    )
+
+    for b in active_bookings:
+        booking_end = datetime.combine(b.booking_date, b.end_time)
+
+        if booking_end < now:
+            b.status = "Expired"
+            b.save()
+
+
 def booking_form(request, facility_id):
+    update_expired_bookings()
     facility = get_object_or_404(facilities, pk=facility_id)
+    today = date.today()
+    min_date = today.isoformat()
+    max_date = (today + timedelta(days=7)).isoformat()
+
+    selected_date_str = request.GET.get("date", "")
+    available_slots = []
+
+    if selected_date_str:
+        try:
+            selected_date_obj = datetime.strptime(selected_date_str, "%Y-%m-%d").date()
+            if today <= selected_date_obj <= today + timedelta(days=7):
+                available_slots = get_available_slots(facility, selected_date_obj)
+        except ValueError:
+            selected_date_str = ""
 
     if request.method == "POST":
         booking_date = request.POST.get("date")
@@ -2676,52 +2815,157 @@ def booking_form(request, facility_id):
         end_time = request.POST.get("end_time")
         purpose = request.POST.get("purpose")
 
-        if start_time >= end_time:
-            return render(request, "facility/booking_form.html", {"facility": facility, "error": "End time must be later than start time."})
+        selected_date = datetime.strptime(booking_date, "%Y-%m-%d").date()
 
-        conflict = booking.objects.filter(
-            facility=facility,
-            booking_date=booking_date,
-            start_time__lt=end_time,
-            end_time__gt=start_time
-        ).exclude(status="Cancelled").exists()
-
-        if conflict:
+        if selected_date < today or selected_date > today + timedelta(days=7):
             return render(request, "facility/booking_form.html", {
                 "facility": facility,
-                "error": "This facility is already booked for the selected time."
+                "error": "You can only book within the next 7 days.",
+                "min_date": min_date,
+                "max_date": max_date,
+                "selected_date": booking_date,
+                "available_slots": get_available_slots(facility, selected_date) if today <= selected_date <= today + timedelta(days=7) else []
             })
 
-        booking.objects.create(
+        active_bookings = booking.objects.filter(
             user=request.user,
-            facility=facility,
-            booking_date=booking_date,
-            start_time=start_time,
-            end_time=end_time,
-            purpose=purpose,
-            status="Pending"
+            status__in=["Pending", "Approved"]
+        ).count()
+
+        if active_bookings >= 3:
+            return render(request, "facility/booking_form.html", {
+                "facility": facility,
+                "error": "You can only have a maximum of 3 active bookings at a time.",
+                "min_date": min_date,
+                "max_date": max_date,
+                "selected_date": booking_date,
+                "available_slots": get_available_slots(facility, selected_date)
+            }) 
+
+        start = datetime.strptime(start_time, "%H:%M").time()
+        end = datetime.strptime(end_time, "%H:%M").time()
+
+        if start>= end:
+            return render(request, "facility/booking_form.html", {
+                "facility": facility,
+                "error": "End time must be later than start time.",
+                "min_date": min_date,
+                "max_date": max_date,
+                "selected_date": booking_date,
+                "available_slots": get_available_slots(facility, selected_date)
+            })
+
+        if start < time(8, 30) or end > time(17, 30):
+            return render(request, "facility/booking_form.html", {
+                "facility": facility,
+                "error": "Booking time must be between 08:30 AM and 05:30 PM.",
+                "min_date": min_date,
+                "max_date": max_date,
+                "selected_date": booking_date,
+                "available_slots": get_available_slots(facility, selected_date)
+            })
+
+        class_conflict = class_session.objects.filter(
+            session__facility=facility,
+            date=selected_date,
+            status="scheduled",
+            session__start_time__lt=end,
+            session__end_time__gt=start
+        ).exists()
+
+        if class_conflict:
+            return render(request, "facility/booking_form.html", {
+                "facility": facility,
+                "error": "This facility is already booked for the selected time.",
+                "min_date": min_date,
+                "max_date": max_date,
+                "selected_date": booking_date,
+                "available_slots": get_available_slots(facility, selected_date)
+            })
+
+        booking_conflict = booking.objects.filter(
+            facility= facility,
+            booking_date= booking_date,
+            start_time__lt = end,
+            end_time__gt = start,
+            status__in = ["Pending", "Approved"]
+        ).exists()
+
+        if booking_conflict:
+            return render(request, "facility/booking_form.html",{
+                "facility": facility,
+                "error": "This facility is already booked for the selected time.",
+                "min_date": min_date,
+                "max_date": max_date,
+                "selected_date": booking_date,
+                "available_slots": get_available_slots(facility, selected_date)
+            })
+        
+        booking.objects.create(
+            user = request.user,
+            facility = facility,
+            booking_date = booking_date,
+            start_time = start_time,
+            end_time = end_time,
+            purpose = purpose,
+            status = "Pending"
         )
 
         messages.success(request, "Booking request submitted successfully! Waiting for admin approval.")
         return redirect("my_bookings")
+    
 
-    return render(request, "facility/booking_form.html", {"facility": facility})
+    return render(request, "facility/booking_form.html", {
+        "facility": facility, 
+        "min_date": today.isoformat(), 
+        "max_date": (today + timedelta(days=7)).isoformat(),
+        "selected_date": selected_date_str,
+        "available_slots": available_slots,
+    })
 
 
 def my_bookings(request):
-    bookings = booking.objects.filter(user=request.user)
+    update_expired_bookings()
+
+    bookings = booking.objects.filter(user=request.user).order_by('-booking_date', '-start_time', '-booking_id')
+
+    now = timezone.localtime()
+
+    for b in bookings:
+        booking_end = datetime.combine(b.booking_date, b.end_time)
+        booking_end = timezone.make_aware(booking_end, timezone.get_current_timezone())
+
+        b.can_cancel = (
+            (b.status == "Pending" or b.status == "Approved")
+            and booking_end > now
+        )
+
     return render(request, "facility/my_bookings.html", {"bookings": bookings})
 
 @login_required
 def cancel_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id, user=request.user)
+
+    booking_end = datetime.combine(selected_booking.booking_date, selected_booking.end_time)
+    booking_end = timezone.make_aware(booking_end, timezone.get_current_timezone())
+
+    if selected_booking.status not in ["Pending", "Approved"]:
+        messages.error(request, "This booking cannot be cancelled.")
+        return redirect("my_bookings")
+
+    if booking_end <= timezone.localtime():
+        messages.error(request, "This booking has already passed and cannot be cancelled.")
+        return redirect("my_bookings")
+
     selected_booking.status = "Cancelled"
     selected_booking.save()
 
-    messages.success(request, "Booking cancelled successfully!")
+    messages.success(request, "Booking cancelled successfully.")
     return redirect("my_bookings")
 
 def review_booking_request(request):
+    update_expired_bookings()
+
     bookings = booking.objects.all().order_by("-booking_date", "-start_time")
 
     booking_data = []
