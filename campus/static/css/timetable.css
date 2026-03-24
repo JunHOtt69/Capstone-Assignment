@@ -5,7 +5,7 @@
 
 .timetableContainer {
     width: 100%;
-    padding: 0.5vw;
+    padding: 2vw;
     display: flex;
     flex-direction: column;
     gap: 1vw;
@@ -16,32 +16,22 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1vw;
-    align-items: center;
+    align-items: flex-start;
     border-bottom: 0.1vw solid rgba(var(--black), 1);
     padding-bottom: 0.5vw;
 }
 
-.controlGroup {
+.timetableControls .controlGroup {
     display: flex;
     align-items: center;
     gap: 0.5vw;
 }
 
-.controlGroup label {
+.timetableControls .controlGroup label {
     font-size: var(--p-fontsize);
     font-weight: 600;
     white-space: nowrap;
     color: rgba(var(--black), 1);
-}
-
-.ttSelect {
-    padding: 0.3vw 0.5vw;
-    font-size: var(--p-fontsize);
-    border: 0.1vw solid rgba(var(--black), 0.4);
-    background-color: white;
-    outline: none;
-    min-width: 15vw;
-    font-family: "Nunito Sans", sans-serif;
 }
 
 .ttInput {
@@ -116,38 +106,6 @@
     min-width: 12vw;
     text-align: center;
     color: rgba(var(--black), 1);
-}
-
-/* ---- Info Bar ---- */
-.infoBar {
-    padding: 0.3vw 0.7vw;
-    font-size: var(--p-fontsize);
-    font-weight: 500;
-    border: 0.1vw solid rgba(var(--black), 0.2);
-}
-
-.infoBar.success {
-    background-color: rgba(var(--dark-green), 0.15);
-    color: rgba(var(--dark-green), 1);
-    border-color: rgba(var(--dark-green), 0.4);
-}
-
-.infoBar.warning {
-    background-color: #fff8e1;
-    color: #856404;
-    border-color: #ffe082;
-}
-
-.infoBar.error {
-    background-color: #fce8ea;
-    color: #c0392b;
-    border-color: #e6a0a8;
-}
-
-.infoBar.info {
-    background-color: rgba(var(--black), 0.05);
-    color: rgba(var(--black), 0.8);
-    border-color: rgba(var(--black), 0.2);
 }
 
 /* ---- Timetable Grid / Table ---- */
@@ -275,6 +233,11 @@
 
 .sessionCell .sessionStatus.rearranged {
     color: #e67e22;
+}
+
+td.conflict {
+    background-color: #ffe0e0;
+    border: 2px solid #c0392b;
 }
 
 .emptySlot {

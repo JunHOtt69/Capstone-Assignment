@@ -1,0 +1,198 @@
+main{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    flex: 1;
+}
+
+.reviewBooking{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    padding: 1vw 2vw 5vw;
+    background-color: transparent;
+}
+
+.sectionHeader{
+    margin-bottom: 1vw;
+}
+
+.tableWrapper{
+    width: 100%;
+    height: auto;
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+    border: 0.1vw solid rgba(var(--black), 1);
+    counter-reset: rowNumber;
+    table-layout: fixed;
+}
+
+
+table td.number-cell::before {
+    content: counter(rowNumber);
+    font-weight: 400; 
+    color: rgba(var(--black), 0.6);
+}
+
+table td.number-cell::before {
+    content: counter(rowNumber);
+    font-weight: 400; 
+    color: rgba(var(--black), 0.6);
+}
+
+table thead{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+table thead th{
+    padding: 0.3vw 0.5vw;
+    line-height: 1.5vw;
+    font-size: var(--p-fontsize);
+}
+
+table tbody tr{
+    width: 100%;
+    border-bottom: 0.1vw solid rgba(var(--black), 0.4);
+    background-color: white;
+    transition: background-color 0.2s;
+    counter-increment: rowNumber;
+}
+
+table tbody tr:nth-child(even){
+    background-color: rgba(var(--black), 0.1);
+}
+
+table tbody tr:last-child{
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+table tbody tr:hover{
+    background-color: rgba(var(--dark-green), 0.1);
+    cursor: pointer;
+}
+
+table tbody tr td{
+    padding-top: 0.1vw;
+    padding-bottom: 0.1vw;
+    text-align: center;
+    font-size: var(--p-fontsize);
+    line-height: 1.5vw;
+}
+
+table tbody th{
+    text-align: center;
+}
+
+table tbody td .statusBadge{
+    background-color: transparent;
+    padding: 0.2vw 0.5vw;
+    border-radius: 0.2vw;
+}
+
+table tbody td .statusBadge.approved{
+    border: 0.01vw solid rgba(var(--dark-green), 0.5);
+    background-color: greenyellow;
+}
+
+table tbody td .statusBadge.pending{
+    border: 0.01vw solid orangered;
+    background-color: orange;
+}
+
+table tbody td .statusBadge.rejected{
+    border: 0.01vw solid red;
+    background-color: red;
+}
+
+table tbody td .statusBadge.cancelled{
+    border: 0.01vw solid lightslategray;
+    background-color: lightslategray;
+}
+
+table thead th.no-col{
+    width: 5%;
+}
+
+table th.code, 
+table th.end,
+table th.start,
+table th.role{
+    width: 6%;
+}
+
+
+table th.facility{
+    width: 8%;
+}
+
+table th.date{
+    width: 8%;
+}
+
+table th.action,
+table th.status{
+    width: 8%;
+}
+
+table th.purpose{
+    width: auto;
+}
+
+table td label{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+table td p{
+    width: 100%;
+    max-width: 37vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    padding-left: 0.5vw;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+table td p.emptyPurpose{
+    color: rgba(var(--black), 0.4);
+}
+
+table tr.active p{
+    white-space: normal;
+    cursor: default;
+}
+
+table td button{
+    outline: none;
+    border: none;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: color .2s, background-color 0.2s;
+    padding: 0.3vw;
+    font-size: var(--p-fontsize);
+    font-weight: bold;
+    color: rgba(var(--black), 1);
+}
+
+table td button:hover{
+    background-color: rgba(var(--dark-green), 0.5);
+    color: rgba(var(--black), 1);
+}
