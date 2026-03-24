@@ -54,10 +54,12 @@
         <section class="suportTicketInfo">
             <div class="infoWrapper">
                 <div class="mytickets">
-                    <span>Total Resolved Tickets: <strong>{{ tickets.total }}</strong></span>
+                    <span>Total Resolved Tickets:</span>
+                    <h3>{{ tickets.total|cool_number }}</h3>
                 </div>
                 <div class="mypendingtickets">
-                    <span>My Pending Tickets: <strong>{{ tickets.in_progress }}</strong></span>
+                    <span>My Pending Tickets: </span>
+                    <h3>{{ tickets.in_progress|cool_number }}</h3>
                 </div>
             </div>
             <div class="ticketOverview">
