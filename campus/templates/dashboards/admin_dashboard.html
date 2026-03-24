@@ -103,38 +103,40 @@
 
     <section class="systemLogs">
         <h3 class="sectionHeader">Recent Admin Actions</h3>
-        <table class="logs">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs %}
-                    <tr class="log-item">
-                        <td>{{ log.action_time }}</td>
-                    
-                        <td>
-                            <strong>{{ log.user.username }}</strong> 
-                            {{ log.get_action_flag_display|lower }}ed 
-                            "{{ log.object_repr }}" 
-                        </td>
-                    </tr>
-                {% empty %}
+        <div class="tableWrapper">
+            <table class="logs">
+                <thead>
                     <tr>
-                        <td colspan="2">No system logs available.</td>
+                        <th>Time</th>
+                        <th>Action</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr class="log-item">
+                            <td>{{ log.action_time }}</td>
+                        
+                            <td>
+                                <strong>{{ log.user.username }}</strong> 
+                                {{ log.get_action_flag_display|lower }}ed 
+                                "{{ log.object_repr }}" 
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="2">No system logs available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </section>
 </div>
 {% endblock %} 
 
 {% block background_scripts %}
-    <!-- <script src="{% static 'js/AmbientLightBg.min.js' %}"></script>
-    <script src="{% static 'js/dashboard_background.js' %}"></script> -->
+    <script src="{% static 'js/AmbientLightBg.min.js' %}"></script>
+    <script src="{% static 'js/dashboard_background.js' %}"></script>
 {% endblock %} 
 
 {% block extra_scripts %}

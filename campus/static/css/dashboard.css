@@ -328,6 +328,7 @@ main{
     height: auto;
     padding: 1vw;
     gap: 0.5vw;
+    flex: 1;
 }
 
 .sectionHeader{
@@ -341,12 +342,24 @@ main{
     font-size: var(--xs-fontsize);
     border-collapse: collapse;
     border: 0.1vw solid rgba(var(--black), 1);
+    
 }
 
 .logs thead{
     background-color: greenyellow;
     color: rgba(var(--black), 1);
     border-bottom: 0.1vw solid rgba(var(--black), 1);
+    table-layout: fixed;
+    width: 100%;
+    display: table;
+}
+
+.logs tbody{
+    display: block;
+    max-height: 70vh;
+    overflow: hidden;
+    overflow-y: auto;
+    width: 100%;
 }
 
 .logs tr th{
@@ -358,15 +371,34 @@ main{
 .logs th,
 .logs td{
     padding: 0.2vw 0.3vw;
+    vertical-align: top;
+}
+
+.logs td{
+    padding-bottom: 0.7vw;
+    vertical-align: top;
 }
 
 .logs tbody tr{
     transition: background-color .2s;
     background-color: rgba(var(--black), 1);
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-bottom: 0.01vw solid rgba(255, 255, 255, 0.5);
+    
 }
 
 .logs tbody tr:hover{
     background-color: rgba(var(--black), 0.5);
     width: 100%;
-    
+}
+
+.logs th:nth-child(1), 
+.logs td:nth-child(1) {
+    width: 25%; 
+}
+.logs th:nth-child(2), 
+.logs td:nth-child(2) {
+    width: 75%;
 }
