@@ -52,20 +52,28 @@
                     </td>
 
                     <td>
-                        {% if b.status == "Pending" or b.status == "Approved" %}
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal" data-booking-url="{% url 'cancel_booking' b.booking_id %}">
-                               Cancel
-                            </button>
-                        {% elif b.status == "Cancelled" %}
-                            <button class="btn btn-secondary btn-sm" disabled>
-                                Cancelled
-                            </button>
-                        {% elif b.status == "Rejected" %}
-                            <button class="btn btn-secondary btn-sm" disabled>
-                                Rejected
-                            </button>
-                        {% endif %}
-                    </td>
+                    {% if b.can_cancel %}
+                        <button type="button" class="btn btn-danger btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#cancelModal"
+                                data-booking-url="{% url 'cancel_booking' b.booking_id %}">
+                            Cancel
+                        </button>
+
+                    {% elif b.status == "Cancelled" %}
+                        <button class="btn btn-secondary btn-sm" disabled>
+                            Cancelled
+                        </button>
+
+                    {% elif b.status == "Rejected" %}
+                        <button class="btn btn-secondary btn-sm" disabled>
+                            Rejected
+                        </button>
+
+                    {% else %}
+                        
+                    {% endif %}
+                </td>
                 </tr>
 
                 {% empty %}
