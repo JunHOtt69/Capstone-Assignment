@@ -8,9 +8,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="timetableContainer">
+<div class="timetableContainer viewTimetable">
     <div class="timetableControls">
-        {% if terms|length > 1 %}
+        {% if is_lecturer %}
+        <input type="hidden" id="lecturerMode" value="1"
+               data-start="{{ overall_start }}"
+               data-end="{{ overall_end }}">
+        {% elif terms|length > 1 %}
         <div class="selectInput" id="termDropdown" style="width:22vw;">
             <div class="selectedLabel">
                 <label>Choose an Intake</label>

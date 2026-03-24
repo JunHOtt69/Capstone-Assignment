@@ -1263,9 +1263,7 @@ def save_map(request):
         
         record_admin_action(
             user_id=request.user.id,
-            content_type_id=ContentType.objects.get_for_model(MapNode).pk,
-            object_id=0,
-            object_repr="Campus Map",
+            obj=request.user,
             action_flag=CHANGE,
             message=f"Updated campus map: {len(nodes_data)} node(s), {len(edges_data)} edge(s){' + new image' if image_data else ''}"
         )
@@ -1374,17 +1372,67 @@ def point_of_interest_save(request):
         # basic validation: must be a dict of category-> {label, images}
         if not isinstance(payload, dict):
             return JsonResponse({"error": "invalid payload"}, status=400)
+
+        # Load old data for comparison
+        old_data = {}
+        if os.path.exists(data_path):
+            with open(data_path, 'r') as f:
+                try:
+                    old_data = json.load(f)
+                except (json.JSONDecodeError, ValueError):
+                    old_data = {}
+
+        # Detect what changed
+        changes = []
+        old_keys = set(old_data.keys())
+        new_keys = set(payload.keys())
+
+        added_cats = new_keys - old_keys
+        removed_cats = old_keys - new_keys
+        if added_cats:
+            for k in added_cats:
+                changes.append(f"Added category '{payload[k].get('label', k)}'")
+        if removed_cats:
+            for k in removed_cats:
+                changes.append(f"Removed category '{old_data[k].get('label', k)}'")
+
+        for key in old_keys & new_keys:
+            old_cat = old_data[key]
+            new_cat = payload[key]
+            old_label = old_cat.get('label', key)
+            new_label = new_cat.get('label', key)
+            if old_label != new_label:
+                changes.append(f"Renamed category '{old_label}' to '{new_label}'")
+
+            old_imgs = old_cat.get('images', [])
+            new_imgs = new_cat.get('images', [])
+            old_srcs = {(img.get('src') if isinstance(img, dict) else img) for img in old_imgs}
+            new_srcs = {(img.get('src') if isinstance(img, dict) else img) for img in new_imgs}
+            imgs_added = len(new_srcs - old_srcs)
+            imgs_removed = len(old_srcs - new_srcs)
+            if imgs_added:
+                changes.append(f"Added {imgs_added} image(s) to '{new_label}'")
+            if imgs_removed:
+                changes.append(f"Deleted {imgs_removed} image(s) from '{new_label}'")
+
+            # Check caption changes
+            old_captions = {(img.get('src') if isinstance(img, dict) else img): (img.get('caption', '') if isinstance(img, dict) else '') for img in old_imgs}
+            new_captions = {(img.get('src') if isinstance(img, dict) else img): (img.get('caption', '') if isinstance(img, dict) else '') for img in new_imgs}
+            captions_edited = sum(1 for src in old_captions if src in new_captions and old_captions[src] != new_captions[src])
+            if captions_edited:
+                changes.append(f"Edited {captions_edited} caption(s) in '{new_label}'")
+
+        change_message = '; '.join(changes) if changes else 'POI data saved (no detected changes)'
+
         # write file
         with open(data_path, 'w') as f:
             json.dump(payload, f, indent=2)
         
         record_admin_action(
             user_id=request.user.id,
-            content_type_id=ContentType.objects.get_for_model(User).pk,
-            object_id=0,
-            object_repr="Point of Interest Data",
+            obj=request.user,
             action_flag=CHANGE,
-            message="Updated point of interest categories/images"
+            message=change_message
         )
         
         return JsonResponse({"status": "ok"})
@@ -1424,9 +1472,7 @@ def point_of_interest_upload(request):
         
         record_admin_action(
             user_id=request.user.id,
-            content_type_id=ContentType.objects.get_for_model(User).pk,
-            object_id=0,
-            object_repr="POI Image Upload",
+            obj=request.user,
             action_flag=ADDITION,
             message=f"Uploaded POI image: {orig}"
         )
@@ -3080,9 +3126,7 @@ def assign_subject_to_course(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(course_subject).pk,
-        object_id=course_obj.course_id,
-        object_repr=f"{course_obj.course_code} - Sem {semester}",
+        obj=course_obj,
         action_flag=ADDITION,
         message=f"Assigned {subj.subject_code} to {course_obj.course_code} semester {semester}"
     )
@@ -3106,14 +3150,16 @@ def remove_subject_from_course(request):
     cs_entry = get_object_or_404(course_subject, id=cs_id)
     code = cs_entry.subject.subject_code
     course_repr = f"{cs_entry.course.course_code} - Sem {cs_entry.recommended_semester}"
+    cs_entry_id = cs_entry.id
+    cs_entry_str = str(cs_entry)
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(course_subject).pk,
-        object_id=cs_entry.course_id,
-        object_repr=course_repr,
+        obj=cs_entry,
         action_flag=DELETION,
-        message=f"Removed {code} from {course_repr}"
+        message=f"Removed {code} from {course_repr}",
+        manual_pk=cs_entry_id,
+        manual_repr=cs_entry_str,
     )
 
     cs_entry.delete()
@@ -3188,9 +3234,7 @@ def create_subject(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(subject).pk,
-        object_id=subj.subject_id,
-        object_repr=f"{code} - {name}",
+        obj=subj,
         action_flag=ADDITION,
         message=f"Created subject {code} with {len(components_data)} component(s)"
     )
@@ -3263,9 +3307,7 @@ def update_subject(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(subject).pk,
-        object_id=subj.subject_id,
-        object_repr=f"{code} - {name}",
+        obj=subj,
         action_flag=CHANGE,
         message=f"Updated subject {code}"
     )
@@ -3305,14 +3347,16 @@ def delete_subject(request):
 
     subj = get_object_or_404(subject, subject_id=subject_id)
     code = subj.subject_code
+    subj_id = subj.subject_id
+    subj_str = str(subj)
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(subject).pk,
-        object_id=subj.subject_id,
-        object_repr=f"{code} - {subj.subject_name}",
+        obj=subj,
         action_flag=DELETION,
-        message=f"Deleted subject {code}"
+        message=f"Deleted subject {code}",
+        manual_pk=subj_id,
+        manual_repr=subj_str,
     )
 
     subj.delete()
@@ -3411,9 +3455,7 @@ def assign_subject_to_lecturer(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(lecturer_subjects).pk,
-        object_id=user_obj.id,
-        object_repr=user_obj.get_full_name(),
+        obj=user_obj,
         action_flag=ADDITION,
         message=f"Assigned {subj.subject_code} to lecturer {user_obj.get_full_name()}"
     )
@@ -3437,14 +3479,16 @@ def remove_subject_from_lecturer(request):
     ls_entry = get_object_or_404(lecturer_subjects, id=ls_id)
     code = ls_entry.subject.subject_code
     lecturer_name = ls_entry.user.get_full_name()
+    ls_entry_id = ls_entry.id
+    ls_entry_str = str(ls_entry)
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(lecturer_subjects).pk,
-        object_id=ls_entry.user_id,
-        object_repr=lecturer_name,
+        obj=ls_entry,
         action_flag=DELETION,
-        message=f"Removed {code} from lecturer {lecturer_name}"
+        message=f"Removed {code} from lecturer {lecturer_name}",
+        manual_pk=ls_entry_id,
+        manual_repr=ls_entry_str,
     )
 
     ls_entry.delete()
@@ -3547,7 +3591,13 @@ def view_timetable(request):
     else:
         return redirect('home')
 
-    return render(request, "view_timetable.html", {'terms': terms})
+    context = {'terms': terms}
+    if 'lecturer' in user_groups:
+        if terms:
+            context['overall_start'] = min(t.start_date for t in terms).isoformat()
+            context['overall_end'] = max(t.end_date for t in terms).isoformat()
+        context['is_lecturer'] = True
+    return render(request, "view_timetable.html", context)
 
 
 @login_required
@@ -3557,10 +3607,11 @@ def get_my_timetable_data(request):
     term_id = request.GET.get('term_id')
     week_start = request.GET.get('week_start')
 
-    if not term_id:
-        return JsonResponse({'error': 'term_id required'}, status=400)
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
 
-    term_obj = get_object_or_404(academic_term, term_id=term_id)
+    if not term_id and 'lecturer' not in user_groups:
+        return JsonResponse({'error': 'term_id required'}, status=400)
 
     if week_start:
         monday = parse_date(week_start)
@@ -3570,19 +3621,40 @@ def get_my_timetable_data(request):
         monday = _get_monday_of_week(date.today())
 
     friday = monday + timedelta(days=4)
-    user = request.user
-    user_groups = set(user.groups.values_list('name', flat=True))
 
-    sessions_qs = class_session.objects.filter(
-        term=term_obj,
-        date__gte=monday,
-        date__lte=friday
-    ).select_related(
-        'session', 'session__facility',
-        'subject_component', 'subject_component__subject', 'lecturer'
-    ).order_by('date', 'session__start_time')
+    if 'lecturer' in user_groups:
+        # Lecturers: load all their classes across all active terms
+        sessions_qs = class_session.objects.filter(
+            lecturer=user,
+            date__gte=monday,
+            date__lte=friday,
+            term__is_active=True,
+        ).select_related(
+            'session', 'session__facility',
+            'subject_component', 'subject_component__subject', 'lecturer', 'term'
+        ).order_by('date', 'session__start_time')
+        sessions_qs = list(sessions_qs)
 
-    if 'student' in user_groups:
+        # Determine overall term bounds across all active terms
+        lec_terms = academic_term.objects.filter(
+            term_id__in=set(s.term_id for s in sessions_qs)
+        ) if sessions_qs else academic_term.objects.filter(
+            is_active=True,
+            term_id__in=class_session.objects.filter(lecturer=user).values_list('term_id', flat=True).distinct()
+        )
+        all_term_start = min((t.start_date for t in lec_terms), default=monday)
+        all_term_end = max((t.end_date for t in lec_terms), default=friday)
+    elif 'student' in user_groups:
+        term_obj = get_object_or_404(academic_term, term_id=term_id)
+        sessions_qs = class_session.objects.filter(
+            term=term_obj,
+            date__gte=monday,
+            date__lte=friday
+        ).select_related(
+            'session', 'session__facility',
+            'subject_component', 'subject_component__subject', 'lecturer'
+        ).order_by('date', 'session__start_time')
+
         enrollment = course_enrollment.objects.filter(student=user).select_related('term').first()
         if not enrollment or enrollment.term_id != term_obj.term_id:
             return JsonResponse({'error': 'Not enrolled in this term'}, status=403)
@@ -3594,8 +3666,8 @@ def get_my_timetable_data(request):
             ).values_list('subject_id', flat=True)
         )
         sessions_qs = [s for s in sessions_qs if s.subject_component.subject_id in semester_subject_ids]
-    elif 'lecturer' in user_groups:
-        sessions_qs = [s for s in sessions_qs if s.lecturer_id == user.id]
+        all_term_start = term_obj.start_date
+        all_term_end = term_obj.end_date
     else:
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
@@ -3641,12 +3713,13 @@ def get_my_timetable_data(request):
             'lecturer': cs.lecturer.get_full_name(),
             'facility': cs.session.facility.facility_name,
             'status': cs.status,
+            'intake_code': cs.term.intake_code if cs.term else '',
         })
 
     return JsonResponse({
         'timetable': timetable,
-        'term_start': term_obj.start_date.isoformat(),
-        'term_end': term_obj.end_date.isoformat(),
+        'term_start': all_term_start.isoformat(),
+        'term_end': all_term_end.isoformat(),
         'week_start': monday.isoformat(),
     })
 
@@ -4164,9 +4237,7 @@ def generate_timetable(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(class_session).pk,
-        object_id=term_obj.term_id,
-        object_repr=f"{term_obj.intake_code} - Week {week_monday}",
+        obj=term_obj,
         action_flag=ADDITION,
         message=f"Generated timetable: {len(created_sessions)} session(s) created, {len(errors)} error(s)"
     )
@@ -4218,9 +4289,7 @@ def delete_week_timetable(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(class_session).pk,
-        object_id=term_obj.term_id,
-        object_repr=f"{term_obj.intake_code} - Week {monday}",
+        obj=term_obj,
         action_flag=DELETION,
         message=f"Deleted {deleted_count} scheduled session(s) for week {monday}"
     )
@@ -4289,9 +4358,7 @@ def save_preference(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(timetable_preference).pk,
-        object_id=term_obj.term_id,
-        object_repr=f"{term_obj.intake_code} - Week {monday}",
+        obj=term_obj,
         action_flag=CHANGE,
         message=f"Saved timetable preference for week {monday}"
     )
@@ -4333,7 +4400,7 @@ def replicate_preference(request):
 
     prefs = timetable_preference.objects.filter(
         term=term_obj, is_active=True, subject_component__subject_id__in=semester_subject_ids
-    ).select_related('session', 'subject')
+    ).select_related('session', 'subject_component', 'subject_component__subject')
     if not prefs.exists():
         return JsonResponse({'error': 'No active preference found for this semester. Please save a preference first.'}, status=400)
 
@@ -4411,9 +4478,7 @@ def replicate_preference(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(class_session).pk,
-        object_id=term_obj.term_id,
-        object_repr=f"{term_obj.intake_code}",
+        obj=term_obj,
         action_flag=ADDITION,
         message=f"Replicated preference to {weeks_processed} week(s), {total_created} session(s) created"
     )
@@ -4457,9 +4522,7 @@ def add_skipped_date(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(skipped_date).pk,
-        object_id=term_obj.term_id,
-        object_repr=f"{term_obj.intake_code} - {skip_dt}",
+        obj=term_obj,
         action_flag=ADDITION,
         message=f"Added skipped date {skip_dt} ({reason}), {cancelled} class(es) cancelled"
     )
@@ -4493,9 +4556,7 @@ def remove_skipped_date(request):
 
     record_admin_action(
         user_id=request.user.id,
-        content_type_id=ContentType.objects.get_for_model(skipped_date).pk,
-        object_id=term_obj.term_id,
-        object_repr=f"{term_obj.intake_code} - {skip_dt}",
+        obj=term_obj,
         action_flag=DELETION,
         message=f"Removed skipped date {skip_dt}"
     )
@@ -4606,9 +4667,7 @@ def rearrange_missing_class(request):
 
             record_admin_action(
                 user_id=request.user.id,
-                content_type_id=ContentType.objects.get_for_model(class_session).pk,
-                object_id=cs_obj.id,
-                object_repr=f"{subj.subject_code} - {target_date}",
+                obj=cs_obj,
                 action_flag=CHANGE,
                 message=f"Rearranged {subj.subject_code} to {DAY_NAMES.get(sess.day_of_week)} {target_date} at {sess.facility.facility_name}"
             )
