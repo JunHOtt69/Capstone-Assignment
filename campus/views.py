@@ -2728,8 +2728,23 @@ def get_available_slots(facility, selected_date):
 
     return available_slots
 
+def update_expired_bookings():
+    now = datetime.now()
+
+    active_bookings = booking.objects.filter(
+        status__in=["Pending", "Approved"]
+    )
+
+    for b in active_bookings:
+        booking_end = datetime.combine(b.booking_date, b.end_time)
+
+        if booking_end < now:
+            b.status = "Expired"
+            b.save()
+
 
 def booking_form(request, facility_id):
+    update_expired_bookings()
     facility = get_object_or_404(facilities, pk=facility_id)
     today = date.today()
     min_date = today.isoformat()
@@ -2862,6 +2877,8 @@ def booking_form(request, facility_id):
 
 
 def my_bookings(request):
+    update_expired_bookings()
+
     bookings = booking.objects.filter(user=request.user).order_by('-booking_date', '-start_time', '-booking_id')
 
     now = timezone.localtime()
@@ -2899,6 +2916,8 @@ def cancel_booking(request, booking_id):
     return redirect("my_bookings")
 
 def review_booking_request(request):
+    update_expired_bookings()
+
     bookings = booking.objects.all().order_by("-booking_date", "-start_time")
 
     booking_data = []

@@ -60,6 +60,8 @@
                             rejected
                             {% elif item.booking.status == "Cancelled" %}
                             cancelled
+                            {% elif item.booking.status == "Expired" %}
+                            expired
                             {% else %}
                             error
                             {% endif %}
