@@ -170,7 +170,51 @@ def account_error(request):
 
 @role_required(allowed_roles=['admin'])
 def admin_dashboard(request):
-    return render(request, "dashboards/admin_dashboard.html")
+    total_users = User.objects.filter(is_active=True).count()
+    active_students = User.objects.filter(groups__name='student', is_active=True).count()
+    active_lecturers = User.objects.filter(groups__name='lecturer', is_active=True).count()
+    active_admins = User.objects.filter(groups__name='admin', is_active=True).count()
+
+    status_counts = SupportTicket.objects.values('status').annotate(total=Count('status'))
+    counts = {item['status']: item['total'] for item in status_counts}
+
+    escalated_count = SupportTicket.objects.filter(
+        status='in_progress',
+        activities__action='escalation'
+        ).distinct().count()
+
+    in_progress_non_escalated = SupportTicket.objects.filter(
+        status='in_progress'
+    ).exclude(
+        activities__action='escalation'
+    ).distinct().count()
+
+    total = SupportTicket.objects.count()
+
+    recent_logs = LogEntry.objects.select_related('user', 'content_type').all()[:10]
+
+    context = {
+        'admin_name': request.user.get_full_name() or request.user.username,
+        'today': timezone.now(),
+        'stats': {
+            'total': total_users,
+            'students': active_students,
+            'lecturers': active_lecturers,
+            'admins': active_admins,
+        },
+        'tickets': {
+            'total': total,
+            'rate': round((counts.get('resolved', 0) / total * 100), 1) if total > 0 else 0,
+            'in_progress_non_escalated': in_progress_non_escalated,
+            'in_progress': counts.get('in_progress', 0),
+            'resolved': counts.get('resolved', 0),
+            'closed': counts.get('closed', 0),
+            'escalated': escalated_count,
+        },
+        'logs': recent_logs,
+    }
+    
+    return render(request, "dashboards/admin_dashboard.html", context)
 
 @role_required(allowed_roles=['lecturer'])
 def lecturer_dashboard(request):

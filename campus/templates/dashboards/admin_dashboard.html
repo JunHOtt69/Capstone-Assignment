@@ -1,52 +1,142 @@
 {% extends "base.html" %} 
 
 {% load static %}  
+{% load faq_extras %}  
 
-{% block title %} Dashboard {% endblock %}
+{% block title %}Admin Dashboard {% endblock %}
 
 {% block extra_head %}
-    
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
+<div id="background"></div>
 <div class="dashboard">
-    <h1>Admin</h1>
-    <section class="systemOverview">
-        <div class="activeUsers">
+    <div class="pageHeader">
+        <div class="greeting">
+            <p>Welcome back, </p>
+            <h1>{{ admin_name }}</h1>
+        </div>
+        <div class="date">
+            <span class="calendarIcon">
+                <svg viewBox="0 0 167 208" xmlns="http://www.w3.org/2000/svg">
+                <path d="M39.8528 51.9736V13.1089C39.8528 9.46534 45.6668 4 53.661 4C61.6553 4 66.7426 9.46534 66.7426 13.1089V51.9736C66.7426 55.6171 63.1088 60.4752 53.661 60.4752C44.2133 60.4752 39.8528 55.6171 39.8528 51.9736Z"/>
+                <path d="M99.6079 51.9736V13.1089C99.6079 9.46534 105.422 4 113.416 4C121.41 4 126.498 9.46534 126.498 13.1089V51.9736C126.498 55.6171 122.864 60.4752 113.416 60.4752C103.968 60.4752 99.6079 55.6171 99.6079 51.9736Z"/>
+                <path d="M4 61.3864C4 115.172 4 163.253 4 176.292M4 61.3864C4 53.1383 5.48277 45.3526 9.5767 39.8773M4 61.3864L4 101M4 176.292C4 179.959 4.5288 183.377 5.49296 186.475C6.33787 189.189 7.51711 191.656 8.96779 193.826M4 176.292L4 101M27.1408 204C39.831 204 130.155 204 140.606 204M27.1408 204C20.6714 204 14.7839 201.035 10.5665 195.968M27.1408 204H140.606M140.606 204C145.953 204 151.691 201.013 156.02 195.912M163 176.292C163 184.154 160.221 190.878 156.171 195.733C156.121 195.794 156.071 195.853 156.02 195.912M163 176.292C163 184.251 160.152 191.044 156.02 195.912M163 176.292C163 170.354 162.798 126.93 162.604 101M140.606 32.0488C127.169 32.0488 42.0704 32.0488 27.1408 32.0488M140.606 32.0488C147.148 32.0488 152.451 34.367 156.171 39.0032M140.606 32.0488H27.1408M140.606 32.0488C147.198 32.0488 152.533 34.403 156.257 39.1115M27.1408 32.0488C19.3944 32.0488 14.0205 34.6389 10.4157 38.8309M156.171 39.0032C156.2 39.039 156.229 39.0751 156.257 39.1115M156.171 39.0032C155.797 38.5418 155.373 38.1375 154.905 37.7842M10.3734 38.8803C10.0848 39.1929 9.81989 39.5257 9.5767 39.8773M10.3734 38.8803C10.3874 38.8638 10.4016 38.8474 10.4157 38.8309M10.3734 38.8803L10.4157 38.8309M9.5767 39.8773C9.84504 39.5184 10.1246 39.1694 10.4157 38.8309M156.257 39.1115C160.123 43.9994 162.254 51.4244 162.254 61.3864C162.254 70.7654 162.425 77.1093 162.604 101M10.5665 195.968C10.501 195.891 10.4366 195.813 10.3734 195.733C9.88069 195.126 9.41148 194.49 8.96779 193.826M10.5665 195.968C10.0029 195.291 9.46912 194.577 8.96779 193.826M4 101H162.604M114 101V204M56 101V204M4 154.5H162.876"/>
+                </svg>
+            </span>
+            {{ today|date:"F j, Y" }}
+        </div>
+    </div>
+
+    <div class="sectionWrapper">
+        <section class="systemOverview">
             <div class="totalUser">
                 <span>Total Active User</span>
-                <span>Number</span>
+                <h2>{{ stats.total }}</h2>
             </div>
-            <div class="user">
-                <span>Active Student</span>
-                <span>Number</span>
+            <div class="activeUsers">
+                <div class="user">
+                    <span>Active Student</span>
+                    <p>{{ stats.students }}</p>
+                </div>
+                <div class="user">
+                    <span>Active Lecturer</span>
+                    <p>{{ stats.lecturers }}</p>
+                </div>
+                <div class="user">
+                    <span>Active Admin</span>
+                    <p>{{ stats.admins }}</p>
+                </div>
             </div>
-            <div class="user">
-                <span>Active Lecturer</span>
-                <span>Number</span>
+        </section>
+
+        <section class="suportTicketInfo">
+            <div class="infoWrapper">
+                <div class="mytickets">
+                    <span>Total Resolved Tickets:</span>
+                    <h3>{{ tickets.total|cool_number }}</h3>
+                </div>
+                <div class="mypendingtickets">
+                    <span>My Pending Tickets: </span>
+                    <h3>{{ tickets.in_progress|cool_number }}</h3>
+                </div>
             </div>
-            <div class="user">
-                <span>Active Admin</span>
-                <span>Number</span>
+            <div class="ticketOverview">
+                <div class="progressWrapper">
+                    <div class="progress">
+                        <svg viewBox="0 0 100 50" preserveAspectRatio="xMidYMax meet">
+                            <g>
+                                <circle id="background" cx="50%" cy="100%" r="40"/>
+                                
+                                <circle id="circle_in_progress" cx="50%" cy="100%" r="40"  />
+                                <circle id="circle_escalate" cx="50%" cy="100%" r="40" />
+                                <circle id="circle_resolved" cx="50%" cy="100%" r="40" />
+                                <circle id="circle_close" cx="50%" cy="100%" r="40"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <h4 class="percentage">{{ tickets.rate }}%</h4>
+                    <span>Resolved</span>
+                </div>
+                <div class="tags" data-total={{ tickets.total|default:0 }} >
+                    <div class="tag in_progress" data-in_progress = {{ tickets.in_progress_non_escalated }}>
+                        <span>In Progress</span>
+                        <p>{{ tickets.in_progress|cool_number }}</p>
+                    </div>
+                    <div class="tag escalate" data-escalated = {{ tickets.escalated }}>
+                        <span>Escalated</span>
+                        <p>{{ tickets.escalated|cool_number }}</p>
+                    </div>
+                    <div class="tag resolved" data-resolved = {{ tickets.resolved }}>
+                        <span>Resolved</span>
+                        <p>{{ tickets.resolved|cool_number }}</p>
+                    </div>
+                    <div class="tag close" data-closed = {{ tickets.closed }}>
+                        <span>Closed</span>
+                        <p>{{ tickets.closed|cool_number }}</p>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
-    <section class="suportTicketInfo">
-        <div class="mytickets">
-            <span>Total Resolved Tickets:</span>
-        </div>
-        <div class="mypendingtickets">
-            <span>My Pending Tickets:</span>
-        </div>
-        <div class="ticketOverview">
-            <div class="percentage">10%</div>
-        </div>
+        </section>
+    </div>
+
+    <section class="systemLogs">
+        <h3 class="sectionHeader">Recent Admin Actions</h3>
+        <table class="logs">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr class="log-item">
+                        <td>{{ log.action_time }}</td>
+                    
+                        <td>
+                            <strong>{{ log.user.username }}</strong> 
+                            {{ log.get_action_flag_display|lower }}ed 
+                            "{{ log.object_repr }}" 
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="2">No system logs available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </section>
 </div>
 {% endblock %} 
 
-<!-- {% block background_scripts %}
-{% endblock %} -->
+{% block background_scripts %}
+    <!-- <script src="{% static 'js/AmbientLightBg.min.js' %}"></script>
+    <script src="{% static 'js/dashboard_background.js' %}"></script> -->
+{% endblock %} 
 
 {% block extra_scripts %}
+    <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %} 

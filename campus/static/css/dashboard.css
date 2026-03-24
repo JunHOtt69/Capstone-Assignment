@@ -1,0 +1,372 @@
+main{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.dashboard{
+    margin: 1vw 25vw 5vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    gap: 1vw;
+    padding: 1vw 2vw; 
+    border-radius: 0.5vw;
+    width: calc(100vw - 25vw * 2);
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
+}
+
+.pageHeader{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    height: auto;
+    user-select: none;
+}
+
+.greeting{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0;
+}
+
+.greeting h1, 
+.greeting p{
+    line-height: 1.5;
+}
+
+.greeting h1{
+    font-family: "Instrument Serif", serif;
+    letter-spacing: 0.02em;
+}
+
+.greeting p{
+    margin-bottom: -1vw;
+}
+
+.date{
+    font-size: var(--p-fontsize);
+    margin-bottom: calc(1.5 * var(--p-fontsize));
+}
+
+.date{
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 0.5vw;
+}
+
+.date .calendarIcon{
+    width: 1.2vw;
+    height: 1.2vw;
+    overflow: hidden;
+    display:  flex;
+    justify-content: center;
+    align-items: center;
+    object-fit: contain;
+    user-select: none;
+}
+
+.calendarIcon svg{
+    fill: none;
+    width: auto;
+    height: 100%;
+}
+
+.calendarIcon svg path{
+    stroke: rgba(var(--black), 1);
+    stroke-width: 8;
+}
+
+
+.sectionWrapper{
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1vw;
+}
+
+.systemOverview{
+    flex: 0 0 16vw;
+    overflow: hidden;
+}
+
+.suportTicketInfo{
+    flex: 1;
+}
+
+.systemOverview{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+}
+
+.totalUser{
+    width: 100%;
+    border-radius: 0.5vw;
+    background-color: rgba(var(--black), 0.1);
+    height: 5vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 1vw;
+    transition: background-color .2s;
+    cursor: pointer;
+    user-select: none;
+}
+
+.totalUser h2 {
+    line-height: 1;
+}
+
+.activeUsers{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.activeUsers .user{
+    flex: 0 0 calc((100% / 3) - (0.5vw * 2/3));
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    background-color: rgba(var(--black), 0.1);
+    height: 6vw;
+    border-radius: 0.5vw;
+    padding: 1vw;
+    gap: 0.5vw;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color .2s;
+}
+
+.totalUser:hover,
+.activeUsers .user:hover{
+    background-color: rgba(var(--dark-green), 0.3);
+}
+
+.systemOverview span{
+    font-size: var(--xs-fontsize);
+    text-align: center;
+}
+
+.suportTicketInfo{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+}
+
+.infoWrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5vw;
+    width: 100%;
+    
+}
+
+.mytickets,
+.mypendingtickets{
+    background-color: rgba(var(--black), 0.1);
+    border-radius: 0.5vw;
+    height: auto;
+    padding: 0.5vw 1vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 50%;
+    gap: 1vw;
+}
+
+.ticketOverview{
+    background-color: rgba(var(--black), 0.1);
+    border-radius: 0.5vw;
+    height: auto;
+    padding: 1vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+    height: auto;
+    gap: 1vw;
+    user-select: none;
+}
+
+.progressWrapper{
+    position: relative;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 5vw;
+    width: 12vw;
+    padding-top: 3vw;
+}
+
+.ticketOverview .progress{
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    top: 0;
+    left: 0;
+    width: auto;
+    height: 7vw;
+    transform: translateX(1vw);
+}
+
+.progress svg{
+    width: 10vw;
+    height: 5vw;
+    overflow: visible;
+}
+
+.progress svg g{
+    fill: none; 
+    stroke-width: 15;
+}
+
+.progress svg #background{
+    stroke: rgba(var(--black), 0.5);
+    stroke-dasharray: 125.6;
+    stroke-dashoffset: 0;
+}
+
+.progress svg circle {
+    fill: none;
+    stroke-width: 15; 
+    stroke-linecap: butt; 
+    
+    transform: rotate(180deg);
+    transform-origin: 50% 100%;
+    
+    transition: stroke-dashoffset 0.8s ease, stroke-dasharray 0.8s ease, transform 0.3s ease, stroke-width 0.3s ease;
+}
+
+.progress svg #circle_in_progress{
+    stroke: orange;
+}
+
+.progress svg circle:hover{
+    stroke-width: 18; 
+    transform: rotate(180deg) scale(1.05);
+}
+
+.progress svg #circle_escalate{
+    stroke: red;
+}
+.progress svg #circle_resolved{
+    stroke: lightskyblue;
+}
+.progress svg #circle_close{
+    stroke: grey;
+}
+
+.tags{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.tag{
+    padding-left: 0.2vw;
+    height: auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.2vw;
+    flex-direction: column;
+    min-width: 5vw;
+    flex: 1;
+}
+
+.tag.in_progress{
+    border-left: 0.2vw solid orange;
+}
+
+.tag.escalate{
+    border-left: 0.2vw solid red;
+}
+
+.tag.resolved{
+    border-left: 0.2vw solid lightskyblue;
+}
+
+.tag.close{
+    border-left: 0.2vw solid grey;
+}
+
+.systemLogs{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    background-color: rgba(var(--black), 0.1);
+    border-radius: 0.5vw;
+    height: auto;
+    padding: 1vw;
+    gap: 0.5vw;
+}
+
+.sectionHeader{
+    user-select: none;
+}
+
+.logs{
+    width: 100%;
+    background-color: transparent;
+    color: white;
+    font-size: var(--xs-fontsize);
+    border-collapse: collapse;
+    border: 0.1vw solid rgba(var(--black), 1);
+}
+
+.logs thead{
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+}
+
+.logs tr th{
+    font-size: var(--xs-fontsize);
+    font-weight: 400;
+    text-align: left;
+}
+
+.logs th,
+.logs td{
+    padding: 0.2vw 0.3vw;
+}
+
+.logs tbody tr{
+    transition: background-color .2s;
+    background-color: rgba(var(--black), 1);
+}
+
+.logs tbody tr:hover{
+    background-color: rgba(var(--black), 0.5);
+    width: 100%;
+    
+}
