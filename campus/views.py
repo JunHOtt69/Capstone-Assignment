@@ -26,6 +26,7 @@ from django.contrib.auth.views import LoginView, PasswordResetView, PasswordRese
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.conf import settings
+from urllib.parse import urlencode
 from datetime import datetime, time, date, timedelta
 from bs4 import BeautifulSoup
 import os
@@ -218,11 +219,84 @@ def admin_dashboard(request):
 
 @role_required(allowed_roles=['lecturer'])
 def lecturer_dashboard(request):
-    return render(request, "dashboards/lecturer_dashboard.html")
+    today = timezone.now().date()
+    lecturer_name = request.user.get_full_name() or request.user.username
+    
+    today_classes = class_session.objects.filter(
+        lecturer=request.user,
+        date=today
+    ).select_related(
+        'session', 
+        'session__facility', 
+        'subject_component__subject',
+        'term'
+    ).order_by('session__start_time')
+
+    formatted_classes = []
+    for cs in today_classes:
+        facility_name = cs.session.facility.facility_name
+        
+        params = urlencode({'destination': facility_name})
+        nav_url = f"{reverse('navigation')}?{params}"
+
+        intake_code = cs.term.intake_code if cs.term else "Error"
+
+        formatted_classes.append({
+            'class_code': cs.subject_component.subject.subject_code,
+            'class_time': f"{cs.session.start_time.strftime('%I:%M %p')} - {cs.session.end_time.strftime('%I:%M %p')}",
+            'classroom': facility_name,
+            'intake_code': intake_code,
+            'nav_url': nav_url,
+        })
+
+    context = {
+        'lecturer_name': lecturer_name,
+        'today': today,
+        'todayClass': formatted_classes,
+    }
+    
+    return render(request, "dashboards/lecturer_dashboard.html", context)
 
 @role_required(allowed_roles=['student'])
 def student_dashboard(request):
-    return render(request, "dashboards/student_dashboard.html")
+    today = timezone.now().date()
+    enrollment = course_enrollment.objects.select_related('term').filter(student=request.user).first()
+    
+    today_classes = []
+    student_name = f"{request.user.first_name} {request.user.last_name}" or request.user.username
+
+    if enrollment:
+        today_classes = class_session.objects.filter(
+            term=enrollment.term,
+            date=today
+        ).select_related(
+            'session', 
+            'session__facility', 
+            'subject_component__subject', 
+            'lecturer'
+        ).order_by('session__start_time')
+
+    formatted_classes = []
+    for cs in today_classes:
+        facility_name = cs.session.facility.facility_name
+        params = urlencode({'destination': facility_name})
+        nav_url = f"{reverse('navigation')}?{params}"
+
+        formatted_classes.append({
+            'class_code': cs.subject_component.subject.subject_code,
+            'class_time': f"{cs.session.start_time.strftime('%I:%M %p')} - {cs.session.end_time.strftime('%I:%M %p')}",
+            'classroom': facility_name,
+            'lectureName': cs.lecturer.get_full_name() or cs.lecturer.username,
+            'nav_url': nav_url,
+        })
+
+    context = {
+        'student_name': student_name,
+        'today': today,
+        'todayClass': formatted_classes,
+    }
+    
+    return render(request, 'dashboards/student_dashboard.html', context)
 
 #attendance function
 @login_required
@@ -1211,7 +1285,7 @@ def navigate_to_class(request):
     s = target_class.session
     is_current = s.start_time <= current_time <= s.end_time
 
-    from urllib.parse import urlencode
+    
     url_params = {
         'destination': facility_name,
         'subject': subject_name,

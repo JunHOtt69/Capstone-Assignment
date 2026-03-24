@@ -17,8 +17,7 @@ main{
     padding: 1vw 2vw; 
     border-radius: 0.5vw;
     width: calc(100vw - 25vw * 2);
-    background-color: white;
-    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
+    background-color: transparent;
 }
 
 .pageHeader{
@@ -99,6 +98,7 @@ main{
 .systemOverview{
     flex: 0 0 16vw;
     overflow: hidden;
+    overflow: visible;
 }
 
 .suportTicketInfo{
@@ -116,7 +116,8 @@ main{
 .totalUser{
     width: 100%;
     border-radius: 0.5vw;
-    background-color: rgba(var(--black), 0.1);
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
     height: 5vw;
     display: flex;
     justify-content: center;
@@ -145,7 +146,8 @@ main{
     justify-content: flex-start;
     align-items: center;
     flex-direction: column;
-    background-color: rgba(var(--black), 0.1);
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
     height: 6vw;
     border-radius: 0.5vw;
     padding: 1vw;
@@ -184,7 +186,8 @@ main{
 
 .mytickets,
 .mypendingtickets{
-    background-color: rgba(var(--black), 0.1);
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
     border-radius: 0.5vw;
     height: auto;
     padding: 0.5vw 1vw;
@@ -196,7 +199,8 @@ main{
 }
 
 .ticketOverview{
-    background-color: rgba(var(--black), 0.1);
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
     border-radius: 0.5vw;
     height: auto;
     padding: 1vw;
@@ -209,6 +213,20 @@ main{
     height: auto;
     gap: 1vw;
     user-select: none;
+}
+
+.ticketOverview.user{
+    gap: 2vw;
+}
+
+.ticketOverview.user .progressWrapper{
+    padding-top: 4vw;   
+}
+
+.ticketOverview.user .progressWrapper span{
+    width: 5vw;
+    text-align: center;
+    text-wrap: normal;
 }
 
 .progressWrapper{
@@ -272,12 +290,19 @@ main{
     transform: rotate(180deg) scale(1.05);
 }
 
-.progress svg #circle_escalate{
+.progress svg #circle_escalate,
+.progress svg #circle_absent{
     stroke: red;
 }
+
+.progress svg #circle_present{
+    stroke: greenyellow;
+}
+
 .progress svg #circle_resolved{
     stroke: lightskyblue;
 }
+
 .progress svg #circle_close{
     stroke: grey;
 }
@@ -305,6 +330,11 @@ main{
     border-left: 0.2vw solid orange;
 }
 
+.tag.present{
+    border-left: 0.2vw solid greenyellow;
+}
+
+.tag.absent,
 .tag.escalate{
     border-left: 0.2vw solid red;
 }
@@ -323,7 +353,8 @@ main{
     align-items: flex-start;
     flex-direction: column;
     width: 100%;
-    background-color: rgba(var(--black), 0.1);
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
     border-radius: 0.5vw;
     height: auto;
     padding: 1vw;
@@ -338,15 +369,15 @@ main{
 .logs{
     width: 100%;
     background-color: transparent;
-    color: white;
+    color: rgba(var(--black), 1);
     font-size: var(--xs-fontsize);
     border-collapse: collapse;
-    border: 0.1vw solid rgba(var(--black), 1);
+    /* border: 0.1vw solid rgba(var(--black), 1); */
     
 }
 
 .logs thead{
-    background-color: greenyellow;
+    /* background-color: greenyellow; */
     color: rgba(var(--black), 1);
     border-bottom: 0.1vw solid rgba(var(--black), 1);
     table-layout: fixed;
@@ -381,16 +412,16 @@ main{
 
 .logs tbody tr{
     transition: background-color .2s;
-    background-color: rgba(var(--black), 1);
+    background-color: rgba(var(--black), 0);
     display: table;
     width: 100%;
     table-layout: fixed;
-    border-bottom: 0.01vw solid rgba(255, 255, 255, 0.5);
+    border-bottom: 0.01vw solid rgba(var(--black), 0.5);
     
 }
 
 .logs tbody tr:hover{
-    background-color: rgba(var(--black), 0.5);
+    background-color: rgba(var(--dark-green), 0.5);
     width: 100%;
 }
 
@@ -401,4 +432,112 @@ main{
 .logs th:nth-child(2), 
 .logs td:nth-child(2) {
     width: 75%;
+}
+
+.myshcedule{
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
+    border-radius: 0.5vw;
+    height: auto;
+    padding: 1vw;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.3vw;
+}
+
+.myshcedule .classWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2vw;
+    width: 100%;
+}
+
+.myshcedule .classWrapper .class{
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.3vw;
+    padding: 0.5vw 1vw 0.5vw 1.5vw; 
+    background-color: rgba(var(--black), 0);
+    border-radius: 0.5vw;
+    font-size: var(--xs-fontsize);
+    line-height: 1.5;
+    width: 100%;
+    transition: background-color .2s;
+}
+
+.myshcedule .classWrapper .class:hover{
+    background-color: rgba(var(--black), 0.1);
+}
+
+.myshcedule .classWrapper .class::before{
+    content: '○';
+    position: absolute;
+    left: 0.5vw;
+    color: rgba(var(--black), 1);
+    font-size: var(--xs-fontsize);
+}
+
+.myshcedule .classWrapper .class::after{
+    content: '';
+    position: absolute;
+    top: calc(1.5 * 0.84vw / 2 + 0.5vw);
+    left: 0.69vw;
+    border-left: 0.05vw solid rgba(var(--black), 0.5);
+    width: 1%;
+    height: calc(100%);
+}
+
+.myshcedule .classWrapper .class:last-child::after{
+    display: none;
+}
+
+.myshcedule .classWrapper .classInfo{
+    display: flex;
+    justify-content: flex-start;
+    align-content: center;
+    gap: 2vw;
+    width: 100%;
+}
+
+.overallAttendance{
+    flex: 0 0 70%;
+}
+
+.quickActions{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+    width: 100%;
+    height: 10vw;
+}
+
+.qaction{
+    width: 100%;
+    padding: 1.5vw 0.5vw;
+    height: 50%;
+    text-decoration: none;
+    font-size: var(--p-fontsize);
+    border-radius: 0.5vw;
+    background-color: white;
+    box-shadow: 0 0.1vw 1vw rgba(var(--black), 0.1);
+    filter: brightness(100%);
+    transition: background-color .2s, filter .2s;
+    color: rgba(var(--black), 1);
+    cursor: pointer;
+    line-height: 2;
+}
+
+.qaction:hover{
+    background-color: greenyellow;
+    filter: brightness(90%);
 }
