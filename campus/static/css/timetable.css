@@ -5,7 +5,7 @@
 
 .timetableContainer {
     width: 100%;
-    padding: 2vw;
+    padding: 0.5vw;
     display: flex;
     flex-direction: column;
     gap: 1vw;
