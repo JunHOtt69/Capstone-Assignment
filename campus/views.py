@@ -47,6 +47,20 @@ from .models import (
 def testing(request):
     return render(request, 'testing.html')
 
+#logging function
+def record_admin_action(user_id, content_type_id, object_id, object_repr, action_flag, message=""):
+    """
+    Manually records an action into the django_admin_log.
+    """
+    LogEntry.objects.log_action(
+        user_id=user_id,
+        content_type_id=content_type_id,
+        object_id=object_id,
+        object_repr=object_repr, # e.g., "Math 101 - Section A"
+        action_flag=action_flag, # Use ADDITION, CHANGE, or DELETION
+        change_message=message    # e.g., "Updated room from L1 to L5"
+    )
+
 #logout user when password resetting
 class SmartPasswordResetConfirmView(PasswordResetConfirmView):
     def dispatch(self, *args, **kwargs):
@@ -3611,7 +3625,7 @@ def save_preference(request):
         for cs in current_classes:
             timetable_preference.objects.create(
                 term=term_obj,
-                subject_component=cs.subject_component,
+                subject=cs.subject_component.subject,
                 lecturer=cs.lecturer,
                 session=cs.session,
                 is_active=True
@@ -3653,8 +3667,8 @@ def replicate_preference(request):
     )
 
     prefs = timetable_preference.objects.filter(
-        term=term_obj, is_active=True, subject_component__subject_id__in=semester_subject_ids
-    ).select_related('session', 'subject_component', 'subject_component__subject')
+        term=term_obj, is_active=True, subject_id__in=semester_subject_ids
+    ).select_related('session', 'subject')
     if not prefs.exists():
         return JsonResponse({'error': 'No active preference found for this semester. Please save a preference first.'}, status=400)
 
@@ -3702,7 +3716,7 @@ def replicate_preference(request):
 
                 if target_date in skipped_dates:
                     all_skipped_classes.append({
-                        'subject': pref.subject_component.subject.subject_code,
+                        'subject': pref.subject.subject_code,
                         'day': DAY_NAMES.get(pref.session.day_of_week, ''),
                         'date': target_date.isoformat(),
                         'reason': 'Skipped date / Public holiday',
@@ -3711,16 +3725,20 @@ def replicate_preference(request):
 
                 if not _is_teaching_date(term_obj, target_date):
                     all_skipped_classes.append({
-                        'subject': pref.subject_component.subject.subject_code,
+                        'subject': pref.subject.subject_code,
                         'day': DAY_NAMES.get(pref.session.day_of_week, ''),
                         'date': target_date.isoformat(),
                         'reason': 'Outside teaching period',
                     })
                     continue
 
+                sc = SubjectComponent.objects.filter(
+                    subject=pref.subject,
+                    class_type='Lab' if pref.session.facility.type == 'Lab' else 'Lecture'
+                ).first() or SubjectComponent.objects.filter(subject=pref.subject).first()
                 class_session.objects.create(
                     session=pref.session,
-                    subject_component=pref.subject_component,
+                    subject_component=sc,
                     lecturer=pref.lecturer,
                     term=term_obj,
                     date=target_date,
