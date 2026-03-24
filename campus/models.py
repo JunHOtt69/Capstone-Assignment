@@ -17,9 +17,6 @@ class academic_rules(models.Model):
     value_days = models.IntegerField()
     description = models.TextField()
 
-    class Meta:
-        db_table = 'academic_rules'
-
 class academic_term(models.Model):
     term_id = models.AutoField(primary_key = True)
     course = models.ForeignKey('course', on_delete=models.CASCADE)
@@ -31,9 +28,6 @@ class academic_term(models.Model):
 
     def __str__(self):
         return f"{self.intake_code} - Sem {self.current_semester}"
-    
-    class Meta:
-        db_table = 'academic_term'
     
     def save(self, *args, **kwargs):
         if not self.term_id:
@@ -59,9 +53,6 @@ class admin_profiles(models.Model):
     id = models.AutoField(primary_key = True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
     ad_id = models.CharField(max_length=12, unique=True)
-    
-    class Meta:
-        db_table = 'admin_profiles'
 
     @property
     def full_name(self):
@@ -87,9 +78,6 @@ class class_session(models.Model):
     date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
 
-    class Meta:
-        db_table = 'class_session'
-
     def __str__(self):
         return f"{self.subject_component.subject} - {self.date} ({self.status})"
 
@@ -111,24 +99,17 @@ class course(models.Model):
     internship = models.BooleanField(default = False)
     dept = models.ForeignKey('departments', on_delete=models.CASCADE)
 
-    class Meta:
-        db_table = 'course'
-
 class course_enrollment(models.Model):
     id = models.AutoField(primary_key = True)
     student	= models.OneToOneField(User, on_delete=models.CASCADE, related_name='course_enrollment')
     term	= models.ForeignKey('academic_term', on_delete=models.CASCADE)
     enrollment_status = models.CharField(max_length=20)
-    class Meta:
-        db_table = 'course_enrollment'
 
 class course_subject(models.Model):
     id = models.AutoField(primary_key = True)
     course	= models.ForeignKey('course', on_delete=models.CASCADE)
     subject	= models.ForeignKey('subject', on_delete=models.CASCADE)
     recommended_semester = models.IntegerField()
-    class Meta:
-        db_table = 'course_subject'
 
 class departments(models.Model):
     dept_id = models.AutoField(primary_key = True)
@@ -141,8 +122,6 @@ class departments(models.Model):
         blank=True,
         related_name='headed_department'
     )
-    class Meta:
-        db_table = 'departments'
 
 class facilities(models.Model):
     FACILITY_TYPES = [
@@ -158,9 +137,6 @@ class facilities(models.Model):
     facility_name = models.CharField(max_length=100, unique=True)
     type = models.CharField(max_length=20, choices=FACILITY_TYPES)
 
-    class Meta:
-        db_table = 'facilities'
-
 class lecturer_profiles(models.Model):
     id = models.AutoField(primary_key = True)
     user	= models.OneToOneField(User, on_delete=models.CASCADE, related_name='lecturer_profile')
@@ -169,16 +145,12 @@ class lecturer_profiles(models.Model):
     specialization = models.TextField(null=True, blank=True)
     is_head	= models.BooleanField(default = False)
     max_hours_per_week = models.IntegerField(default=20)
-    class Meta:
-        db_table = 'lecturer_profiles'
 
 class lecturer_subjects(models.Model):
     id = models.AutoField(primary_key = True)
     user	= models.ForeignKey(User, on_delete=models.CASCADE)
     subject	= models.ForeignKey('subject', on_delete=models.CASCADE)
     is_lead = models.BooleanField(default=False)
-    class Meta:
-        db_table = 'lecturer_subjects'
 
 class session(models.Model):
     DAY_CHOICES = [
@@ -193,16 +165,11 @@ class session(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     day_of_week	= models.CharField(max_length=3, choices=DAY_CHOICES)
-    class Meta:
-        db_table = 'session'
 
 class student_profiles(models.Model):
     id = models.AutoField(primary_key = True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     tp_id = models.CharField(max_length=12, unique=True)
-    
-    class Meta:
-        db_table = 'student_profiles'
 
 class subject(models.Model):
     CLASS_TYPE_CHOICES = [
@@ -212,10 +179,6 @@ class subject(models.Model):
     subject_id = models.AutoField(primary_key=True)
     subject_code = models.CharField(max_length=20, unique=True)
     subject_name = models.CharField(max_length=255)
-    
-
-    class Meta:
-        db_table = 'subject'
 
     def __str__(self):
         return f"{self.subject_code} - {self.subject_name}"
@@ -238,9 +201,6 @@ class SubjectComponent(models.Model):
     total_required_hours = models.IntegerField(default=0)
     class_type = models.CharField(max_length=20, choices=CLASS_TYPE_CHOICES, default='Lecture')
 
-    class Meta:
-        db_table = 'campus_subjectcomponent'
-
     def __str__(self):
         return f"{self.subject.subject_code}-{self.class_type}"
     
@@ -256,18 +216,12 @@ class MapNode(models.Model):
     x = models.IntegerField()
     y = models.IntegerField()
 
-    class Meta:
-        db_table = 'campus_mapnode'
-
     def __str__(self):
         return f"{self.node_id} - {self.name if self.name else 'Pathway'}"
 
 class MapEdge(models.Model):
     from_node = models.ForeignKey(MapNode, related_name='edges_from', on_delete=models.CASCADE)
     to_node = models.ForeignKey(MapNode, related_name='edges_to', on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'campus_mapedge'
 
     def __str__(self):
         return f"{self.from_node.node_id} to {self.to_node.node_id}"
@@ -303,15 +257,10 @@ class faq(models.Model):
     n_dislikes = models.PositiveIntegerField(default=0)
     slug = models.SlugField(unique=True, blank=True)
 
-    class Meta:
-        db_table = 'campus_faq'
-
     def save(self, *args, **kwargs):
-        # Generate slug if it doesn't exist
         if not self.slug:
             self.slug = slugify(self.title)
         
-        # Call the real save method
         super().save(*args, **kwargs)
 
 class FAQReaction(models.Model):
@@ -329,7 +278,6 @@ class FAQReaction(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'campus_faqreaction'
         unique_together = ('faq', 'user')
 
     def __str__(self):
@@ -341,9 +289,6 @@ class attachments(models.Model):
     object_id = models.PositiveIntegerField()
     file = models.FileField(upload_to='attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'campus_attachments'
 
     @property
     def filename(self):
@@ -381,9 +326,6 @@ class AttendanceSession(models.Model):
     expires_at = models.DateTimeField()
     is_active = models.BooleanField(default=True)
 
-    class Meta:
-        db_table = 'campus_AttendanceSession'
-
     def __str__(self):
         return f"OTP {self.otp} (active={self.is_active})"
 
@@ -398,7 +340,6 @@ class AttendanceMark(models.Model):
     marked_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        db_table = 'campus_attendanceMark'
         unique_together = ("session", "student")
 
     def __str__(self):
@@ -427,9 +368,6 @@ class booking(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'booking'
 
 class SupportTicket(models.Model):
     CATEGORY_CHOICES = [
@@ -480,9 +418,6 @@ class SupportTicket(models.Model):
     def is_close_requested(self):
         return self.activities.filter(action="closure_request").exists()
 
-    class Meta:
-        db_table = 'campus_supportticket'
-
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -492,9 +427,6 @@ class TicketMessage(models.Model):
     is_admin_reply = models.BooleanField(default=False)
     
     all_attachments = GenericRelation(attachments)
-
-    class Meta:
-        db_table = 'campus_ticketmessage'
 
     @property 
     def sender_name(self):
@@ -517,7 +449,6 @@ class TicketActivity(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'campus_ticketactivity'
         ordering = ['-timestamp']
 
     @property
@@ -537,9 +468,6 @@ class timetable_preference(models.Model):
     session = models.ForeignKey('session', on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
 
-    class Meta:
-        db_table = 'timetable_preference'
-
     def __str__(self):
         return f"{self.term} - {self.subject_component} ({self.session.day_of_week})"
 
@@ -550,7 +478,6 @@ class lecturer_assignment(models.Model):
     lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'lecturer_assignment'
         unique_together = ('term', 'subject')
 
     def __str__(self):
@@ -563,7 +490,6 @@ class skipped_date(models.Model):
     reason = models.CharField(max_length=255, default='Public Holiday')
 
     class Meta:
-        db_table = 'skipped_date'
         unique_together = ('term', 'date')
 
     def __str__(self):
@@ -596,9 +522,6 @@ class announcement(models.Model):
     
     all_attachments = GenericRelation('attachments')
 
-    class Meta:
-        db_table = 'campus_announcement'
-
     def __str__(self):
         return self.subject
 
@@ -614,9 +537,6 @@ class announcementTarget(models.Model):
     is_for_admins = models.BooleanField(default=True)
     is_visitor_visible = models.BooleanField(default= False)
     academic_term = models.CharField(max_length=50, blank=True, null=True)
-    
-    class Meta:
-        db_table = 'campus_announcementTarget'
 
     def __str__(self):
         return f"Target for {self.announcement.subject}: {self.user_group}"
