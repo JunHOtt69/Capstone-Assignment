@@ -1069,6 +1069,88 @@ def map_data(request):
 def navigation(request): 
     return render(request, "navigation.html")
 
+@login_required
+@role_required(allowed_roles=['student', 'lecturer'])
+def navigate_to_class(request):
+    """Find the user's current or next class and redirect to navigation with the classroom pre-selected."""
+    now = timezone.localtime()
+    today = now.date()
+    current_time = now.time()
+
+    day_map = {0: 'MON', 1: 'TUE', 2: 'WED', 3: 'THU', 4: 'FRI', 5: 'SAT', 6: 'SUN'}
+    today_day = day_map.get(today.weekday())
+
+    if today_day not in ('MON', 'TUE', 'WED', 'THU', 'FRI'):
+        messages.info(request, "No classes scheduled on weekends.")
+        return redirect('navigation')
+
+    user = request.user
+    user_groups = set(user.groups.values_list('name', flat=True))
+
+    # Build queryset for today's scheduled classes
+    if 'student' in user_groups:
+        enrollment = course_enrollment.objects.filter(student=user).select_related('term').first()
+        if not enrollment or not enrollment.term:
+            messages.info(request, "You are not enrolled in any active term.")
+            return redirect('navigation')
+        today_classes = class_session.objects.filter(
+            term=enrollment.term,
+            date=today,
+            status='scheduled',
+            session__day_of_week=today_day,
+        ).select_related('session__facility', 'subject_component__subject')
+    elif 'lecturer' in user_groups:
+        today_classes = class_session.objects.filter(
+            lecturer=user,
+            date=today,
+            status='scheduled',
+            session__day_of_week=today_day,
+        ).select_related('session__facility', 'subject_component__subject', 'term')
+    else:
+        messages.info(request, "Navigate to Classroom is only available for students and lecturers.")
+        return redirect('navigation')
+
+    # Find current class (in progress, including late) or next upcoming class
+    current_class = None
+    next_class = None
+
+    for cs in today_classes.order_by('session__start_time'):
+        s = cs.session
+        if s.start_time <= current_time <= s.end_time:
+            # Class is currently in progress (user may be on time or late)
+            current_class = cs
+        elif s.start_time > current_time:
+            if next_class is None:
+                next_class = cs
+
+    target_class = current_class or next_class
+
+    if not target_class:
+        messages.info(request, "No more classes scheduled for today.")
+        return redirect('navigation')
+
+    facility_name = target_class.session.facility.facility_name
+    subject_name = target_class.subject_component.subject.subject_name
+    start_time = target_class.session.start_time.strftime('%H:%M')
+    end_time = target_class.session.end_time.strftime('%H:%M')
+    term_name = str(target_class.term) if target_class.term else ''
+
+    s = target_class.session
+    is_current = s.start_time <= current_time <= s.end_time
+
+    from urllib.parse import urlencode
+    url_params = {
+        'destination': facility_name,
+        'subject': subject_name,
+        'start_time': start_time,
+        'end_time': end_time,
+        'is_current': '1' if is_current else '0',
+    }
+    if 'lecturer' in user_groups and term_name:
+        url_params['term'] = term_name
+    params = urlencode(url_params)
+    return redirect(f"{reverse('navigation')}?{params}")
+
 @role_required(allowed_roles=['admin'])
 def editmap(request): 
     return render(request, "editmap.html")

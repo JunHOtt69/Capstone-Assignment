@@ -273,7 +273,7 @@
     
     <div class="functionG2">
         <span class="title">Quick Actions</span>
-        <span class="item"><a href="">Navigate to Classroom</a></span>
+        <span class="item"><a href="{% url 'navigate_to_class' %}">Navigate to Classroom</a></span>
         <span class="item"><a href="">View Class Details</a></span>
     </div>
 </template>
@@ -394,6 +394,7 @@
                 active
                 {% endif %}
             "><a href="{% url "navigation" %}">Campus Navigation</a></span>
+            <span class="item"><a href="{% url 'navigate_to_class' %}">Navigate to Classroom</a></span>
             <span class="item
                 {% if request.resolver_match.url_name == 'point_of_interest' %}
                 active
@@ -464,7 +465,7 @@
             {% elif user_role == 'lecturer'%}
                 <span class="item"><a href="">Open Attendance Session</a></span>
             {% endif %}
-            <span class="item"><a href="">Campus Map</a></span>
+            <span class="item"><a href="{% url 'navigate_to_class' %}">Navigate to Classroom</a></span>
             <span class="item"><a href="">Facility Availability</a></span>
             <span class="item"><a href="">My Profile</a></span>
             <span class="item"><a href="{% url "submit_feedback" %}">IT Support</a></span>

@@ -26,6 +26,7 @@ urlpatterns = [
 
     #campus map
     path("navigation/", views.navigation, name="navigation"),
+    path("navigation/navigate-to-class/", views.navigate_to_class, name="navigate_to_class"),
     path("editmap/", views.editmap, name="editmap"),
     path("navigation/map-data/", views.map_data, name="map_data"),
     path("save-map/", views.save_map, name="save_map"),
