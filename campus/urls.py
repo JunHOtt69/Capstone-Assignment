@@ -26,6 +26,10 @@ urlpatterns = [
     path("attendance/chart-data/<int:class_event_id>/", views.attendance_chart_data, name="attendance_chart_data"),
     path("attendance/close/<int:class_event_id>/", views.close_attendance_session, name="close_attendance_session"),
     path("attendance/pie-partial/<int:class_event_id>/", views.attendance_pie_partial, name="attendance_pie_partial"),
+    path("attendance/student-list-partial/<int:class_event_id>/", views.attendance_student_list_partial, name="attendance_student_list_partial"),
+    path("attendance/lecturer/past-subject/<str:intake_code>/<int:subject_id>/",
+    views.lecturer_past_subject_sessions,
+    name="lecturer_past_subject_sessions"),
 
     #campus map
     path("navigation/", views.navigation, name="navigation"),

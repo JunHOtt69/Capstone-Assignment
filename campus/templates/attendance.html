@@ -99,80 +99,74 @@
 
 {% elif user_role == 'lecturer' %}
 
-    <h2>Attendance Management</h2>
-    <div class="attendance-container">
+<h2>Attendance Management</h2>
+<div class="attendance-container">
 
-        <h3>Today's Classes</h3>
-        {% if today_classes %}
-            {% for c in today_classes %}
-                <div class="current-sem-box">
-                    <div class="sem-header">
-                        <h2>{{ c.subject_component.subject }}</h2>
-                        <p><strong>Date:</strong> {{ c.date }}</p>
-                        <p><strong>Status:</strong> {{ c.status|title }}</p>
+    <h2>Today's Classes</h2>
 
-                        <a class="signup-btn" href="{% url 'attendance_lecturer_otp' c.id %}">
-                            <h3>Open Attendance Session</h3>
-                        </a>
+    {% if today_classes %}
+        {% for cls in today_classes %}
+        <div class="today-card">
+            <h3>
+                {{ cls.subject_component.subject.subject_code }} - 
+                {{ cls.subject_component.subject.subject_name }}
+            </h3>
+
+            <div class="today-card-info">
+                <p><strong>Date:</strong> {{ cls.date }}</p>
+                {% if cls.term %}
+                    <p><strong>Intake:</strong> {{ cls.term.intake_code }}</p>
+                {% endif %}
+            </div>
+
+            <a href="{% url 'attendance_lecturer_otp' cls.id %}" class="today-btn">
+                Open Attendance Session
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="today-card no-class">
+            <h3>No class today</h3>
+            <p>You have no classes scheduled for today.</p>
+        </div>
+    {% endif %}
+
+    <h2>Past Sessions</h2>
+
+    {% if grouped_past %}
+        {% for intake in grouped_past %}
+        <div class="past-card">
+            <div class="past-card-header">
+                {{ intake.intake_code }}
+            </div>
+
+            {% for subj in intake.subjects %}
+            <div class="past-subject-row">
+                <div class="past-subject-left">
+                    <div class="past-subject-name">
+                        {{ subj.subject_code }} - {{ subj.subject_name }}
+                    </div>
+                    <div class="past-subject-meta">
+                        Classes: {{ subj.classes|length }}
                     </div>
                 </div>
-            {% endfor %}
-        {% else %}
-            <div class="current-sem-box">
-                <div class="sem-header">
-                    <h2>No class today</h2>
-                    <p>You have no classes scheduled for today.</p>
+
+                <div class="past-subject-right">
+                    <a href="{% url 'lecturer_past_subject_sessions' intake.intake_code subj.subject_id %}" class="past-edit-btn">
+                        Edit Session
+                    </a>
                 </div>
             </div>
-        {% endif %}
-
-        <h3>Upcoming Classes</h3>
-        {% if upcoming_classes %}
-            {% for c in upcoming_classes %}
-                <div class="current-sem-box">
-                    <div class="sem-header">
-                        <h2>{{ c.subject_component.subject }}</h2>
-                        <p><strong>Date:</strong> {{ c.date }}</p>
-                        <p><strong>Status:</strong> {{ c.status|title }}</p>
-
-                        <a class="signup-btn" href="{% url 'attendance_lecturer_otp' c.id %}">
-                            <h3>Open Attendance Session</h3>
-                        </a>
-                    </div>
-                </div>
             {% endfor %}
-        {% else %}
-            <div class="current-sem-box">
-                <div class="sem-header">
-                    <h2>No upcoming classes</h2>
-                    <p>You have no future scheduled classes.</p>
-                </div>
-            </div>
-        {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="past-empty">
+            No past sessions available.
+        </div>
+    {% endif %}
 
-        <h3>Past Classes</h3>
-        {% if past_classes %}
-            {% for c in past_classes %}
-                <div class="current-sem-box">
-                    <div class="sem-header">
-                        <h2>{{ c.subject_component.subject }}</h2>
-                        <p><strong>Date:</strong> {{ c.date }}</p>
-                        <p><strong>Status:</strong> {{ c.status|title }}</p>
-
-                        <p><em>Class ended</em></p>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="current-sem-box">
-                <div class="sem-header">
-                    <h2>No past classes</h2>
-                    <p>No previous classes found.</p>
-                </div>
-            </div>
-        {% endif %}
-
-    </div>
+</div>
 
 {% endif %}
 

@@ -1,0 +1,67 @@
+<hr class="student-list-divider">
+
+<div class="student-list-card">
+  <div class="student-list-header">
+    <h3>Student List</h3>
+  </div>
+
+  {% if student_rows %}
+    <div class="student-list-table">
+      <div class="student-list-table-head">
+        <div>No.</div>
+        <div>Student Name</div>
+        <div>Student ID</div>
+        <div>Current Status</div>
+        <div>Mark Attendance</div>
+      </div>
+
+      {% for row in student_rows %}
+      <div class="student-list-row">
+        <div>{{ forloop.counter }}</div>
+
+        <div>
+          {% if row.student.first_name or row.student.last_name %}
+            {{ row.student.first_name }} {{ row.student.last_name }}
+          {% else %}
+            {{ row.student.username }}
+          {% endif %}
+        </div>
+
+        <div>{{ row.student.student_profile.tp_id }}</div>
+
+        <div>
+          {% if row.status == "PRESENT" %}
+            <span class="status-badge status-present">Present</span>
+          {% elif row.status == "LATE" %}
+            <span class="status-badge status-late">Late</span>
+          {% else %}
+            <span class="status-badge status-absent">Absent</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <form class="mark-attendance-form action-buttons" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="mark_attendance">
+            <input type="hidden" name="student_id" value="{{ row.student.id }}">
+
+            <button type="submit" name="status" value="PRESENT" class="mark-btn present-btn">
+              Present
+            </button>
+            <button type="submit" name="status" value="LATE" class="mark-btn late-btn">
+              Late
+            </button>
+            <button type="submit" name="status" value="ABSENT" class="mark-btn absent-btn">
+              Absent
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="student-list-empty">
+      No students found.
+    </div>
+  {% endif %}
+</div>
