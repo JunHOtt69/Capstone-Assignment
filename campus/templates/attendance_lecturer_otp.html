@@ -10,7 +10,15 @@
 {% block content %}
 <div class="otp-card">
 
-  <h2>Lecturer: Generate OTP</h2>
+  <div class="otp-page-header">
+    <h2>Lecturer: Generate OTP</h2>
+
+    {% if show_return_to_past and return_to_past_url %}
+      <a href="{{ return_to_past_url }}" class="back-btn">
+        Return to Past Sessions
+      </a>
+    {% endif %}
+  </div>
 
   <!-- Generate OTP -->
   <form method="post">
@@ -31,60 +39,9 @@
     {% include "partials/attendance_pie_chart.html" %}
   </div>
 
-  <hr style="margin: 30px 0;">
-
-  <h3>Student List</h3>
-
-  {% if student_rows %}
-    <table class="table table-striped" style="width:100%; margin-top:15px;">
-      <thead>
-        <tr>
-          <th>No.</th>
-          <th>Student Name</th>
-          <th>Student ID</th>
-          <th>Current Status</th>
-          <th>Mark Attendance</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in student_rows %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>
-              {% if row.student.first_name or row.student.last_name %}
-                {{ row.student.first_name }} {{ row.student.last_name }}
-              {% else %}
-                {{ row.student.username }}
-              {% endif %}
-            </td>
-            <td>{{ row.student.student_profile.tp_id }}</td>
-            <td>
-              {% if row.status == "PRESENT" %}
-                Present
-              {% elif row.status == "LATE" %}
-                Late
-              {% else %}
-                Absent
-              {% endif %}
-            </td>
-            <td>
-              <form class="mark-attendance-form" method="post" style="display:flex; gap: 6px;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="mark_attendance">
-                <input type="hidden" name="student_id" value="{{ row.student.id }}">
-
-                <button type="submit" name="status" value="PRESENT">Present</button>
-                <button type="submit" name="status" value="LATE">Late</button>
-                <button type="submit" name="status" value="ABSENT">Absent</button>
-              </form>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No students found.</p>
-  {% endif %}
+  <div id="attendance-student-list-wrapper">
+    {% include "partials/attendance_student_list.html" %}
+  </div>
 
 </div>
 {% endblock %}
@@ -130,15 +87,27 @@ function refreshAttendancePie() {
     });
 }
 
+function refreshStudentList() {
+  fetch("{% url 'attendance_student_list_partial' class_event.id %}")
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById("attendance-student-list-wrapper").innerHTML = html;
+    })
+    .catch(error => {
+      console.error("Failed to refresh student list partial:", error);
+    });
+}
+
 function startCountdown() {
-  const countdownEl = document.getElementById('countdown');
-  if (!countdownEl) return;
+  const countdownEl = document.getElementById("countdown");
+  const pieData = document.getElementById("attendance-pie-data");
 
-  const otpText = document.querySelector("#attendance-pie-wrapper");
-  if (!otpText) return;
+  if (!countdownEl || !pieData) return;
 
-  {% if session and session.otp_session %}
-  const createdAt = new Date("{{ session.otp_session.created_at|date:'c' }}").getTime();
+  const createdAtStr = pieData.dataset.createdAt;
+  if (!createdAtStr) return;
+
+  const createdAt = new Date(createdAtStr).getTime();
   const ttlMs = 60 * 1000;
 
   function updateCountdown() {
@@ -148,6 +117,11 @@ function startCountdown() {
 
     if (distance <= 0) {
       countdownEl.textContent = "0";
+
+      if (window.attendanceCountdownInterval) {
+        clearInterval(window.attendanceCountdownInterval);
+      }
+
       refreshAttendancePie();
       return;
     }
@@ -163,7 +137,6 @@ function startCountdown() {
   }
 
   window.attendanceCountdownInterval = setInterval(updateCountdown, 1000);
-  {% endif %}
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -176,7 +149,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (form.classList.contains("mark-attendance-form")) {
       e.preventDefault();
 
+      const clickedButton = e.submitter;
       const formData = new FormData(form);
+
+      if (clickedButton && clickedButton.name === "status") {
+        formData.append("status", clickedButton.value);
+      }
 
       fetch("{% url 'attendance_lecturer_otp' class_event.id %}", {
         method: "POST",
@@ -193,6 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then(() => {
         refreshAttendancePie();
+        refreshStudentList();
       })
       .catch(error => {
         console.error(error);
