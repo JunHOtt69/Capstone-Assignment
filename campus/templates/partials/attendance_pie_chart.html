@@ -1,0 +1,15 @@
+{% if session and session.otp_session %}
+  <h3>Current OTP: {{ session.otp_session.otp_code }}</h3>
+  <p>Valid for 1 minutes from generation.</p>
+  <p><strong>Time left:</strong> <span id="countdown">60</span>s</p>
+
+  <p><strong>Present:</strong> <span id="present-count">{{ present }}</span></p>
+  <p><strong>Late:</strong> <span id="late-count">{{ late }}</span></p>
+  <p><strong>Absent:</strong> <span id="absent-count">{{ absent }}</span></p>
+
+  <div style="max-width:420px;margin-top:20px;">
+    <canvas id="attendancePie"></canvas>
+  </div>
+{% else %}
+  <p>No active attendance session.</p>
+{% endif %}
