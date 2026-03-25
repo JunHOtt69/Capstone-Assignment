@@ -2863,8 +2863,7 @@ def facility_list(request):
     if query:
         facility_list = facility_list.filter(
             Q(facility_name__icontains=query) |
-            Q(type__icontains=query) |
-            Q(building__icontains=query)
+            Q(type__icontains=query)
         )
 
     return render(request, "facility/facility_list.html", {
