@@ -9,7 +9,7 @@
 {% block content %}
 <div class="bookingList">
     <div class="sectionHeader">
-        <h2 class="">My Bookings</h2>
+        <h2 class="">Book Facility</h2>
         <span class="subtitle">Select a facility below to make a booking</span>
     </div>
 
@@ -79,49 +79,54 @@
 
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("facilitySearch");
-    const rows = document.querySelectorAll(".facility-row");
-    const tableBody = document.getElementById("facilityTableBody");
 
-    const noResultRow = document.createElement("tr");
-    noResultRow.id = "noResultRow";
-    noResultRow.style.display = "none";
-    noResultRow.innerHTML = `
-        <td colspan="4" class="text-center text-muted">
-            No matching facilities found
-            <div class="">
-                <a href="{% url 'facility_list' %}" class="">
-                    Show all facilities
-                </a>
-            </div>
-        </td>
-    `;
-    tableBody.appendChild(noResultRow);
-
-    searchInput.addEventListener("input", function () {
-        const keyword = this.value.toLowerCase().trim();
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            const rowText = row.textContent.toLowerCase();
-
-            if (rowText.includes(keyword)) {
-                row.style.display = "";
-                visibleCount++;
-            } else {
-                row.style.display = "none";
-            }
-        });
-
-        if (visibleCount === 0 && keyword !== "") {
-            noResultRow.style.display = "";
-        } else {
-            noResultRow.style.display = "none";
-        }
-    });
-});
-</script>
 
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("facilitySearch");
+        const rows = document.querySelectorAll(".facility-row");
+        const tableBody = document.getElementById("facilityTableBody");
+
+        const noResultRow = document.createElement("tr");
+        noResultRow.id = "noResultRow";
+        noResultRow.style.display = "none";
+        noResultRow.innerHTML = `
+            <td colspan="4" class="text-center text-muted">
+                No matching facilities found
+                <div class="">
+                    <a href="{% url 'facility_list' %}" class="">
+                        Show all facilities
+                    </a>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(noResultRow);
+
+        searchInput.addEventListener("input", function () {
+            const keyword = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const rowText = row.textContent.toLowerCase();
+
+                if (rowText.includes(keyword)) {
+                    row.style.display = "";
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            if (visibleCount === 0 && keyword !== "") {
+                noResultRow.style.display = "";
+            } else {
+                noResultRow.style.display = "none";
+            }
+        });
+    });
+</script>
+<script src="{% static 'js/booking.js' %}"></script>
+{% endblock %} 

@@ -13,6 +13,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const loading = document.querySelector('.loading');
+    const bookingForm = document.querySelector('form'); // Targets the booking form
+
+    if (bookingForm) {
+        bookingForm.addEventListener("submit", function (e) {
+            if (bookingForm.checkValidity()) {
+                loading.classList.add("active");
+
+                const submitBtn = bookingForm.querySelector('.submitbookBtn');
+                if (submitBtn) {
+                    submitBtn.style.pointerEvents = "none";
+                    submitBtn.style.opacity = "0.5";
+                }
+            } else {
+                return false;
+            }
+        });
+    }
+
+    const simpleLinks = document.querySelectorAll(".requestBooking, #confirmCancelBtn, #approveBtn, #rejectBtn");
+    simpleLinks.forEach(link => {
+        link.addEventListener("click", function () {
+            loading.classList.add("active");
+        });
+    });
 });
 
 document.addEventListener('click', (e) => {
