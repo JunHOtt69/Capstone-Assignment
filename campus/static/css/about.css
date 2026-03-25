@@ -21,6 +21,7 @@
     user-select: none;
     pointer-events: none;
     filter: brightness(70%);
+    width: 100vw;
 }
 
 #section2{
@@ -160,7 +161,6 @@ p strong{
     justify-content: center;
     align-items: flex-start;
     gap: 1vw;
-    
 }
 
 .demoWrapper img{
@@ -215,18 +215,57 @@ p strong{
     justify-content: flex-start;
     align-items: center;
     flex-direction: column;
-    padding: 4vw 8vw 5vw;
+    padding: 7vw 6.5vw 5vw;
     height: 100%;
     background-color: white;
     gap: 2vw;
+    position: relative;
+    overflow: hidden;
+}
+
+#section4 .teamTitle{
+    position: absolute;
+    top: 0;
+    user-select: none;
+    font-size: 8vw;
+    color: rgba(var(--gray), 1);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 0 8vw;
+    transform-origin: bottom right;
+    transform-origin: left bottom; 
+    
+    transform: scale(6); 
+    will-change: transform;  
+    pointer-events: none;
 }
 
 .teamContent{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: blue;
+    background-color: white;
     width: 100%;
+    gap: 0.5vw;
+}
+
+.imgItem{
+    height: 75vh;
+    width: auto;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+}
+
+.member{
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .memberDescWrapper{
@@ -235,9 +274,127 @@ p strong{
     align-items: flex-start;
     gap: 0.5vw;
     flex-direction: column;
+    width: 40vw;
+    margin-left: auto;
+    align-self: center;
+}
+
+.memberDescWrapper hr{
+    width: 100%;
+    height: 1px;
+    color: rgba(var(--gray), 1)
 }
 
 .memberDescWrapper .memberName{
-    font-size: var(--h2-fontsize);
+    font-size: var(--h1-fontsize);
     font-family: "Instrument Serif", serif;
+    text-transform: uppercase;
+    margin-bottom: -0.5vw;
+}
+
+.memberDescWrapper .memberDesc{
+    font-size: var(--h3-fontsize);
+    margin-bottom: 1.5vw;
+}
+
+.memberDescWrapper .contribution{
+    margin-top: 1.5vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2vw 2vw;
+}
+
+.memberDescWrapper .contribution .item{
+    font-size: var(--p-fontsize);
+    flex: 0 0 calc(50% - 1vw);
+    font-weight: bold;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.memberDescWrapper .contribution .subitem:first-child{
+    margin-top: 0.35vw;
+}
+
+.memberDescWrapper .contribution .subitem + .subitem{
+    margin-top: 0.2vw;
+}
+
+.memberDescWrapper .contribution .subitem{
+    font-weight: normal;
+    font-size: var(--xs-fontsize);
+    text-align: justify;
+}
+
+.teamContent .arrow{
+    width: 0.5vw;
+    height: auto;
+    object-fit: contain;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.teamContent .arrow svg{
+    fill: none;
+}
+
+.teamContent .arrow svg path{
+    stroke: rgba(var(--black), 0.8);
+    stroke-width: 3;
+}
+
+.teamContent .arrow.left{
+    margin-right: 0.5vw;
+}
+
+.teamContent .arrow.right{
+    margin-left: 0.5vw;
+    transform: scaleX(-1);
+}
+
+.carouselIndicators{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.carouselIndicators .dot{
+    width: 0.5vw;
+    height: 0.5vw;
+    border-radius: 50%;
+    background-color: rgba(var(--black), 1);
+}
+
+.member.switching {
+    opacity: 0;
+    transform: scale(1.02);
+    visibility: hidden;
+    transition: opacity 0.4s ease, transform 0.4s ease, visibility 0s 0.4s;
+}
+
+.member.prepare {
+    opacity: 0;
+    transform: scale(0.98); 
+    visibility: hidden;
+}
+
+.member.active {
+    opacity: 1;
+    transform: scale(1);
+    visibility: visible;
+    transition: opacity 0.4s ease, transform 0.4s ease, visibility 0s 0s;
+}
+
+.carouselIndicators .dot.active {
+    background-color: rgba(var(--green-yellow), 1);;
+    transform: scale(1.2);
 }
