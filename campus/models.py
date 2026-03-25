@@ -321,16 +321,33 @@ class attachments(models.Model):
 class AttendanceSession(models.Model):
     class_event = models.ForeignKey('class_session', on_delete=models.CASCADE, related_name="attendance_records")
     lecturer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    is_open = models.BooleanField(default=False) 
+    is_open = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    closed_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"Attendance for {self.class_event}"
+    
+class AttendanceOTP(models.Model):
+    attendance_session = models.OneToOneField(
+        AttendanceSession,
+        on_delete=models.CASCADE,
+        related_name="otp_session"
+    )
+    otp_code = models.CharField(max_length=4)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"OTP for {self.attendance_session}"
+
+    def is_valid(self):
+        return timezone.now() <= self.created_at + timedelta(minutes=1)
 
 class AttendanceMark(models.Model):
     STATUS_CHOICES = (
         ("PRESENT", "Present"),
         ("LATE", "Late"),
+        ("ABSENT", "Absent"),
     )
     session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE, related_name="marks")
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

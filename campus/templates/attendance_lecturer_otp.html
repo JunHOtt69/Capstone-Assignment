@@ -9,62 +9,110 @@
 
 {% block content %}
 <div class="otp-card">
+
   <h2>Lecturer: Generate OTP</h2>
 
+  <!-- Generate OTP -->
   <form method="post">
     {% csrf_token %}
-    <button class="signup-btn" type="submit">Generate New OTP</button>
+    <button type="submit" class="btn btn-primary">Generate OTP</button>
+  </form>
+  <form method="post" action="{% url 'close_attendance_session' class_event.id %}" style="margin-top:10px;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger"
+      onclick="return confirm('Are you sure you want to close the attendance session?')">
+      Close Attendance
+    </button>
   </form>
 
-  {% if session %}
-    <div class="otp-box">
-      <p><strong>OTP:</strong> <span class="otp-code">{{ session.otp }}</span></p>
-      <p class="muted">Expires at: {{ session.expires_at }}</p>
-    </div>
+  <!-- OTP Display -->
+  {% if session and session.otp_session %}
+    <h3>Current OTP: {{ session.otp_session.otp_code }}</h3>
+    <p>Valid for 1 minutes from generation.</p>
+    <p><strong>Time left:</strong> <span id="countdown">60</span>s</p>
+
+    <p><strong>Present:</strong> {{ present }}</p>
+    <p><strong>Late:</strong> {{ late }}</p>
+    <p><strong>Absent:</strong> {{ absent }}</p>
 
     <!-- PIE CHART -->
     <div style="max-width:420px;margin-top:20px;">
       <canvas id="attendancePie"></canvas>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-    const ctx = document.getElementById('attendancePie');
-
-    const attendancePie = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['Present', 'Late', 'Absent'],
-        datasets: [{
-          data: [{{ present }}, {{ late }}, {{ absent }}],
-          backgroundColor: [
-            '#4CAF50',
-            '#FFC107',
-            '#f52314'
-          ]
-        }]
-      }
-    });
-
-    function updateChart(){
-      fetch("{% url 'attendance_chart_data' %}")
-      .then(response => response.json())
-      .then(data => {
-        attendancePie.data.datasets[0].data = [
-          data.present,
-          data.late,
-          data.absent
-        ];
-        attendancePie.update();
-      });
-    }
-
-    setInterval(updateChart, 5000);
-    </script>
-
   {% else %}
-    <p class="muted">No active OTP session.</p>
+    <p>No active attendance session.</p>
   {% endif %}
+
 </div>
+{% endblock %}
+
+
+{% block background_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if session and session.otp_session %}
+<script>
+const ctx = document.getElementById('attendancePie');
+const countdownEl = document.getElementById('countdown');
+
+if (ctx) {
+  const attendancePie = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Present', 'Late', 'Absent'],
+      datasets: [{
+        data: [{{ present }}, {{ late }}, {{ absent }}],
+        backgroundColor: [
+          '#4CAF50',
+          '#FFC107',
+          '#f52314'
+        ]
+      }]
+    }
+  });
+
+  function updateChart(){
+    fetch("{% url 'attendance_chart_data' class_event.id %}")
+    .then(response => response.json())
+    .then(data => {
+      attendancePie.data.datasets[0].data = [
+        data.present,
+        data.late,
+        data.absent
+      ];
+      attendancePie.update();
+    });
+  }
+
+  setInterval(updateChart, 5000);
+}
+
+// ===== Countdown =====
+const createdAt = new Date("{{ session.otp_session.created_at|date:'c' }}").getTime();
+const ttlMs = 60 * 1000; // 1 minute
+
+function updateCountdown() {
+  const now = new Date().getTime();
+  const expiryTime = createdAt + ttlMs;
+  const distance = expiryTime - now;
+
+  if (distance <= 0) {
+    if (countdownEl) {
+      countdownEl.textContent = "0";
+    }
+    location.reload();
+    return;
+  }
+
+  const seconds = Math.floor(distance / 1000);
+  if (countdownEl) {
+    countdownEl.textContent = seconds;
+  }
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+{% endif %}
 {% endblock %}
