@@ -381,16 +381,23 @@ def attendance(request):
 
 @login_required
 def attendance(request):
-    classes = None
-
     if request.user.groups.filter(name="lecturer").exists():
-        classes = class_session.objects.filter(
+        today = timezone.localdate()
+
+        all_classes = class_session.objects.filter(
             lecturer=request.user,
             status='scheduled'
-        ).order_by('-date')
+        )
+
+        today_classes = all_classes.filter(date=today).order_by("date")
+        upcoming_classes = all_classes.filter(date__gt=today).order_by("date")
+        past_classes = all_classes.filter(date__lt=today).order_by("-date")
 
         return render(request, "attendance.html", {
-            "classes": classes
+            "today_classes": today_classes,
+            "upcoming_classes": upcoming_classes,
+            "past_classes": past_classes,
+            "today": today,
         })
 
     return render(request, "attendance.html")
@@ -433,6 +440,7 @@ def attendance_signup(request):
 @login_required
 @role_required(['lecturer'])
 def attendance_lecturer_otp(request, class_event_id):
+    print("ENTER attendance_lecturer_otp")
     OTP_TTL_MIN = 1
 
     class_event = get_object_or_404(
@@ -447,6 +455,10 @@ def attendance_lecturer_otp(request, class_event_id):
         is_open=True
     ).order_by("-created_at").first()
 
+    enrolled_students = User.objects.filter(
+        groups__name="student"
+    ).distinct()
+
     if session and hasattr(session, "otp_session"):
         otp_obj = session.otp_session
 
@@ -457,54 +469,147 @@ def attendance_lecturer_otp(request, class_event_id):
 
             AttendanceOTP.objects.update_or_create(
                 attendance_session=session,
-                otp_code = new_otp
+                defaults={"otp_code": new_otp}
             )
 
-
     if request.method == "POST":
-        AttendanceSession.objects.filter(
-            class_event=class_event,
-            lecturer=request.user,
-            is_open=True
-        ).update(
-            is_open=False,
-            closed_at=timezone.now()
-        )
+        print("POST HIT")
+        print("ACTION =", request.POST.get("action"))
 
-        old_sessions = AttendanceSession.objects.filter(
-            class_event=class_event,
-            lecturer=request.user
-        )
+        action = request.POST.get("action")
 
-        for old_session in old_sessions:
-            if hasattr(old_session, "otp_session"):
-                old_session.otp_session.delete()
+        if action == "open_session":
+            AttendanceSession.objects.filter(
+                class_event=class_event,
+                lecturer=request.user,
+                is_open=True
+            ).update(
+                is_open=False,
+                closed_at=timezone.now()
+            )
 
-        otp = f"{random.randint(0, 9999):04d}"
+            old_sessions = AttendanceSession.objects.filter(
+                class_event=class_event,
+                lecturer=request.user
+            )
 
-        session = AttendanceSession.objects.create(
-            class_event=class_event,
-            lecturer=request.user,
-            is_open=True
-        )
+            for old_session in old_sessions:
+                if hasattr(old_session, "otp_session"):
+                    old_session.otp_session.delete()
 
-        AttendanceOTP.objects.create(
-            attendance_session=session,
-            otp_code = otp
-        )
+            otp = f"{random.randint(0, 9999):04d}"
+
+            session = AttendanceSession.objects.create(
+                class_event=class_event,
+                lecturer=request.user,
+                is_open=True
+            )
+
+            AttendanceOTP.objects.create(
+                attendance_session=session,
+                otp_code=otp
+            )
+
+            return redirect("attendance_lecturer_otp", class_event_id=class_event.id)
+
+        elif action == "mark_attendance":
+            if not session:
+                messages.error(request, "Please open attendance session first.")
+                return redirect("attendance_lecturer_otp", class_event_id=class_event.id)
+
+            student_id = request.POST.get("student_id")
+            status = request.POST.get("status")
+
+            if status not in ["PRESENT", "LATE", "ABSENT"]:
+                messages.error(request, "Invalid attendance status.")
+                return redirect("attendance_lecturer_otp", class_event_id=class_event.id)
+
+            student = get_object_or_404(
+                User,
+                id=student_id,
+                groups__name="student"
+            )
+
+            if status == "ABSENT":
+                AttendanceMark.objects.filter(
+                    session=session,
+                    student=student
+                ).delete()
+            else:
+                AttendanceMark.objects.update_or_create(
+                    session=session,
+                    student=student,
+                    defaults={"status": status}
+                )
+
+            return redirect("attendance_lecturer_otp", class_event_id=class_event.id)
 
     present = late = absent = 0
-    total_students = User.objects.filter(groups__name="student").distinct().count()
+    total_students = enrolled_students.count()
 
     if session:
         present = AttendanceMark.objects.filter(session=session, status="PRESENT").count()
         late = AttendanceMark.objects.filter(session=session, status="LATE").count()
         absent = max(total_students - present - late, 0)
 
+    student_rows = []
+
+    for student in enrolled_students:
+        current_status = "ABSENT"
+
+        if session:
+            mark = AttendanceMark.objects.filter(
+                session=session,
+                student=student
+            ).first()
+
+            if mark:
+                current_status = mark.status
+
+        student_rows.append({
+            "student": student,
+            "status": current_status,
+        })
+
     return render(request, "attendance_lecturer_otp.html", {
         "class_event": class_event,
         "session": session,
         "OTP_TTL_MIN": OTP_TTL_MIN,
+        "present": present,
+        "late": late,
+        "absent": absent,
+        "student_rows": student_rows,
+    })
+
+@login_required
+@role_required(['lecturer'])
+def attendance_pie_partial(request, class_event_id):
+    class_event = get_object_or_404(
+        class_session,
+        id=class_event_id,
+        lecturer=request.user
+    )
+
+    session = AttendanceSession.objects.filter(
+        class_event=class_event,
+        lecturer=request.user,
+        is_open=True
+    ).order_by("-created_at").first()
+
+    enrolled_students = User.objects.filter(
+        groups__name="student"
+    ).distinct()
+
+    present = late = absent = 0
+
+    if session:
+        present = AttendanceMark.objects.filter(session=session, status="PRESENT").count()
+        late = AttendanceMark.objects.filter(session=session, status="LATE").count()
+        absent = max(enrolled_students.count() - present - late, 0)
+
+    return render(request, "partials/attendance_pie_chart.html", {
+        "class_event": class_event,
+        "session": session,
         "present": present,
         "late": late,
         "absent": absent,

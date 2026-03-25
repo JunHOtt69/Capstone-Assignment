@@ -15,8 +15,10 @@
   <!-- Generate OTP -->
   <form method="post">
     {% csrf_token %}
+    <input type="hidden" name="action" value="open_session">
     <button type="submit" class="btn btn-primary">Generate OTP</button>
   </form>
+
   <form method="post" action="{% url 'close_attendance_session' class_event.id %}" style="margin-top:10px;">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger"
@@ -25,94 +27,179 @@
     </button>
   </form>
 
-  <!-- OTP Display -->
-  {% if session and session.otp_session %}
-    <h3>Current OTP: {{ session.otp_session.otp_code }}</h3>
-    <p>Valid for 1 minutes from generation.</p>
-    <p><strong>Time left:</strong> <span id="countdown">60</span>s</p>
+  <div id="attendance-pie-wrapper">
+    {% include "partials/attendance_pie_chart.html" %}
+  </div>
 
-    <p><strong>Present:</strong> {{ present }}</p>
-    <p><strong>Late:</strong> {{ late }}</p>
-    <p><strong>Absent:</strong> {{ absent }}</p>
+  <hr style="margin: 30px 0;">
 
-    <!-- PIE CHART -->
-    <div style="max-width:420px;margin-top:20px;">
-      <canvas id="attendancePie"></canvas>
-    </div>
+  <h3>Student List</h3>
 
+  {% if student_rows %}
+    <table class="table table-striped" style="width:100%; margin-top:15px;">
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Student Name</th>
+          <th>Student ID</th>
+          <th>Current Status</th>
+          <th>Mark Attendance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in student_rows %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              {% if row.student.first_name or row.student.last_name %}
+                {{ row.student.first_name }} {{ row.student.last_name }}
+              {% else %}
+                {{ row.student.username }}
+              {% endif %}
+            </td>
+            <td>{{ row.student.student_profile.tp_id }}</td>
+            <td>
+              {% if row.status == "PRESENT" %}
+                Present
+              {% elif row.status == "LATE" %}
+                Late
+              {% else %}
+                Absent
+              {% endif %}
+            </td>
+            <td>
+              <form class="mark-attendance-form" method="post" style="display:flex; gap: 6px;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="mark_attendance">
+                <input type="hidden" name="student_id" value="{{ row.student.id }}">
+
+                <button type="submit" name="status" value="PRESENT">Present</button>
+                <button type="submit" name="status" value="LATE">Late</button>
+                <button type="submit" name="status" value="ABSENT">Absent</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   {% else %}
-    <p>No active attendance session.</p>
+    <p>No students found.</p>
   {% endif %}
 
 </div>
 {% endblock %}
 
-
 {% block background_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-{% if session and session.otp_session %}
 <script>
-const ctx = document.getElementById('attendancePie');
-const countdownEl = document.getElementById('countdown');
+function renderAttendancePie() {
+  const ctx = document.getElementById("attendancePie");
+  if (!ctx) return;
 
-if (ctx) {
-  const attendancePie = new Chart(ctx, {
-    type: 'pie',
+  const present = parseInt(document.getElementById("present-count")?.textContent || 0);
+  const late = parseInt(document.getElementById("late-count")?.textContent || 0);
+  const absent = parseInt(document.getElementById("absent-count")?.textContent || 0);
+
+  if (window.attendancePieInstance) {
+    window.attendancePieInstance.destroy();
+  }
+
+  window.attendancePieInstance = new Chart(ctx, {
+    type: "pie",
     data: {
-      labels: ['Present', 'Late', 'Absent'],
+      labels: ["Present", "Late", "Absent"],
       datasets: [{
-        data: [{{ present }}, {{ late }}, {{ absent }}],
-        backgroundColor: [
-          '#4CAF50',
-          '#FFC107',
-          '#f52314'
-        ]
+        data: [present, late, absent],
+        backgroundColor: ["#4CAF50", "#FFC107", "#f52314"]
       }]
     }
   });
-
-  function updateChart(){
-    fetch("{% url 'attendance_chart_data' class_event.id %}")
-    .then(response => response.json())
-    .then(data => {
-      attendancePie.data.datasets[0].data = [
-        data.present,
-        data.late,
-        data.absent
-      ];
-      attendancePie.update();
-    });
-  }
-
-  setInterval(updateChart, 5000);
 }
 
-// ===== Countdown =====
-const createdAt = new Date("{{ session.otp_session.created_at|date:'c' }}").getTime();
-const ttlMs = 60 * 1000; // 1 minute
+function refreshAttendancePie() {
+  fetch("{% url 'attendance_pie_partial' class_event.id %}")
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById("attendance-pie-wrapper").innerHTML = html;
+      renderAttendancePie();
+      startCountdown();
+    })
+    .catch(error => {
+      console.error("Failed to refresh pie chart partial:", error);
+    });
+}
 
-function updateCountdown() {
-  const now = new Date().getTime();
-  const expiryTime = createdAt + ttlMs;
-  const distance = expiryTime - now;
+function startCountdown() {
+  const countdownEl = document.getElementById('countdown');
+  if (!countdownEl) return;
 
-  if (distance <= 0) {
-    if (countdownEl) {
+  const otpText = document.querySelector("#attendance-pie-wrapper");
+  if (!otpText) return;
+
+  {% if session and session.otp_session %}
+  const createdAt = new Date("{{ session.otp_session.created_at|date:'c' }}").getTime();
+  const ttlMs = 60 * 1000;
+
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const expiryTime = createdAt + ttlMs;
+    const distance = expiryTime - now;
+
+    if (distance <= 0) {
       countdownEl.textContent = "0";
+      refreshAttendancePie();
+      return;
     }
-    location.reload();
-    return;
-  }
 
-  const seconds = Math.floor(distance / 1000);
-  if (countdownEl) {
+    const seconds = Math.floor(distance / 1000);
     countdownEl.textContent = seconds;
   }
+
+  updateCountdown();
+
+  if (window.attendanceCountdownInterval) {
+    clearInterval(window.attendanceCountdownInterval);
+  }
+
+  window.attendanceCountdownInterval = setInterval(updateCountdown, 1000);
+  {% endif %}
 }
 
-updateCountdown();
-setInterval(updateCountdown, 1000);
+document.addEventListener("DOMContentLoaded", function () {
+  startCountdown();
+  renderAttendancePie();
+
+  document.addEventListener("submit", function (e) {
+    const form = e.target;
+
+    if (form.classList.contains("mark-attendance-form")) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      fetch("{% url 'attendance_lecturer_otp' class_event.id %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to mark attendance.");
+        }
+        return response.text();
+      })
+      .then(() => {
+        refreshAttendancePie();
+      })
+      .catch(error => {
+        console.error(error);
+        alert("Failed to update attendance.");
+      });
+    }
+  });
+});
 </script>
-{% endif %}
 {% endblock %}
