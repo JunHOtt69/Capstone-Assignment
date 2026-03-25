@@ -25,7 +25,9 @@
                     <th class="end">End</th>
                     <th class="purpose">Purpose</th>
                     <th class="status">Status</th>
-                    <th class="action">Action</th>
+                    {% if any_pending %}
+                        <th class="action">Action</th>
+                    {% endif %}
                 </tr>
             </thead>
 
@@ -69,23 +71,28 @@
                         </span>
                     </td>
 
-                        <td>
-                            {% if item.booking.status == "Pending" %}
-                                <div class="">
-                                    <a href="{% url 'approve_booking' item.booking.booking_id %}" class="btn btn-success btn-sm">
-                                        Approve
-                                    </a>
-                                    <a href="{% url 'reject_booking' item.booking.booking_id %}" class="">
-                                        Reject
-                                    </a>
-                                </div>
-                            {% endif %}
-                        </td>
-                    </tr>
-
+                    {% if any_pending %}
+                    <td class="action"> 
+                        {% if item.booking.status == "Pending" %}
+                        <div style="display: flex; gap: 0.2vw; height: 1.7vw;">
+                            <a href="{% url 'approve_booking' item.booking.booking_id %}" class="bookBtn" id="approveBtn">
+                                Approve
+                            </a>
+                            <a href="{% url 'reject_booking' item.booking.booking_id %}" class="cancelBtn" id="rejectBtn">
+                                Reject
+                            </a>
+                        </div>
+                        {% else %}
+                            <span class="emptyPurpose">-</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10" class="text-center text-muted">No booking requests found</td>
+                    <td colspan="{% if any_pending %}10{% else %}9{% endif %}" class="noResults">
+                        No booking requests found
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

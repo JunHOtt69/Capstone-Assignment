@@ -2856,6 +2856,7 @@ def system_log(request):
     return render(request, "help/system_log.html")
 
 #Facility Booking
+@role_required(allowed_roles=['lecturer', 'student'])
 def facility_list(request):
     query = request.GET.get("q", "")
     facility_list = facilities.objects.all()
@@ -2951,6 +2952,7 @@ def get_available_slots(facility, selected_date):
 
     return available_slots
 
+@transaction.atomic
 def update_expired_bookings():
     now = datetime.now()
 
@@ -2965,7 +2967,7 @@ def update_expired_bookings():
             b.status = "Expired"
             b.save()
 
-
+@role_required(allowed_roles=['lecturer', 'student'])
 def booking_form(request, facility_id):
     update_expired_bookings()
     facility = get_object_or_404(facilities, pk=facility_id)
@@ -3098,13 +3100,15 @@ def booking_form(request, facility_id):
         "available_slots": available_slots,
     })
 
-
+@login_required
+@role_required(allowed_roles=['lecturer', 'student'])
 def my_bookings(request):
     update_expired_bookings()
 
-    bookings = booking.objects.filter(user=request.user).order_by('-booking_date', '-start_time', '-booking_id')
+    bookings = booking.objects.filter(user=request.user).order_by('-created_at',  '-booking_date', '-start_time')
 
     now = timezone.localtime()
+    any_can_cancel = False
 
     for b in bookings:
         booking_end = datetime.combine(b.booking_date, b.end_time)
@@ -3115,18 +3119,26 @@ def my_bookings(request):
             and booking_end > now
         )
 
-    return render(request, "facility/my_bookings.html", {"bookings": bookings})
+        if b.can_cancel:
+            any_can_cancel = True
+
+    return render(request, "facility/my_bookings.html", 
+        {
+            "bookings": bookings,
+            "any_can_cancel": any_can_cancel
+        })
 
 @login_required
+@role_required(allowed_roles=['lecturer', 'student'])
 def cancel_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id, user=request.user)
-
-    booking_end = datetime.combine(selected_booking.booking_date, selected_booking.end_time)
-    booking_end = timezone.make_aware(booking_end, timezone.get_current_timezone())
 
     if selected_booking.status not in ["Pending", "Approved"]:
         messages.error(request, "This booking cannot be cancelled.")
         return redirect("my_bookings")
+
+    booking_end = datetime.combine(selected_booking.booking_date, selected_booking.end_time)
+    booking_end = timezone.make_aware(booking_end, timezone.get_current_timezone())
 
     if booking_end <= timezone.localtime():
         messages.error(request, "This booking has already passed and cannot be cancelled.")
@@ -3138,13 +3150,16 @@ def cancel_booking(request, booking_id):
     messages.success(request, "Booking cancelled successfully.")
     return redirect("my_bookings")
 
+
+@login_required
+@role_required(allowed_roles=['admin'])
 def review_booking_request(request):
     update_expired_bookings()
 
-    bookings = booking.objects.all().order_by("-booking_date", "-start_time")
+    bookings = booking.objects.all().order_by('-created_at',  '-booking_date', '-start_time')
 
     booking_data = []
-
+    any_pending = False
     for b in bookings:
         name = b.user.get_full_name() or b.user.username
         role = "User"
@@ -3164,12 +3179,21 @@ def review_booking_request(request):
             "code": code,
         })
 
+        if(b.status == 'Pending'): any_pending = True
+
     return render(request, "facility/review_booking_request.html", {
-        "booking_data": booking_data
+        "booking_data": booking_data,
+        "any_pending": any_pending,
     })
 
+@transaction.atomic
 def approve_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id)
+    
+    if selected_booking.status != "Pending":
+        messages.error(request, f"Your ticket is {selected_booking.status}. Approval failed.")
+        return redirect("review_booking_request")
+    
     selected_booking.status = "Approved"
     selected_booking.save()
 
@@ -3196,8 +3220,14 @@ def approve_booking(request, booking_id):
     messages.success(request, "Booking approved successfully.")
     return redirect("review_booking_request")
 
+@transaction.atomic
 def reject_booking(request, booking_id):
     selected_booking = get_object_or_404(booking, booking_id=booking_id)
+    
+    if selected_booking.status != "Pending":
+        messages.error(request, f"Your ticket is {selected_booking.status}. Rejection failed.")
+        return redirect("review_booking_request")
+    
     selected_booking.status = "Rejected"
     selected_booking.save()
 
@@ -3225,6 +3255,7 @@ def reject_booking(request, booking_id):
     return redirect("review_booking_request")
 
 #Facility Status
+@role_required(allowed_roles=['admin'])
 def facility_status(request):
     selected_date = request.GET.get("date")
 

@@ -40,7 +40,7 @@ main{
     text-decoration: none;
     color: rgba(var(--black), 1);
     background-color: transparent;
-    font-size: var(--xs-fontsize);
+    font-size: var(--p-fontsize);
     border: 0.01vw solid rgba(var(--black), 1);
     transition: background-color .2s;
 }
@@ -160,6 +160,11 @@ table tbody td .statusBadge.expired{
     background-color: yellow;
 }
 
+table tbody td:has(.cancelBtn){
+    padding: 0;
+    height: 1px;
+}
+
 table thead th.no-col{
     width: 5%;
 }
@@ -176,13 +181,25 @@ table th.facility{
     width: 8%;
 }
 
+.facilityStatus table th.facility{
+    width: 15%;
+}
+
+.facilityStatus table th.type{
+    width: 10%;
+}
+
+.facilityStatus table th.slots{
+    width: 25%;
+}
+
 table th.date{
     width: 8%;
 }
 
 table th.action,
 table th.status{
-    width: 8%;
+    width: 10%;
 }
 
 table.mybookingTable th.action{
@@ -250,6 +267,13 @@ table td button:disabled:hover{
 
 .cancelBtn{
     color: red;
+    text-decoration: none;
+}
+
+a.cancelBtn, a.bookBtn{
+    padding: 0.2vw 0.5vw; 
+    transition: all .2s;
+    flex: 1;
 }
 
 .cancelBtn:hover{
@@ -291,7 +315,7 @@ table td button:disabled:hover{
     background-color: transparent;
 }
 
-.searchBtn, .clearBtn, .bookBtn{
+.searchBtn, .clearBtn, .bookBtn, .submitbookBtn{
     height: 1.7vw;
     padding: 0.1vw 0.3vw;
     background-color: transparent;
@@ -355,6 +379,200 @@ table tbody tr td:has(.bookBtn){
     height: 1px;
 }
 
-.bookBtn{
+.bookingList.form .subtitle{
+    margin-bottom: 0;
+}
 
+/* Form Layout */
+.bookingFormContainer {
+    width: 100%;
+    background-color: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+    padding: 1vw;
+}
+
+.formRow {
+    display: flex;
+    gap: 1vw;
+    margin-bottom: 1.5vw;
+}
+
+.formCol {
+    flex: 1;
+}
+
+.formGroup {
+    margin-bottom: 1.5vw;
+}
+
+/* Form Elements */
+.formLabel {
+    display: block;
+    font-size: var(--p-fontsize);
+    font-weight: bold;
+    margin-bottom: 0.4vw;
+}
+
+.formInput {
+    width: 100%;
+    height: auto;
+    padding: 0.3vw 0.5vw;
+    font-size: var(--p-fontsize);
+    border: 0.1vw solid rgba(var(--black), 1);
+    background-color: transparent;
+    outline: none;
+}
+
+.formInput:focus {
+    background-color: rgba(var(--black), 0.05);
+}
+
+.readonlyInput {
+    background-color: rgba(var(--black), 0.05);
+    border-color: rgba(var(--black), 0.3);
+}
+
+/* Utilities */
+.textCount {
+    font-size: var(--xs-fontsize);
+    color: rgba(var(--black), 0.6);
+    margin-top: 0.2vw;
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1vw;
+    margin-top: 2vw;
+}
+
+.formActions button,
+.formActions a{
+    width: 7vw;
+}
+
+.formActions .submitbookBtn{
+    background-color: greenyellow;
+    border: 0.01vw solid rgba(var(--black), 0);
+    filter: brightness(100%);
+}
+
+.formActions .submitbookBtn:hover{
+    filter: brightness(90%);
+    border: 0.01vw solid rgba(var(--black), 1);
+}
+
+.slotWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5vw;
+    padding: 0.5vw;
+    border: 0.01vw solid rgba(var(--black), 0.2);
+}
+
+.slotBadge {
+    font-size: var(--xs-fontsize);
+    padding: 0.2vw 0.5vw;
+    background-color: greenyellow;
+    border: 0.01vw solid rgba(var(--black), 0.1);
+}
+
+.errorAlert {
+    padding: 0.5vw 1vw;
+    margin-bottom: 1vw;
+    background-color: red;
+    color: white;
+    font-size: var(--p-fontsize);
+    border: 0.1vw solid darkred;
+}
+
+.popups {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(var(--black), 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popups.active {
+    display: flex;
+}
+
+.modal-dialog {
+    width: 30vw;
+    min-width: 300px;
+    position: relative;
+    pointer-events: auto;
+}
+
+.customModalContent {
+    background-color: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.modalHeader {
+    padding: 0.5vw 1vw;
+    background-color: greenyellow;
+    border-bottom: 0.1vw solid rgba(var(--black), 1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modalTitle {
+    font-size: var(--p-fontsize);
+    font-weight: bold;
+    margin: 0;
+}
+
+.closeModalBtn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: var(--p-fontsize);
+    font-weight: bold;
+}
+
+.modalBody {
+    padding: 1vw 1vw;
+    text-align: center;
+    font-size: var(--p-fontsize);
+}
+
+.modalSubtitle {
+    color: rgba(var(--black), 0.5);
+    margin-top: 0.5vw;
+}
+
+.modalFooter {
+    padding: 0.5vw 1vw;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5vw;
+    border-top: 0.05vw solid rgba(var(--black), 0.1);
+}
+
+.cancelBtnAction {
+    padding: 0.3vw 1vw;
+    background-color: red;
+    color: white;
+    text-decoration: none;
+    font-size: var(--xs-fontsize);
+    font-weight: bold;
+    border: 0.01vw solid rgba(var(--black), 1);
+    display: flex;
+    align-items: center;
+    transition: filter 0.2s;
+}
+
+.cancelBtnAction:hover {
+    filter: brightness(1.2);
+    color: white;
 }
