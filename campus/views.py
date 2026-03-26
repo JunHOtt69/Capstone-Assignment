@@ -2418,8 +2418,12 @@ def feedbacks(request):
             .annotate(total=Count('id'))
     )
 
+    available_tickets = tickets.filter(status='open').order_by(sort_by)
+    if(request.user.is_superuser):
+        available_tickets = [t for t in available_tickets if t.is_escalated]
+
     context = {
-        'tickets': tickets,
+        'tickets': available_tickets,
         'categories': categories,
         'status': status,
         'my_tickets': my_tickets,
@@ -2630,7 +2634,10 @@ def ticket_list_ajax(request):
             query = Q(created_by=request.user)
         tickets = SupportTicket.objects.filter(query)
 
-    else: tickets = SupportTicket.objects.all()
+    else: 
+        tickets = SupportTicket.objects.filter(status='open').order_by(sort_by)
+        if request.user.is_superuser:
+            tickets = tickets.filter(activities__action='escalation').distinct()
 
     if categories: 
         tickets = tickets.filter(category__in= categories)
