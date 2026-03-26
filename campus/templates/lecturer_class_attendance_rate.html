@@ -40,9 +40,11 @@
         <div class="past-session-date">{{ row.date }}</div>
         <div class="past-session-intake">{{ row.attendance_rate }}%</div>
         <div class="past-session-action">
-          <a href="{% url 'lecturer_class_attendance_rate' intake_code subject_obj.subject_id %}?class_event_id={{ row.class_event.id }}" class="past-session-btn">
+          
+          <button type="button" class="past-session-btn" onclick="openStudentModal('{{ row.class_event.id }}')">
             View Students
-          </a>
+          </button>
+
         </div>
       </div>
       {% endfor %}
@@ -54,7 +56,7 @@
   {% endif %}
 
   {% if selected_class_event %}
-    <div class="attendance-rate-box">
+    <div id="student-list-section" class="attendance-rate-box">
       <h3>Class Attendance Rate</h3>
       <p>{{ selected_attendance_rate }}%</p>
       <small>Present + Late: {{ selected_attended_count }} / {{ selected_total_students }}</small>
@@ -71,4 +73,57 @@
   {% endif %}
 
 </div>
+
+<div id="studentModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h3>Student Attendance</h3>
+      <span class="close-btn" onclick="closeStudentModal()">×</span>
+    </div>
+
+    <div id="modal-body">
+      <!-- Student list will appear here -->
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block background_scripts %}
+<script>
+function openStudentModal(classEventId) {
+    fetch(`?class_event_id=${classEventId}`)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+
+            const rateBox = doc.querySelector("#student-list-section");
+            const studentCard = doc.querySelector(".student-list-card");
+
+            let modalContent = "";
+
+            if (rateBox) {
+                modalContent += rateBox.outerHTML;
+            }
+
+            if (studentCard) {
+                modalContent += studentCard.outerHTML;
+            }
+
+            document.getElementById("modal-body").innerHTML = modalContent;
+            document.getElementById("studentModal").style.display = "flex";
+        })
+        .catch(error => {
+            console.error("Failed to load student attendance:", error);
+            alert("Failed to load student attendance.");
+        });
+}
+
+function closeStudentModal() {
+    document.getElementById("studentModal").style.display = "none";
+}
+</script>
 {% endblock %}
