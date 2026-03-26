@@ -172,10 +172,6 @@ class student_profiles(models.Model):
     tp_id = models.CharField(max_length=12, unique=True)
 
 class subject(models.Model):
-    CLASS_TYPE_CHOICES = [
-        ('Lecture', 'Lecture'),
-        ('Tutorial', 'Tutorial'),
-    ]
     subject_id = models.AutoField(primary_key=True)
     subject_code = models.CharField(max_length=20, unique=True)
     subject_name = models.CharField(max_length=255)

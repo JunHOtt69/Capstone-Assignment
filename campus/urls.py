@@ -119,7 +119,7 @@ urlpatterns = [
     
     path('support-center/', views.support_center,name='support_center'),
     
-    path('support/tickets/', views.feedbacks,name='feedbacks'),
+    path('support/tickets/', views.feedbacks,name='feedbacks'), 
     path('support/tickets/<int:ticket_id>/', views.review_feedback,name='review_feedback'),
     path('support/tickets/new/', views.submit_feedback,name='submit_feedback'),
     path('support/tickets/<int:ticket_id>/reply/', views.post_reply_ajax, name='post_reply_ajax'),
@@ -128,12 +128,7 @@ urlpatterns = [
     path('support/tickets/take/<int:ticket_id>/', views.take_ownership, name='take_ownership'),
     path('support/tickets/<int:ticket_id>/sync/', views.sync_messages, name='sync_messages'),
     path('suggestions/', views.faq_suggestions,name='faq_suggestions'),
-
-    path('smart-assistant/', views.smart_assistant,name='smart_assistant'),
-    path('config-bot/', views.config_bot,name='config_bot'),
-    path('system-log/', views.system_log,name='system_log'),
     
-
     #Facility
     path("facility/", views.facility_list, name="facility_list"),
     path("facility/book/<int:facility_id>/", views.booking_form, name="booking_form"),

@@ -2331,10 +2331,6 @@ def point_of_interest_upload(request):
 def support_center(request):
     return render(request, 'help/support_center.html')
 
-@role_required(allowed_roles=['lecturer', 'student'])
-def smart_assistant(request):
-    return render(request, 'help/smart_assistant.html')
-
 def check_and_notify_expired():
     expiry_threshold = timezone.now() - timedelta(days=7)
     stale_tickets = SupportTicket.objects.filter(
@@ -2422,8 +2418,12 @@ def feedbacks(request):
             .annotate(total=Count('id'))
     )
 
+    available_tickets = tickets.filter(status='open').order_by(sort_by)
+    if(request.user.is_superuser):
+        available_tickets = [t for t in available_tickets if t.is_escalated]
+
     context = {
-        'tickets': tickets,
+        'tickets': available_tickets,
         'categories': categories,
         'status': status,
         'my_tickets': my_tickets,
@@ -2634,7 +2634,10 @@ def ticket_list_ajax(request):
             query = Q(created_by=request.user)
         tickets = SupportTicket.objects.filter(query)
 
-    else: tickets = SupportTicket.objects.all()
+    else: 
+        tickets = SupportTicket.objects.filter(status='open').order_by(sort_by)
+        if request.user.is_superuser:
+            tickets = tickets.filter(activities__action='escalation').distinct()
 
     if categories: 
         tickets = tickets.filter(category__in= categories)
@@ -3019,7 +3022,6 @@ def ticket_action_ajax(request, ticket_id):
             return JsonResponse({"status": "success", "message": "Ticket has been resolved."})
 
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
-
 
 
 #generate unique slug
@@ -3466,15 +3468,6 @@ def save_manual_attachment(instance, file_obj):
         object_id=pk_value,
         file=file_obj
     )
-
-#Facility Email Ticket
-@role_required(allowed_roles=['admin'])
-def config_bot(request): 
-    return render(request, "help/config_bot.html")
-
-@role_required(allowed_roles=['admin'])
-def system_log(request): 
-    return render(request, "help/system_log.html")
 
 #Facility Booking
 @role_required(allowed_roles=['lecturer', 'student'])

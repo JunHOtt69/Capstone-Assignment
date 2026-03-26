@@ -77,9 +77,11 @@
                 My Tickets
                 {% endif %}
             </div>
-            <button class="submitnew" onclick="location.href='{% url "submit_feedback" %}';">
-                Submit New Ticket
-            </button>
+            {% if user_role != "admin" %}
+                <button class="submitnew" onclick="location.href='{% url "submit_feedback" %}';">
+                    Submit New Ticket
+                </button>
+            {% endif %}
         </div>
         <table class="ticketTable">
             <thead>
@@ -97,7 +99,7 @@
                                 <input type="checkbox" name="category-my" value="{{ value }}" class="cbxInput">
                                 <div class="cbxTitle">
                                     <span class="cbx"></span>
-                                    <span class="categoryLabel">{{ label }} ({{ my_category_counts|get_item:value|cool_number }}) ({{ my_category_counts|get_item:value|cool_number }})</span>
+                                    <span class="categoryLabel">{{ label }} ({{ my_category_counts|get_item:value|cool_number }})</span>
                                 </div>
                             </label>
                             {% endfor %}
