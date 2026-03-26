@@ -57,15 +57,20 @@
 
   {% if selected_class_event %}
     <div id="student-list-section" class="attendance-rate-box">
-      <h3>Class Attendance Rate</h3>
-      <p>{{ selected_attendance_rate }}%</p>
-      <small>Present + Late: {{ selected_attended_count }} / {{ selected_total_students }}</small>
-      <div style="margin-top:10px;">
-        <small>
-          Present: {{ selected_present }} |
-          Late: {{ selected_late }} |
-          Absent: {{ selected_absent }}
-        </small>
+      <div class="rate-header">Class Attendance Rate</div>
+
+      <div class="rate-main">
+        {{ selected_attendance_rate }}%
+      </div>
+
+      <div class="rate-sub">
+        Present + Late: <strong>{{ selected_attended_count }} / {{ selected_total_students }}</strong>
+      </div>
+
+      <div class="rate-breakdown">
+        <span class="rate-chip chip-present">Present: {{ selected_present }}</span>
+        <span class="rate-chip chip-late">Late: {{ selected_late }}</span>
+        <span class="rate-chip chip-absent">Absent: {{ selected_absent }}</span>
       </div>
     </div>
 

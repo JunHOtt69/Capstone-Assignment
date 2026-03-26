@@ -652,3 +652,64 @@
     font-size: 24px;
     cursor: pointer;
 }
+
+.attendance-rate-box{
+    max-width: 1500px;
+    width: 90%;
+    margin: 20px auto;
+    padding: 22px 24px;
+    background-color: greenyellow;
+    border: 3px solid black;
+    border-radius: 16px;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.15);
+}
+
+.rate-header{
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 10px;
+}
+
+.rate-main{
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: black;
+    margin-bottom: 10px;
+}
+
+.rate-sub{
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: black;
+    margin-bottom: 14px;
+}
+
+.rate-breakdown{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.rate-chip{
+    display: inline-block;
+    padding: 8px 14px;
+    border: 2px solid black;
+    border-radius: 999px;
+    font-weight: 700;
+    color: black;
+    background-color: white;
+}
+
+.chip-present{
+    background-color: #d4edda;
+}
+
+.chip-late{
+    background-color: #fff3cd;
+}
+
+.chip-absent{
+    background-color: #f8d7da;
+}
