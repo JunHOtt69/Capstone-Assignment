@@ -20,7 +20,7 @@ class academic_rules(models.Model):
 class academic_term(models.Model):
     term_id = models.AutoField(primary_key = True)
     course = models.ForeignKey('course', on_delete=models.CASCADE)
-    intake_code = models.CharField(max_length=25)
+    intake_code = models.CharField(max_length=25, unique=True)
     current_semester = models.PositiveSmallIntegerField()
     is_active = models.BooleanField(default = True)
     start_date = models.DateField()
