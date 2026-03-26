@@ -93,11 +93,24 @@
     justify-content: center;
     align-items: center;
     object-fit: fill;
+    position: relative;
+    user-select: none;
 }
 
 #section2 .imageHolder img{
     width: 100%;
     height: auto;
+}
+
+#section2 .screen{
+    position: absolute;
+    width: 74.5%;
+    height: 51%;
+    border-radius: 0.5vw 0.5vw 0 0;
+    top: 7vw;
+    left: 4.67vw;
+    overflow: hidden;
+    user-select: none;
 }
 
 p strong{

@@ -42,20 +42,21 @@
                             <g>
                                 <circle id="background" cx="50%" cy="100%" r="40"/>
                                 
-                                <circle id="circle_present" cx="50%" cy="100%" r="40"  />
+                                <circle id="circle_present" cx="50%" cy="100%" r="40" />
                                 <circle id="circle_absent" cx="50%" cy="100%" r="40" />
                             </g>
                         </svg>
                     </div>
-                    <h4 class="percentage">{{ tickets.rate }}%</h4>
+                    <h4 class="percentage">{{ attendance.rate }}%</h4>
                     <span>Overall Intake Attendance</span>
                 </div>
-                <div class="tags" data-total={{ tickets.total|default:0 }} >
-                    <div class="tag present" data-present = {{ attendance.present}}>
+
+                <div class="tags" data-total="{{ attendance.total|default:0 }}">
+                    <div class="tag present" data-present="{{ attendance.present|default:0 }}">
                         <span>Present</span>
                         <p>{{ attendance.present|cool_number }}</p>
                     </div>
-                    <div class="tag absent" data-absent = {{ attendance.absent }}>
+                    <div class="tag absent" data-absent="{{ attendance.absent|default:0 }}">
                         <span>Absent</span>
                         <p>{{ attendance.absent|cool_number }}</p>
                     </div>
@@ -92,5 +93,5 @@
 {% endblock %} 
 
 {% block extra_scripts %}
-    <script src="{% static 'js/dashboard.js' %}"></script>
+    <script src="{% static 'js/st_dashboard.js' %}"></script>
 {% endblock %} 
