@@ -28,6 +28,7 @@
     z-index: 1;
     background-color: transparent;
     pointer-events: none;
+    user-select: none;
 }
 
 .section1 .sectionBg img{
@@ -46,6 +47,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     pointer-events: none;
+    user-select: none;
 }
 
 .section1 .screen img{
