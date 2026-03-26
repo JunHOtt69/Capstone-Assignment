@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Class Attendance Rate{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/attendance.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="attendance-container">
+
+  <div class="past-page-header">
+    <div>
+      <h2>
+        {% if subject_obj %}
+          {{ subject_obj.subject_code }} - {{ subject_obj.subject_name }}
+        {% else %}
+          Class Attendance Rate
+        {% endif %}
+      </h2>
+      <p><strong>Intake:</strong> {{ intake_code }}</p>
+    </div>
+
+    <a href="{% url 'attendance' %}" class="back-btn">
+      ← Return to Attendance
+    </a>
+  </div>
+
+  {% if session_rows %}
+    <div class="past-session-list-card">
+      <div class="past-session-list-header">
+        <div>Date</div>
+        <div>Attendance Rate</div>
+        <div>Action</div>
+      </div>
+
+      {% for row in session_rows %}
+      <div class="past-session-list-row">
+        <div class="past-session-date">{{ row.date }}</div>
+        <div class="past-session-intake">{{ row.attendance_rate }}%</div>
+        <div class="past-session-action">
+          <a href="{% url 'lecturer_class_attendance_rate' intake_code subject_obj.subject_id %}?class_event_id={{ row.class_event.id }}" class="past-session-btn">
+            View Students
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="past-empty">
+      No past attendance sessions found.
+    </div>
+  {% endif %}
+
+  {% if selected_class_event %}
+    <div class="attendance-rate-box">
+      <h3>Class Attendance Rate</h3>
+      <p>{{ selected_attendance_rate }}%</p>
+      <small>Present + Late: {{ selected_attended_count }} / {{ selected_total_students }}</small>
+      <div style="margin-top:10px;">
+        <small>
+          Present: {{ selected_present }} |
+          Late: {{ selected_late }} |
+          Absent: {{ selected_absent }}
+        </small>
+      </div>
+    </div>
+
+    {% include "partials/attendance_student_list_readonly.html" with student_rows=selected_student_rows %}
+  {% endif %}
+
+</div>
+{% endblock %}

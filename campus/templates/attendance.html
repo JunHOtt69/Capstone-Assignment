@@ -16,8 +16,8 @@
     <div class="attendance-container">
         <div class="student-box">
             <hr>
-            <h4><strong>Name:</strong> {{ student.name|title }}</h4>
-            <p><strong>Intake Code:</strong> {{ student.intake_code }}</p>
+            <h4><strong>Name:</strong> {{ student_name|title }}</h4>
+            <p><strong>Intake Code:</strong> {{ intake_code }}</p>
             <hr>
         </div>
 
@@ -56,7 +56,7 @@
             </div>
             
             <div class="sem-stats">
-                <p>Semester Attendance: <strong>{{ sem_percentage }}%</strong></p>
+                <p>Semester Attendance: <strong>{{ semester_percentage }}%</strong></p>
             </div>
 
             <hr class="thick-line">
@@ -154,6 +154,10 @@
                 <div class="past-subject-right">
                     <a href="{% url 'lecturer_past_subject_sessions' intake.intake_code subj.subject_id %}" class="past-edit-btn">
                         Edit Session
+                    </a>
+
+                    <a href="{% url 'lecturer_class_attendance_rate' intake.intake_code subj.subject_id %}" class="past-rate-btn">
+                        Class Attendance Rate
                     </a>
                 </div>
             </div>
