@@ -88,6 +88,16 @@
     width: 35vw;
     background-color: grey;
     height: 60vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    object-fit: fill;
+}
+
+#section2 .imageHolder img{
+    width: 100%;
+    height: auto;
 }
 
 p strong{
@@ -259,6 +269,7 @@ p strong{
     justify-content: center;
     align-items: center;
     user-select: none;
+    box-shadow: 0.1vw 0.5vw 0.6vw rgba(var(--black), 0.3);
 }
 
 .member{
