@@ -288,13 +288,13 @@
             <span class="title">Attendance</span>
             <span class="item"><a href="{% url 'attendance' %}">Attendance Page</a></span>
             <span class="item"><a href="{% url 'attendance_signup' %}">Enter Attendance Code</a></span>
-            <span class="item"><a href="">My Attendance Rate</a></span>
+            <span class="item"><a href="{% url 'my_attendance_rate' %}">My Attendance Rate</a></span>
         </div>
     {% elif user_role == 'lecturer'%}
         <div class="functionG1">
             <span class="title">Attendance Management</span>
             <span class="item"><a href="{% url 'attendance' %}">Open Attendance Session</a></span>
-            <span class="item"><a href="">Class Attendance Rate</a></span>
+            <span class="item"><a href="{% url 'attendance' %}">Class Attendance Rate</a></span>
         </div>
     {% endif %}
 </template>

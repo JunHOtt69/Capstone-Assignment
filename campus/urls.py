@@ -30,6 +30,12 @@ urlpatterns = [
     path("attendance/lecturer/past-subject/<str:intake_code>/<int:subject_id>/",
     views.lecturer_past_subject_sessions,
     name="lecturer_past_subject_sessions"),
+    path("attendance/rate/", views.my_attendance_rate, name="my_attendance_rate"),
+    path(
+    "attendance/lecturer/class-attendance-rate/<str:intake_code>/<int:subject_id>/",
+    views.lecturer_class_attendance_rate,
+    name="lecturer_class_attendance_rate"
+),
 
     #campus map
     path("navigation/", views.navigation, name="navigation"),

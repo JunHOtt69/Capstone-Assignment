@@ -1,5 +1,12 @@
 {% if session and session.otp_session %}
   <div id="attendance-pie-data" data-created-at="{{ session.otp_session.created_at|date:'c' }}">
+
+    <div class="attendance-rate-box">
+      <h3>Class Attendance Rate</h3>
+      <p>{{ attendance_rate }}%</p>
+      <small>Present + Late: {{ attended_count }} / {{ total_students }}</small>
+    </div>
+
     <h3>Current OTP: {{ session.otp_session.otp_code }}</h3>
     <p>Valid for 1 minutes from generation.</p>
     <p><strong>Time left:</strong> <span id="countdown">60</span>s</p>
