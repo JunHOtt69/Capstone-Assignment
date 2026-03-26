@@ -504,6 +504,31 @@ p{
     cursor: default;
 }
 
+.gitHubWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.5vw;
+    cursor: pointer;
+}
+
+.gitHubWrapper .gitHubIcon{
+    width: 1vw;
+    height: 1vw;
+    overflow: hidden;
+    object-fit: contain;
+    transform: scale(1);
+    transition: transform .2s;
+}
+
+.gitHubWrapper:hover .gitHubIcon{
+    transform: scale(1.1);
+}
+
+.gitHubWrapper .gitHubIcon svg{
+    width: 100%;
+    height: auto;
+}
 
 .itemWrapper:has(.item:hover) .icon,
 .itemWrapper .icon:hover{
