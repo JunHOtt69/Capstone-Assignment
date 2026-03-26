@@ -77,9 +77,11 @@
                 My Tickets
                 {% endif %}
             </div>
-            <button class="submitnew" onclick="location.href='{% url "submit_feedback" %}';">
-                Submit New Ticket
-            </button>
+            {% if user_role != "admin" %}
+                <button class="submitnew" onclick="location.href='{% url "submit_feedback" %}';">
+                    Submit New Ticket
+                </button>
+            {% endif %}
         </div>
         <table class="ticketTable">
             <thead>

@@ -2331,10 +2331,6 @@ def point_of_interest_upload(request):
 def support_center(request):
     return render(request, 'help/support_center.html')
 
-@role_required(allowed_roles=['lecturer', 'student'])
-def smart_assistant(request):
-    return render(request, 'help/smart_assistant.html')
-
 def check_and_notify_expired():
     expiry_threshold = timezone.now() - timedelta(days=7)
     stale_tickets = SupportTicket.objects.filter(
@@ -3021,7 +3017,6 @@ def ticket_action_ajax(request, ticket_id):
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 
-
 #generate unique slug
 def generate_unique_slug(model_class, title, instance=None):
     base_slug = slugify(title)
@@ -3466,15 +3461,6 @@ def save_manual_attachment(instance, file_obj):
         object_id=pk_value,
         file=file_obj
     )
-
-#Facility Email Ticket
-@role_required(allowed_roles=['admin'])
-def config_bot(request): 
-    return render(request, "help/config_bot.html")
-
-@role_required(allowed_roles=['admin'])
-def system_log(request): 
-    return render(request, "help/system_log.html")
 
 #Facility Booking
 @role_required(allowed_roles=['lecturer', 'student'])
