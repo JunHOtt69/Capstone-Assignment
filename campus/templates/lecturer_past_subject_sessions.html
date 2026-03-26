@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Past Subject Sessions{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/attendance.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="attendance-container">
+
+    <div class="past-page-header">
+        <h2>
+            {% if subject_obj %}
+                {{ subject_obj.subject_code }} - {{ subject_obj.subject_name }}
+            {% else %}
+                Past Subject Sessions
+            {% endif %}
+        </h2>
+
+        <a href="{% url 'attendance' %}" class="back-btn">
+            Return to Attendance
+        </a>
+    </div>
+
+    {% if past_classes %}
+        <div class="past-session-list-card">
+            <div class="past-session-list-header">
+                <div>Date</div>
+                <div>Intake</div>
+                <div>Action</div>
+            </div>
+
+            {% for cls in past_classes %}
+            <div class="past-session-list-row">
+                <div class="past-session-date">{{ cls.date }}</div>
+                <div class="past-session-intake">
+                    {% if cls.term %}
+                        {{ cls.term.intake_code }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <div class="past-session-action">
+                    <a href="{% url 'attendance_lecturer_otp' cls.id %}?from_past=1&intake_code={{ intake_code }}&subject_id={{ subject_obj.subject_id}}" class="past-session-btn">
+                        Edit Attendance
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="past-empty">
+            No past sessions found.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
