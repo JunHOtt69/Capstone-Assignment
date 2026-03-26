@@ -3,7 +3,7 @@
 {% load static %}  
 {% load faq_extras %}  
 
-{% block title %}Student Dashboard {% endblock %}
+{% block title %}Admin Dashboard {% endblock %}
 
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -47,18 +47,18 @@
                             </g>
                         </svg>
                     </div>
-                    <h4 class="percentage">88.5%</h4>
+                    <h4 class="percentage">{{ attendance.rate }}%</h4>
                     <span>Overall Intake Attendance</span>
                 </div>
 
-                <div class="tags" data-total="26">
-                    <div class="tag present" data-present="23">
+                <div class="tags" data-total="{{ attendance.total|default:0 }}">
+                    <div class="tag present" data-present="{{ attendance.present|default:0 }}">
                         <span>Present</span>
-                        <p>23</p>
+                        <p>{{ attendance.present|cool_number }}</p>
                     </div>
-                    <div class="tag absent" data-absent="3">
+                    <div class="tag absent" data-absent="{{ attendance.absent|default:0 }}">
                         <span>Absent</span>
-                        <p>3</p>
+                        <p>{{ attendance.absent|cool_number }}</p>
                     </div>
                 </div>
             </div>

@@ -1,24 +1,244 @@
-<svg viewBox="0 0 100 50" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-    <g>
-        <circle id="background" cx="50" cy="50" r="40" 
-                fill="none" 
-                stroke="#e0e0e0" 
-                stroke-width="12" 
-                stroke-dasharray="125.66 251.33" 
-                transform="rotate(-180 50 50)" />
-        
-        <circle id="circle_present" cx="50" cy="50" r="40" 
-                fill="none" 
-                stroke="#4CAF50" 
-                stroke-width="12" 
-                stroke-dasharray="110.58 251.33" 
-                transform="rotate(-180 50 50)" />
-        
-        <circle id="circle_absent" cx="50" cy="50" r="40" 
-                fill="none" 
-                stroke="#F44336" 
-                stroke-width="12" 
-                stroke-dasharray="15.08 251.33" 
-                transform="rotate(-21.6 50 50)" />
-    </g>
-</svg>
+.section1{
+    width: 100%;
+    height: 90vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 0;
+}
+
+.section1::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 5vw -5vw 10vw rgba(0, 0, 0, 0.5); 
+    pointer-events: none;
+    z-index: -1;
+}
+
+.section1 .sectionBg{
+    height: 100%;
+    width: auto;
+    object-fit: fill;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    z-index: 1;
+    background-color: transparent;
+    pointer-events: none;
+}
+
+.section1 .sectionBg img{
+    width: 90%;
+}
+
+.section1 .screen{
+    position: absolute;
+    top: 4.5vw;
+    left: -4.7vw;
+    width: 46.2vw;
+    height: auto;
+    border-radius: 1vw 1vw 0 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    pointer-events: none;
+}
+
+.section1 .screen img{
+    width: 100%;
+}
+
+.section1 .char{
+    position: absolute;
+    right: 0;
+    top: 0;
+    user-select: none;
+    width: 5vw;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
+    transform: translateX(10%);
+}
+
+.section1 .char span{
+    font-size: 9vw;
+}
+
+.section1 .sectionContent{
+    position: absolute;
+    top: 30%;
+    left: 45%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    z-index: 2;
+    width: 30vw;
+}
+
+.section1 .sectionContent .title{
+    font-size: var(--h1-fontsize);
+}
+
+.section1 .sectionContent .desc{
+    font-size: var(--p-fontsize);
+}
+
+.section2{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 5vw 6.5vw;
+    gap: 1vw;
+}
+
+.section2 .title{
+    font-size: var(--h2-fontsize);
+}
+
+.steps{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 3vw;
+}
+
+.step{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 1vw;
+    padding: 0 15vw;
+}
+
+.step .stepTitle{
+    font-size: var(--h3-fontsize);
+}
+
+.step .stepContent{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.code-container{
+    width: 30vw;
+    height: 30vh;
+    background-color: #32373D;
+    border-radius: 1vw;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    box-shadow: 0.2vw 0.7vw 1vw rgba(var(--black), 0.5);
+    color: rgba(var(--gray), 1);
+    font-size: var(--xs-fontsize);
+}
+
+.code-container .code-header{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 0.6vw 1vw;
+    background-color: transparent;
+    gap: 1vw;
+}
+
+.code-container .code-header .copy-btn{
+    margin-left: auto;
+    width: auto;
+    height: 1.3vw;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    overflow: hidden;
+    cursor: pointer;
+    transform: scale(1);
+    transition: all .2s;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: var(--xs-fontsize);
+    color: rgba(var(--gray), 1);
+}
+
+.copyIcon{
+    object-fit: contain;
+}
+
+.code-container .code-header .copy-btn:hover{
+    transform: scale(1.1);
+}
+
+.copyIcon svg{
+    width: 1vw;
+    height:auto;
+    display: block;
+}
+
+.copyIcon svg path{
+    stroke: rgba(var(--gray), 1);
+    stroke-width: 20;
+}
+
+.code-container .code-header .circles{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.code-container .code-header .circles .circle{
+    width: 0.5vw;
+    height: 0.5vw;
+    border-radius: 50%;;
+}
+
+.code-container .code-header .circles .circle:nth-child(1){
+    background-color: #F65F57;
+}
+.code-container .code-header .circles .circle:nth-child(2){
+    background-color: #FABC2F;
+}
+.code-container .code-header .circles .circle:nth-child(3){
+    background-color: #44C840;
+}
+
+.code-container #code-block{
+    background-color: #22272E;
+    padding: 1vw;
+    width: 100%;
+    color: rgba(var(--gray), 1);
+    flex: 1;
+}
+
+.code-container #code-block code{
+    color: rgba(var(--gray), 1);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: var(--xs-fontsize);
+}
+
+#code-block .code-comment{
+    color: #6A994C
+}
+
+.stepContent .expl{
+    font-size: var(--p-fontsize);
+    width: 30vw;
+    text-align: center;
+}

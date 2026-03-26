@@ -9,6 +9,120 @@
 
 {% block content %}
     <section class="section1">
-        
+        <div class="sectionBg">
+            <img src="/media/display/cover final.png" alt="">
+            <div class="shadow"></div>
+        </div>
+        <div class="screen">
+            <img src="/media/display/screen.png" alt="">
+        </div>
+        <div class="char">
+            <span>S</span>
+            <span>C</span>
+            <span>M</span>
+            <span>S</span>
+        </div>
+        <div class="sectionContent">
+            <div class="title">
+            Modernizing Your University Experience
+            </div>
+            <div class="desc">
+                Transforming campus operations into a unified digital ecosystem. Our system replaces manual processes with real-time solutions for attendance tracking, facility booking, and seamless communication.
+            </div>
+        </div>
     </section>
+    <section class="section2">
+        <div class="title">Prototype Installation Guide</div>
+        <div class="steps">
+            <div class="step">
+                <div class="stepTitle">
+                    Clone the Repository
+                </div>
+                <div class="stepContent">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="circles">
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                            </div>
+                            <span>Terminal</span>
+                            <button class="copy-btn" onclick="copyCode()">
+                                <span class="copyIcon">
+                                    <svg  viewBox="0 0 365 405" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M69.5 60.5V40.5C69.5 20.6178 85.6178 4.5 105.5 4.5H324.5C344.382 4.5 360.5 20.6178 360.5 40.5V301.5C360.5 321.382 344.382 337.5 324.5 337.5H305.5M40.5 400.5H259.5C279.382 400.5 295.5 384.382 295.5 364.5V103.5C295.5 83.6178 279.382 67.5 259.5 67.5H40.5C20.6177 67.5 4.5 83.6177 4.5 103.5V364.5C4.5 384.382 20.6178 400.5 40.5 400.5Z" />
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                        <pre id="code-block"><code>git clone https://github.com/JunHOtt69/Capstone-Assignment.git</code></pre>
+                    </div>
+                    <div class="expl">Get a local copy of the source code on your machine.</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="stepTitle">
+                    Configure Environment Variables
+                </div>
+                <div class="stepContent">
+                    <div class="expl">Set up your private credentials and database settings.</div>
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="circles">
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                            </div>
+                            <span>.env</span>
+                            <button class="copy-btn" onclick="copyCode()">
+                                <span class="copyIcon">
+                                    <svg  viewBox="0 0 365 405" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M69.5 60.5V40.5C69.5 20.6178 85.6178 4.5 105.5 4.5H324.5C344.382 4.5 360.5 20.6178 360.5 40.5V301.5C360.5 321.382 344.382 337.5 324.5 337.5H305.5M40.5 400.5H259.5C279.382 400.5 295.5 384.382 295.5 364.5V103.5C295.5 83.6178 279.382 67.5 259.5 67.5H40.5C20.6177 67.5 4.5 83.6177 4.5 103.5V364.5C4.5 384.382 20.6178 400.5 40.5 400.5Z" />
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                        <pre id="code-block">
+<code>DB_PASSWORD= <span class="code-comment">#your desired password</span>
+DB_HOST=
+EMAIL_HOST_USER= <span class="code-comment">#your email</span>
+EMAIL_HOST_PASSWORD= <span class="code-comment">#your email app password</span>
+PYTHONUTF8=1</code>
+                        </pre>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="stepTitle">
+                    Launch with Docker
+                </div>
+                <div class="stepContent">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <div class="circles">
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                                <div class="circle"></div>
+                            </div>
+                            <span>Terminal</span>
+                            <button class="copy-btn" onclick="copyCode()">
+                                <span class="copyIcon">
+                                    <svg  viewBox="0 0 365 405" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M69.5 60.5V40.5C69.5 20.6178 85.6178 4.5 105.5 4.5H324.5C344.382 4.5 360.5 20.6178 360.5 40.5V301.5C360.5 321.382 344.382 337.5 324.5 337.5H305.5M40.5 400.5H259.5C279.382 400.5 295.5 384.382 295.5 364.5V103.5C295.5 83.6178 279.382 67.5 259.5 67.5H40.5C20.6177 67.5 4.5 83.6177 4.5 103.5V364.5C4.5 384.382 20.6178 400.5 40.5 400.5Z" />
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                        <pre id="code-block"><code>docker compose up --build</code>
+                        </pre>
+                    </div>
+                    <div class="expl">Build and start the system containers.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %} 
+
+{% block extra_scripts %}
+    <script src="{% static 'js/home.js' %}"></script>
 {% endblock %} 
