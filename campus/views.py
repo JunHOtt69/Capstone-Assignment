@@ -625,7 +625,7 @@ def my_attendance_rate(request):
 @role_required(['lecturer'])
 def lecturer_past_subject_sessions(request, intake_code, subject_id):
     today = timezone.localdate()
-
+    
     past_classes = class_session.objects.filter(
         lecturer=request.user,
         term__intake_code=intake_code,
@@ -633,19 +633,84 @@ def lecturer_past_subject_sessions(request, intake_code, subject_id):
         date__lt=today,
         status="scheduled"
     ).select_related(
-        "term",
-        "subject_component",
-        "subject_component__subject"
+        "term", 
+        "term__course",
+        "subject_component", 
+        "subject_component__subject",
+        "session",
+        "session__facility"
     ).order_by("-date")
 
     subject_obj = None
     if past_classes.exists():
         subject_obj = past_classes.first().subject_component.subject
 
+    past_classes_data = []
+    
+    for cls in past_classes:
+        att_session = AttendanceSession.objects.filter(
+            class_event=cls,
+            lecturer=request.user
+        ).first()
+
+        enrolled_students = User.objects.filter(
+            groups__name="student",
+            course_enrollment__term=cls.term,
+            course_enrollment__term__course__course_subject__subject=cls.subject_component.subject
+        ).select_related('student_profile').distinct()
+
+        total_students = enrolled_students.count()
+        present_count = 0
+        late_count = 0
+        absent_students = []
+
+        if att_session:
+            marks = AttendanceMark.objects.filter(session=att_session).select_related('student')
+            
+            present_count = marks.filter(status="PRESENT").count()
+            late_count = marks.filter(status="LATE").count()
+            
+            marked_student_ids = marks.values_list('student_id', flat=True)
+
+            absent_list = enrolled_students.exclude(id__in=marked_student_ids) | \
+                          enrolled_students.filter(id__in=marks.filter(status="ABSENT").values_list('student_id', flat=True))
+            
+            for student in absent_list.distinct():
+                tp_id = student.student_profile.tp_id if hasattr(student, 'student_profile') else "N/A"
+    
+                absent_students.append({
+                    "name": student.get_full_name() or student.username,
+                    "id": tp_id 
+                })
+        else:
+            for student in enrolled_students:
+                tp_id = student.student_profile.tp_id if hasattr(student, 'student_profile') else "N/A"
+        
+                absent_students.append({
+                    "name": student.get_full_name() or student.username,
+                    "id": tp_id
+                })
+
+        attended = present_count + late_count
+        absent_count = max(total_students - attended, 0)
+        rate = round((attended / total_students * 100), 1) if total_students > 0 else 0
+
+        past_classes_data.append({
+            "id": cls.id,
+            "date": cls.date.strftime('%Y-%m-%d'),
+            "start_time": cls.session.start_time.strftime('%H:%M') if cls.session else "",
+            "att_rate": rate,
+            "present": present_count,
+            "late": late_count,
+            "absent": absent_count,
+            "absent_list": absent_students
+        })
+
     context = {
-        "past_classes": past_classes,
-        "subject_obj": subject_obj,
         "intake_code": intake_code,
+        "subject_obj": subject_obj,
+        "past_classes": past_classes, 
+        "past_classes_json": json.dumps(past_classes_data),
     }
 
     return render(request, "lecturer_past_subject_sessions.html", context)
@@ -1086,121 +1151,6 @@ def close_attendance_session(request, class_event_id):
             session.otp_session.delete()
 
     return redirect("attendance_lecturer_otp", class_event_id=class_event.id)
-
-@login_required
-@role_required(['lecturer'])
-def lecturer_class_attendance_rate(request, intake_code, subject_id):
-    today = timezone.localdate()
-
-    past_classes = class_session.objects.filter(
-        lecturer=request.user,
-        term__intake_code=intake_code,
-        subject_component__subject__subject_id=subject_id,
-        date__lt=today,
-        status="scheduled"
-    ).select_related(
-        "term",
-        "subject_component",
-        "subject_component__subject"
-    ).order_by("-date")
-
-    subject_obj = None
-    if past_classes.exists():
-        subject_obj = past_classes.first().subject_component.subject
-
-    session_rows = []
-    selected_class_event = None
-    selected_student_rows = []
-    selected_attendance_rate = 0
-    selected_attended_count = 0
-    selected_total_students = 0
-    selected_present = 0
-    selected_late = 0
-    selected_absent = 0
-
-    selected_class_event_id = request.GET.get("class_event_id")
-
-    for cls in past_classes:
-        attendance_session = AttendanceSession.objects.filter(
-            class_event=cls,
-            lecturer=request.user
-        ).order_by("-created_at").first()
-
-        enrolled_students = User.objects.filter(
-            groups__name="student",
-            course_enrollment__term=cls.term,
-            course_enrollment__term__course__course_subject__subject=cls.subject_component.subject
-        ).distinct()
-
-        total_students = enrolled_students.count()
-        present = 0
-        late = 0
-        absent = 0
-        attended_count = 0
-        attendance_rate = 0
-
-        if attendance_session:
-            present = AttendanceMark.objects.filter(
-                session=attendance_session,
-                status="PRESENT"
-            ).count()
-
-            late = AttendanceMark.objects.filter(
-                session=attendance_session,
-                status="LATE"
-            ).count()
-
-            absent = max(total_students - present - late, 0)
-            attended_count = present + late
-            attendance_rate = round((attended_count / total_students) * 100, 1) if total_students > 0 else 0
-
-        session_rows.append({
-            "class_event": cls,
-            "date": cls.date,
-            "attendance_rate": attendance_rate,
-        })
-
-        if selected_class_event_id and str(cls.id) == str(selected_class_event_id):
-            selected_class_event = cls
-            selected_attendance_rate = attendance_rate
-            selected_attended_count = attended_count
-            selected_total_students = total_students
-            selected_present = present
-            selected_late = late
-            selected_absent = absent
-
-            for student in enrolled_students:
-                current_status = "ABSENT"
-
-                if attendance_session:
-                    mark = AttendanceMark.objects.filter(
-                        session=attendance_session,
-                        student=student
-                    ).first()
-
-                    if mark:
-                        current_status = mark.status
-
-                selected_student_rows.append({
-                    "student": student,
-                    "status": current_status,
-                })
-
-    context = {
-        "intake_code": intake_code,
-        "subject_obj": subject_obj,
-        "session_rows": session_rows,
-        "selected_class_event": selected_class_event,
-        "selected_student_rows": selected_student_rows,
-        "selected_attendance_rate": selected_attendance_rate,
-        "selected_attended_count": selected_attended_count,
-        "selected_total_students": selected_total_students,
-        "selected_present": selected_present,
-        "selected_late": selected_late,
-        "selected_absent": selected_absent,
-    }
-
-    return render(request, "lecturer_class_attendance_rate.html", context)
 
 #management function
 @role_required(allowed_roles=['admin'])

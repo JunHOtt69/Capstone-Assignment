@@ -48,6 +48,10 @@ header{
     width: 100vw;
     overflow-x: hidden;
     overflow-y: auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
 }
 
 main{

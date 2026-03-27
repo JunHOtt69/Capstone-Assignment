@@ -22,20 +22,22 @@ urlpatterns = [
     #attendance function
     path("attendance/", views.attendance, name="attendance"),
     path("attendance/signup/",views.attendance_signup, name="attendance_signup"),
+    
     path("attendance/lecturer-otp/<int:class_event_id>/", views.attendance_lecturer_otp, name="attendance_lecturer_otp"),
+    
     path("attendance/chart-data/<int:class_event_id>/", views.attendance_chart_data, name="attendance_chart_data"),
+   
     path("attendance/close/<int:class_event_id>/", views.close_attendance_session, name="close_attendance_session"),
+    
     path("attendance/pie-partial/<int:class_event_id>/", views.attendance_pie_partial, name="attendance_pie_partial"),
+    
     path("attendance/student-list-partial/<int:class_event_id>/", views.attendance_student_list_partial, name="attendance_student_list_partial"),
+    
     path("attendance/lecturer/past-subject/<str:intake_code>/<int:subject_id>/",
     views.lecturer_past_subject_sessions,
     name="lecturer_past_subject_sessions"),
+    
     path("attendance/rate/", views.my_attendance_rate, name="my_attendance_rate"),
-    path(
-    "attendance/lecturer/class-attendance-rate/<str:intake_code>/<int:subject_id>/",
-    views.lecturer_class_attendance_rate,
-    name="lecturer_class_attendance_rate"
-),
 
     #campus map
     path("navigation/", views.navigation, name="navigation"),

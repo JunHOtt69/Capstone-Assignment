@@ -8,53 +8,99 @@
 {% endblock %}
 
 {% block content %}
-<div class="attendance-container">
-
+<div class="subjectAtt">
     <div class="past-page-header">
-        <h2>
-            {% if subject_obj %}
-                {{ subject_obj.subject_code }} - {{ subject_obj.subject_name }}
-            {% else %}
-                Past Subject Sessions
-            {% endif %}
-        </h2>
+        <div class="headerWrapp">
+            <h2>
+                {% if subject_obj %}
+                    {{ subject_obj.subject_code }} - {{ subject_obj.subject_name }}
+                {% else %}
+                    Past Subject Sessions
+                {% endif %}
+            </h2>
+            <span>{{intake_code}}</span>
+        </div>
 
         <a href="{% url 'attendance' %}" class="back-btn">
             Return to Attendance
         </a>
     </div>
-
-    {% if past_classes %}
-        <div class="past-session-list-card">
-            <div class="past-session-list-header">
-                <div>Date</div>
-                <div>Intake</div>
-                <div>Action</div>
+    
+    <section class="pastSubjectContent">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prevMonth" class="nav-arrow">&lt;</button>
+                <span id="monthYearDisplay"></span>
+                <button id="nextMonth" class="nav-arrow">&gt;</button>
             </div>
 
-            {% for cls in past_classes %}
-            <div class="past-session-list-row">
-                <div class="past-session-date">{{ cls.date }}</div>
-                <div class="past-session-intake">
-                    {% if cls.term %}
-                        {{ cls.term.intake_code }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </div>
-                <div class="past-session-action">
-                    <a href="{% url 'attendance_lecturer_otp' cls.id %}?from_past=1&intake_code={{ intake_code }}&subject_id={{ subject_obj.subject_id}}" class="past-session-btn">
+            <div class="calendar-weekdays">
+                <p>Sun</p>
+                <p>Mon</p>
+                <p>Tue</p>
+                <p>Wed</p>
+                <p>Thu</p>
+                <p>Fri</p>
+                <p>Sat</p>
+            </div>
+
+            <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+        <div class="classInfo">
+            <div class="empty">Please choose a date to review class attendance.</div>
+            <div class="attendanceWrap hide">
+                <div class="attendanceRate">
+                    <div class="attInfowrap">
+                        <span>Class Attendance Rate</span>
+                        <h3>0%</h3>
+                        <div class="tags">
+                            <div class="tag total">
+                                Total: 
+                            </div>
+                            <div class="tag present">
+                                Present: 
+                            </div>
+                            <div class="tag late">
+                                Late: 
+                            </div>
+                            <div class="tag absent">
+                                Absent: 
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="" class="editSession">
                         Edit Attendance
                     </a>
                 </div>
+                <hr>
+                <div class="studentList">
+                    <span class="listTitle">Absent Student List</span>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="no-col">No.</th>
+                                    <th class="id">Unique ID</th>
+                                    <th class="name">Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
         </div>
-    {% else %}
-        <div class="past-empty">
-            No past sessions found.
-        </div>
-    {% endif %}
-
+    </section>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        const pastClasses = {{ past_classes_json|safe }};
+        const intake_code = "{{ intake_code }}";
+        const subject_id = "{{ subject_obj.subject_id }}";
+    </script>
+    <script src="{% static 'js/lecturer_past_subject.js' %}"></script>
+{% endblock %} 
