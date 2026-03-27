@@ -4305,9 +4305,11 @@ def view_timetable(request):
 
     if 'student' in user_groups:
         enrollment = course_enrollment.objects.filter(student=user).select_related('term__course').first()
+        
         if not enrollment or not enrollment.term:
             messages.info(request, "You are not enrolled in any active term.")
             return redirect('student_dashboard')
+        
         terms = [enrollment.term]
     elif 'lecturer' in user_groups:
         term_ids = class_session.objects.filter(
@@ -4316,6 +4318,9 @@ def view_timetable(request):
         terms = academic_term.objects.filter(
             term_id__in=term_ids, is_active=True
         ).select_related('course').order_by('-start_date')
+        if not terms.exists():
+            messages.warning(request, "You are not currently assigned to any subjects or departments for an active term.")
+            return redirect('home')
     else:
         return redirect('home')
 
@@ -4325,6 +4330,7 @@ def view_timetable(request):
             context['overall_start'] = min(t.start_date for t in terms).isoformat()
             context['overall_end'] = max(t.end_date for t in terms).isoformat()
         context['is_lecturer'] = True
+
     return render(request, "view_timetable.html", context)
 
 
