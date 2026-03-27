@@ -9,136 +9,136 @@
 
 {% block content %}
 <div class="otp-card">
-  <form style="display:none;">{% csrf_token %}</form>
+	<form style="display:none;">
+		{% csrf_token %}
+	</form>
 
-  <div class="top-bar">
-  <a href="{% url 'attendance' %}" class="back-btn"> Return to Attendance Page</a>
-  </div>
-  
-  <h2>Enter OTP</h2>
+	<h2>Enter OTP</h2>
+	
+	<div id="msg" class="msg" style="display:none;"></div>
 
-  <div id="msg" class="msg" style="display:none;"></div>
+	<div class="otp-grid" id="otpGrid">
+		<input class="otp-box-input" inputmode="numeric" maxlength="1" />
+		<input class="otp-box-input" inputmode="numeric" maxlength="1" />
+		<input class="otp-box-input" inputmode="numeric" maxlength="1" />
+		<input class="otp-box-input" inputmode="numeric" maxlength="1" />
+	</div>
 
-  <div class="otp-grid" id="otpGrid">
-    <input class="otp-box-input" inputmode="numeric" maxlength="1" />
-    <input class="otp-box-input" inputmode="numeric" maxlength="1" />
-    <input class="otp-box-input" inputmode="numeric" maxlength="1" />
-    <input class="otp-box-input" inputmode="numeric" maxlength="1" />
-  </div>
-
-  <p class="muted">OTP will be verified automatically when you complete 4 digits.</p>
+	<p class="muted">OTP will be verified automatically when you complete 4 digits.</p>
 </div>
 {% endblock %}
 
 {% block background_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const inputs = Array.from(document.querySelectorAll(".otp-box-input"));
-  const msg = document.getElementById("msg");
-  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  let isSubmitting = false;
+	const inputs = Array.from(document.querySelectorAll(".otp-box-input"));
+	const msg = document.getElementById("msg");
+	const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+	let isSubmitting = false;
 
-  function showMsg(text, ok) {
-    msg.style.display = "block";
-    msg.textContent = text;
-    msg.className = "msg " + (ok ? "msg-success" : "msg-error");
-  }
+	function showMsg(text, ok) {
+		msg.style.display = "block";
+		msg.textContent = text;
+		msg.className = "msg " + (ok ? "msg-success" : "msg-error");
+	}
 
-  function clearOTP() {
-    inputs.forEach(input => input.value = "");
-    inputs[0].focus();
-  }
+	function clearOTP() {
+		inputs.forEach(input => input.value = "");
+		inputs[0].focus();
+	}
 
-  function getOTP() {
-    return inputs.map(i => i.value).join("");
-  }
+	function getOTP() {
+		return inputs.map(i => i.value).join("");
+	}
 
-  function isComplete() {
-    return inputs.every(i => i.value.length === 1);
-  }
+	function isComplete() {
+		return inputs.every(i => i.value.length === 1);
+	}
 
-  async function verifyOTP() {
-    if (isSubmitting) return;
+	async function verifyOTP() {
+		if (isSubmitting) return;
 
-    const otp = getOTP();
-    if (otp.length !== 4) return;
+		const otp = getOTP();
+		if (otp.length !== 4) return;
 
-    isSubmitting = true;
+		isSubmitting = true;
 
-    try {
-      const res = await fetch("{% url 'attendance_signup' %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-CSRFToken": csrfToken
-        },
-        body: new URLSearchParams({ otp })
-      });
+		try {
+			const res = await fetch("{% url 'attendance_signup' %}", {
+				method: "POST",
+				headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+				"X-CSRFToken": csrfToken
+				},
+				body: new URLSearchParams({ otp })
+			});
 
-      const data = await res.json();
+			const data = await res.json();
 
-      showMsg(data.message, data.ok);
-      alert(data.message);
-      clearOTP();
+			if (!data.ok) {
+                showMsg(data.message, data.ok);
+            }
+			alert(data.message);
+			clearOTP();
 
-    } catch (error) {
-      showMsg("Something went wrong. Please try again.", false);
-      alert("Something went wrong. Please try again.");
-      clearOTP();
-    } finally {
-      isSubmitting = false;
-    }
-  }
+		} catch (error) {
+			showMsg("Something went wrong. Please try again.", false);
+			alert("Something went wrong. Please try again.");
+			clearOTP();
+		} finally {
+			isSubmitting = false;
+		}
+	}
 
-  inputs.forEach((input, idx) => {
-    input.addEventListener("input", () => {
-      input.value = input.value.replace(/\D/g, "").slice(0, 1);
+	inputs.forEach((input, idx) => {
+		input.addEventListener("input", () => {
+		input.value = input.value.replace(/\D/g, "").slice(0, 1);
 
-      if (input.value && idx < inputs.length - 1) {
-        inputs[idx + 1].focus();
-      }
+		if (input.value && idx < inputs.length - 1) {
+			inputs[idx + 1].focus();
+		}
 
-      if (isComplete()) {
-        verifyOTP();
-      }
-    });
+		if (isComplete()) {
+			verifyOTP();
+		}
+		});
 
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Backspace") {
-        if (input.value) {
-          input.value = "";
-          e.preventDefault();
-        } else if (idx > 0) {
-          inputs[idx - 1].focus();
-          inputs[idx - 1].value = "";
-          e.preventDefault();
-        }
-      }
-    });
+		input.addEventListener("keydown", (e) => {
+		if (e.key === "Backspace") {
+			if (input.value) {
+			input.value = "";
+			e.preventDefault();
+			} else if (idx > 0) {
+			inputs[idx - 1].focus();
+			inputs[idx - 1].value = "";
+			e.preventDefault();
+			}
+		}
+		});
 
-    input.addEventListener("paste", (e) => {
-      e.preventDefault();
-      const pasted = (e.clipboardData.getData("text") || "")
-        .replace(/\D/g, "")
-        .slice(0, 4);
+		input.addEventListener("paste", (e) => {
+		e.preventDefault();
+		const pasted = (e.clipboardData.getData("text") || "")
+			.replace(/\D/g, "")
+			.slice(0, 4);
 
-      clearOTP();
+		clearOTP();
 
-      pasted.split("").forEach((ch, i) => {
-        if (inputs[i]) inputs[i].value = ch;
-      });
+		pasted.split("").forEach((ch, i) => {
+			if (inputs[i]) inputs[i].value = ch;
+		});
 
-      if (pasted.length > 0) {
-        inputs[Math.min(pasted.length, 4) - 1].focus();
-      }
+		if (pasted.length > 0) {
+			inputs[Math.min(pasted.length, 4) - 1].focus();
+		}
 
-      if (pasted.length === 4) {
-        verifyOTP();
-      }
-    });
-  });
+		if (pasted.length === 4) {
+			verifyOTP();
+		}
+		});
+	});
 
-  inputs[0].focus();
-});
+	inputs[0].focus();
+	});
 </script>
 {% endblock %}

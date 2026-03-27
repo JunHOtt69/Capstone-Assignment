@@ -77,6 +77,12 @@ class class_session(models.Model):
     term = models.ForeignKey('academic_term', on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    semester = models.PositiveSmallIntegerField()
+    
+    def save(self, *args, **kwargs):
+        if not self.semester and self.term:
+            self.semester = self.term.current_semester
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.subject_component.subject} - {self.date} ({self.status})"

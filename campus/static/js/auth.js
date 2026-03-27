@@ -87,8 +87,13 @@ function togglePasswordVisibility() {
 }
 
 const submitBtn = document.querySelector('button[type="submit"]');
-
+console.log(submitBtn);
 submitBtn.addEventListener('click', () => {
+    const form = document.getElementById('login') || document.getElementById('send-link') || document.getElementById('password-reset');
     const authLoad = document.querySelector('.authLoad');
-    authLoad.classList.add('active');
+    if (form.checkValidity()) {
+        authLoad.classList.add('active');
+    } else {
+        loginForm.reportValidity();
+    }
 })

@@ -72,6 +72,7 @@ TEMPLATES = [
                 'campus.context_processors.card_context',
                 'campus.context_processors.announcement_banner',
                 'campus.context_processors.today_schedule',
+                'campus.context_processors.closest_attendance_session',
             ],
         },
     },

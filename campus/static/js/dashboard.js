@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
         { id: 'circle_resolved',    attr: 'data-resolved' },
         { id: 'circle_close',       attr: 'data-closed' }
     ];
-
+    
     const maxPath = 125.6;
     let accumulatedPercent = 0;
 

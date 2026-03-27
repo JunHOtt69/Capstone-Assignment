@@ -571,7 +571,7 @@ main {
     display: inline-flex;
     align-items: center;
     gap: 0.5vw;
-    margin: 0 0 1vw;
+    margin: 1.5vw 0 0.5vw;
 }
 
 .detailVoteBtn {

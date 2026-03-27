@@ -47,17 +47,17 @@
                             </g>
                         </svg>
                     </div>
-                    <h4 class="percentage">{{ tickets.rate }}%</h4>
+                    <h4 class="percentage">{{ tickets.rate|default:0 }}%</h4>
                     <span>Overall Intake Attendance</span>
                 </div>
-                <div class="tags" data-total={{ tickets.total|default:0 }} >
-                    <div class="tag present" data-present = {{ attendance.present}}>
+                <div class="tags" data-total="{{ tickets.total|default:0 }}">
+                    <div class="tag present" data-present="{{ attendance.present|default:0 }}">
                         <span>Present</span>
-                        <p>{{ attendance.present|cool_number }}</p>
+                        <p>{{ attendance.present|cool_number|default:0 }}</p>
                     </div>
-                    <div class="tag absent" data-absent = {{ attendance.absent }}>
+                    <div class="tag absent" data-absent="{{ attendance.absent|default:0 }}">
                         <span>Absent</span>
-                        <p>{{ attendance.absent|cool_number }}</p>
+                        <p>{{ attendance.absent|cool_number|default:0 }}</p>
                     </div>
                 </div>
             </div>
