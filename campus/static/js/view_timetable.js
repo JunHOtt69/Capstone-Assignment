@@ -143,14 +143,22 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ── Load & render ── */
 
     function loadTimetable() {
-        if (!currentWeekMonday) return;
+    // 1. Guard against null or "NaN" strings
+        if (!currentWeekMonday || currentWeekMonday.includes('NaN')) {
+            console.warn("Skipping load: currentWeekMonday is invalid.", currentWeekMonday);
+            return; 
+        }
+        
         if (selectedTermId === null && !document.getElementById('lecturerMode')) return;
 
         let url = `/timetable/data/?week_start=${encodeURIComponent(currentWeekMonday)}`;
         if (selectedTermId) url += `&term_id=${encodeURIComponent(selectedTermId)}`;
 
         fetch(url)
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error(`Server responded with ${r.status}`);
+                return r.json();
+            })
             .then(data => {
                 if (data.error) {
                     showNotif('error', data.error);
@@ -158,7 +166,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 renderTimetable(data.timetable);
             })
-            .catch(err => showNotif('error', 'Failed to load timetable: ' + err));
+            .catch(err => {
+                console.error(err);
+                showNotif('error', 'Failed to load timetable');
+            });
     }
 
     function renderTimetable(sessions) {
