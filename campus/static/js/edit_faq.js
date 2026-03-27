@@ -19,10 +19,12 @@ const fieldSelectors = {
 window.attachQuillListeners = function(){
     const hiddenContent = document.querySelector('#id_content').value;
     if (hiddenContent && hiddenContent.trim() !== "") {
-        if(window.campusData.announcement_type == "BANNER"){
-            const bannerText = document.getElementById('bannerText');
-            bannerText.value = hiddenContent;
-            updateBannerCounter();
+        if(window.campusData){
+            if(window.campusData.announcement_type == "BANNER"){
+                const bannerText = document.getElementById('bannerText');
+                bannerText.value = hiddenContent;
+                updateBannerCounter();
+            }
         }else{
             quill.root.innerHTML = hiddenContent;
         }
