@@ -1,10 +1,26 @@
-main{
+main {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: column;
-    min-height: 91vh !important;
-    overflow: hidden;
+    width: 100%;
+    margin-top: 5vw;
+    position: relative;
+    
+    /* 1. Use min-height to ensure it covers the screen by default */
+    min-height: 91vh; 
+    
+    /* 2. CRITICAL: Override 'max-content' from root.css to allow growth */
+    height: auto !important; 
+    
+    /* 3. Ensure overflow doesn't clip the growing table */
+    overflow: visible; 
+}
+
+main:has(.otpPage){
+    min-height: 100vh !important;
+    height: auto !important; 
+    overflow: visible !important;
 }
 
 .pageTitle{
@@ -19,17 +35,25 @@ main{
     letter-spacing: 0.02em;
 }
 
-.subjectAtt{
+.subjectAtt, .otpPage{
     width: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: column;
     gap: 0.5vw;
-    padding: 0 10vw;
+    padding: 0 15vw;
     flex: 1;
     height: 100%;
     overflow: hidden;
+}
+
+.otpPage{
+    padding-bottom: 5vw;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    flex: 1;
 }
 
 .pastSubjectContent{
@@ -108,6 +132,7 @@ main{
     font-size: var(--h3-fontsize);
     cursor: pointer;
     transition: all .2s;
+    user-select: none;
 }
 
 .calendar-header button:hover{
@@ -521,8 +546,8 @@ main{
 }
 
 .back-btn{
-    padding: 0.2vw 1vw;
-    font-size: var(--p-fontsize);
+    padding: 0.3vw 1vw;
+    font-size: var(--xs-fontsize);
     text-decoration: none;
     color: rgba(var(--black), 1);
     background-color: transparent;
@@ -642,7 +667,21 @@ main{
     font-size: var(--p-fontsize);
 }
 
-.table-container{
+#attendance-student-list-wrapper{
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+}
+
+.otpPage hr{
+    width: 100%;
+    margin: 2vw 0;
+}
+
+.classInfo .table-container{
     width: 100%;
     height: 15vw;
     max-height: 23vw;
@@ -651,33 +690,38 @@ main{
     overflow-y: auto;
 }
 
-table{
+.otpPage table,
+.classInfo table{
     width: 100%;
     border-collapse: collapse;
     counter-reset: rowNumber;
 }
 
+.otpPage table{
+    background-color: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+    font-size: var(--p-fontsize);
+}
 
-table td.number-cell::before {
+.otpPage table td.number-cell::before ,
+.classInfo table td.number-cell::before {
     content: counter(rowNumber);
     font-weight: 400; 
     color: rgba(var(--black), 0.6);
 }
 
-table td.number-cell::before {
-    content: counter(rowNumber);
-    font-weight: 400; 
-    color: rgba(var(--black), 0.6);
-}
-
-table thead{
+.classInfo table thead,
+.otpPage table thead{
     background-color: transparent;
     color: rgba(var(--black), 1);
     border-bottom: 0.1vw solid rgba(var(--black), 1);
 }
 
-table thead th{
-    padding: 0.3vw 0.5vw;
+.otpPage table thead{
+    background-color: greenyellow;
+}
+
+.classInfo table thead th{
     font-size: var(--p-fontsize);
     line-height: 1.2;
     position: sticky;
@@ -685,57 +729,302 @@ table thead th{
     background-color: white;
 }
 
-table tbody tr{
+.otpPage table thead th{
+    font-size: var(--p-fontsize);
+    line-height: 1.5;
+    background-color: greenyellow;
+}
+
+.otpPage table tbody tr,
+.classInfo table tbody tr{
     width: 100%;
     background-color: rgba(255, 0, 0, 0.2);
-    transition: background-color 0.2s;
+    filter: brightness(100%);
+    transition: all 0.2s;
     counter-increment: rowNumber;
 }
 
-table tbody tr:nth-child(even){
+.otpPage table tbody tr{
+    background-color: white;
+}
+
+.otpPage table tbody tr[data-status="absent"]{
+    background-color: rgba(255, 0, 0, 0.5);
+}
+.otpPage table tbody tr[data-status="present"]{
+    background-color: rgba(var(--green-yellow), 0.5);
+}
+.otpPage table tbody tr[data-status="late"]{
+    background-color: rgba(255, 166, 0, 0.5);
+}
+
+.classInfo table tbody tr:nth-child(even){
     background-color: rgba(241, 80, 31, 0.2);
 }
 
-table tbody tr:hover{
+.classInfo table tbody tr:hover{
     background-color: rgba(255, 37, 8, 0.849);
     cursor: pointer;
 }
 
-table tbody tr td{
+.otpPage table tbody tr:hover{
+    filter: brightness(90%);
+    cursor: pointer;
+}
+
+.otpPage table tbody tr td,
+.classInfo table tbody tr td{
     padding: 0.2vw 0.5vw;
     text-align: center;
     line-height: 1.2;
     font-size: var(--p-fontsize);
 }
 
-table tbody th{
+.otpPage table thead th,
+.otpPage table tbody tr td{
+    padding: 0.5vw 1vw;
+    text-align: left;
+}
+
+.otpPage table tbody tr td{
+    font-size: var(--xs-fontsize);
+}
+
+.otpPage table{
+    line-height: 1.5;
+}
+
+.classInfo table tbody th{
     text-align: center;
 }
 
-table thead th.no-col{
+.otpPage table thead th.no-col,
+.classInfo table thead th.no-col{
     width: 5%;
 }
 
-table thead th.id{
+.otpPage table thead th.id{
+    width: 10%;
+}
+
+.otpPage table thead th.action,
+.classInfo table thead th.id{
     width: 20%;
 }
 
-table thead th.name{
+.classInfo table thead th.name{
     width: auto;
 }
 
-table tbody td .id,
-table tbody td .name{
+.classInfo table tbody td .id,
+.classInfo table tbody td .name{
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
 }
 
-table tbody td .id{
+.classInfo table tbody td .id{
     width: 7.7vw;
 }
 
-table tbody td .name{
+.classInfo table tbody td .name{
     width: 26vw;
+}
+
+.otpPage table tbody tr td form{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+.otpPage table tbody tr td form button{
+    font-size: var(--xs-fontsize);
+    padding: 0.3vw 0.5vw;
+    background-color: transparent;
+    transition: all .2s;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.otpPage table tbody tr td form button:hover{
+    background-color: rgba(var(--black), 0.1);
+}
+
+.chartWrapper{
+    width: 100%;
+    background-color: rgba(var(--gray), 1);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    border-radius: 0.5vw;
+    padding: 2vw 5vw;
+}
+
+.formWrapper{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.formWrapper button{
+    font-size: var(--p-fontsize);
+    padding: 0.3vw 0.5vw;
+    background-color: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+    transition: all .2s;
+    cursor: pointer;
+    user-select: none;
+}
+
+.formWrapper button.gen{
+    background-color: greenyellow;
+    border: 0.1vw solid greenyellow;
+}
+
+.formWrapper button.gen:hover{
+    background-color: rgba(var(--dark-green), 1);
+    color: white;
+    border: 0.1vw solid rgba(var(--black), 1);
+}
+
+.formWrapper button.rem{
+    background-color: white;
+    border: 0.1vw solid red;
+    color: red;
+}
+
+.formWrapper button.rem:hover{
+    background-color: red;
+    color: white;
+}
+
+.formWrapper[data-session="open"] #open,
+.formWrapper[data-session="close"] #close{
+    display: none;
+}
+
+#attendance-pie-data{
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 2vw;
+    width: 100%;
+}
+
+.infoOtp{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    gap: 1vw;
+    height: auto;
+    flex: 1;
+}
+
+.infoOtp .otpWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    gap: 1vw;
+}
+
+.infoOtp .otpWrapper .otp-digit{
+    width: auto;
+    height: auto;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 9vw;
+    padding: 1vw;
+    border-radius: 0.5vw;
+    border: 0.2vw solid rgba(var(--periwinkle), 0.5);
+    user-select: none;
+}
+
+.timeCount{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    justify-self: flex-end;
+    margin-top: auto;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+}
+
+.timeCount .countWrapper{
+    font-size: var(--h1-fontsize);
+    position: relative;
+    width: 100%;
+    text-align: center;
+}
+
+.countWrapper::before,
+.countWrapper::after{
+    position: absolute;
+    content: '';
+    width: 100%;
+    height: 0.5vw;
+    bottom: 0;
+    left: 0;
+    border-radius: 1vw;
+    background-color: rgb(56, 56, 56);
+    z-index: 0
+}
+
+.countWrapper::before{
+    width: var(--progress, 0%); 
+    background-color: rgba(var(--periwinkle), 1);
+    z-index: 1;
+    transition: width 1s linear;
+
+}
+
+.canvas{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    gap: 1vw;
+    width: 20vw;
+    flex: 1;
+}
+
+
+.canvas .canvasDesc{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vw;
+}
+
+.canvasDesc .counts{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5vw;
+    font-size: var(--p-fontsize);
+}
+
+.canvasDesc .counts #present-count{
+    font-weight: bold;
+    color: seagreen;
+}
+
+.canvasDesc .counts #late-count{
+    font-weight: bold;
+    color: orange;
+}
+
+.canvasDesc .counts #absent-count{
+    font-weight: bold;
+    color: red;
 }

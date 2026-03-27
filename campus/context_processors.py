@@ -7,6 +7,7 @@ from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
 from .models import announcement, announcementTarget, class_session
+import pytz
 
 #returning card ID
 def card_context(request):
@@ -125,6 +126,30 @@ def announcement_banner(request):
         
     return {"recent_news": recent_news, "rolling_banner": None}
 
+
+def closest_attendance_session(request):
+    if request.user.is_authenticated and request.user.groups.filter(name="lecturer").exists():
+        now = timezone.now()
+        
+        malaysia_tz = pytz.timezone('Asia/Kuala_Lumpur')
+        now_local = now.astimezone(malaysia_tz)
+        
+        current_time = now_local.time() 
+        today = now_local.date()
+
+        active_event = class_session.objects.filter(
+            lecturer=request.user,
+            date=today,
+            status='scheduled',
+            session__start_time__lte=current_time, 
+            session__end_time__gte=current_time 
+        ).select_related('session').first()
+
+        return {
+            'closest_class_event': active_event
+        }
+    
+    return {'closest_class_event': None}
 
 def today_schedule(request):
     u = getattr(request, 'user', None)

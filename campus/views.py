@@ -858,9 +858,6 @@ def attendance_lecturer_otp(request, class_event_id):
             )
 
     if request.method == "POST":
-        print("POST HIT")
-        print("ACTION =", request.POST.get("action"))
-
         action = request.POST.get("action")
 
         if action == "open_session":
@@ -959,7 +956,7 @@ def attendance_lecturer_otp(request, class_event_id):
 
     return render(request, "attendance_lecturer_otp.html", {
         "class_event": class_event,
-        "session": active_session,   # OTP 显示只看 open session
+        "session": active_session,
         "OTP_TTL_MIN": OTP_TTL_MIN,
         "present": present,
         "late": late,
@@ -970,6 +967,8 @@ def attendance_lecturer_otp(request, class_event_id):
         "attendance_rate": attendance_rate,
         "attended_count": attended_count,
         "total_students": total_students,
+        "subject_name": class_event.subject_component.subject.subject_name,
+        "intake_code": class_event.term.intake_code,
     })
 
 @login_required
@@ -1125,6 +1124,7 @@ def attendance_student_list_partial(request, class_event_id):
 
     return render(request, "partials/attendance_student_list.html", {
         "student_rows": student_rows,
+        "class_event": class_event,
     })
 
 @login_required

@@ -342,16 +342,20 @@
     {% elif user_role == 'lecturer'%}
         <div class="functionG1">
             <span class="title">Attendance Management</span>
+            {% if closest_class_event %}
+                <a href="{% url 'attendance_lecturer_otp' closest_class_event.id %}">
+                    Open Class Attendance
+                </a>
+            {% else %}
+                <span class="item" title="No live session at this time">
+                    No Active Session
+                </span>
+            {% endif %}
             <span class="item
-                {% if request.resolver_match.url_name == '' %}
+                {% if request.resolver_match.url_name == 'attendance' %}
                 active
             {% endif %}
-            "><a href="{% url 'attendance' %}">Open Attendance Session</a></span>
-            <span class="item
-                {% if request.resolver_match.url_name == '' %}
-                active
-            {% endif %}
-            "><a href="">Class Attendance Rate</a></span>
+            "><a href="{% url 'attendance' %}">Class Attendance Rate</a></span>
         </div>
     {% endif %}
 </template>

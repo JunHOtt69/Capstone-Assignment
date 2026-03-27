@@ -8,177 +8,53 @@
 {% endblock %}
 
 {% block content %}
-<div class="otp-card">
+<div class="otpPage">
+	<div class="past-page-header">
+		<h2>{{ subject_name }}-{{ intake_code }}</h2>
 
-  <div class="otp-page-header">
-    <h2>Lecturer: Generate OTP</h2>
+		{% if show_return_to_past and return_to_past_url %}
+			<a href="{{ return_to_past_url }}" class="back-btn">
+				Return to Past Sessions
+			</a>
+		{% endif %}
+	</div>
 
-    {% if show_return_to_past and return_to_past_url %}
-      <a href="{{ return_to_past_url }}" class="back-btn">
-        Return to Past Sessions
-      </a>
-    {% endif %}
-  </div>
+	<div id="attendance-pie-wrapper" 
+		data-url="{% url 'attendance_pie_partial' class_event.id %}"
+		data-student-url="{% url 'attendance_student_list_partial' class_event.id %}"
+		class="chartWrapper"
+	>
+		{% include "partials/attendance_pie_chart.html" %}
+	</div>
+	
+	<div class="formWrapper" data-session="{% if session and session.is_open %}open{% else %}close{% endif %}">
+		<form method="post" id="open">
+			{% csrf_token %}
+			<input type="hidden" name="action" value="open_session">
+			<button type="submit" class="gen">Generate OTP</button>
+		</form>
 
-  <!-- Generate OTP -->
-  <form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="open_session">
-    <button type="submit" class="btn btn-primary">Generate OTP</button>
-  </form>
+		<form method="post" action="{% url 'close_attendance_session' class_event.id %}" id="close" data-url="{% url 'close_attendance_session' class_event.id %}">
+			{% csrf_token %}
+			<button type="submit" class="rem"
+			onclick="return confirm('Are you sure you want to close the attendance session?')">
+			Close Attendance
+			</button>
+		</form>
+	</div>
 
-  <form method="post" action="{% url 'close_attendance_session' class_event.id %}" style="margin-top:10px;">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger"
-      onclick="return confirm('Are you sure you want to close the attendance session?')">
-      Close Attendance
-    </button>
-  </form>
+	<hr>
 
-  <div id="attendance-pie-wrapper">
-    {% include "partials/attendance_pie_chart.html" %}
-  </div>
-
-  <div id="attendance-student-list-wrapper">
-    {% include "partials/attendance_student_list.html" %}
-  </div>
-
+	<div id="attendance-student-list-wrapper" data-url="{% url 'attendance_student_list_partial' class_event.id %}">
+		{% include "partials/attendance_student_list.html" with class_event=class_event %}
+	</div>
 </div>
 {% endblock %}
 
 {% block background_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-function renderAttendancePie() {
-  const ctx = document.getElementById("attendancePie");
-  if (!ctx) return;
-
-  const present = parseInt(document.getElementById("present-count")?.textContent || 0);
-  const late = parseInt(document.getElementById("late-count")?.textContent || 0);
-  const absent = parseInt(document.getElementById("absent-count")?.textContent || 0);
-
-  if (window.attendancePieInstance) {
-    window.attendancePieInstance.destroy();
-  }
-
-  window.attendancePieInstance = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: ["Present", "Late", "Absent"],
-      datasets: [{
-        data: [present, late, absent],
-        backgroundColor: ["#4CAF50", "#FFC107", "#f52314"]
-      }]
-    }
-  });
-}
-
-function refreshAttendancePie() {
-  fetch("{% url 'attendance_pie_partial' class_event.id %}")
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById("attendance-pie-wrapper").innerHTML = html;
-      renderAttendancePie();
-      startCountdown();
-    })
-    .catch(error => {
-      console.error("Failed to refresh pie chart partial:", error);
-    });
-}
-
-function refreshStudentList() {
-  fetch("{% url 'attendance_student_list_partial' class_event.id %}")
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById("attendance-student-list-wrapper").innerHTML = html;
-    })
-    .catch(error => {
-      console.error("Failed to refresh student list partial:", error);
-    });
-}
-
-function startCountdown() {
-  const countdownEl = document.getElementById("countdown");
-  const pieData = document.getElementById("attendance-pie-data");
-
-  if (!countdownEl || !pieData) return;
-
-  const createdAtStr = pieData.dataset.createdAt;
-  if (!createdAtStr) return;
-
-  const createdAt = new Date(createdAtStr).getTime();
-  const ttlMs = 60 * 1000;
-
-  function updateCountdown() {
-    const now = new Date().getTime();
-    const expiryTime = createdAt + ttlMs;
-    const distance = expiryTime - now;
-
-    if (distance <= 0) {
-      countdownEl.textContent = "0";
-
-      if (window.attendanceCountdownInterval) {
-        clearInterval(window.attendanceCountdownInterval);
-      }
-
-      refreshAttendancePie();
-      return;
-    }
-
-    const seconds = Math.floor(distance / 1000);
-    countdownEl.textContent = seconds;
-  }
-
-  updateCountdown();
-
-  if (window.attendanceCountdownInterval) {
-    clearInterval(window.attendanceCountdownInterval);
-  }
-
-  window.attendanceCountdownInterval = setInterval(updateCountdown, 1000);
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  startCountdown();
-  renderAttendancePie();
-
-  document.addEventListener("submit", function (e) {
-    const form = e.target;
-
-    if (form.classList.contains("mark-attendance-form")) {
-      e.preventDefault();
-
-      const clickedButton = e.submitter;
-      const formData = new FormData(form);
-
-      if (clickedButton && clickedButton.name === "status") {
-        formData.append("status", clickedButton.value);
-      }
-
-      fetch("{% url 'attendance_lecturer_otp' class_event.id %}", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-Requested-With": "XMLHttpRequest"
-        }
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Failed to mark attendance.");
-        }
-        return response.text();
-      })
-      .then(() => {
-        refreshAttendancePie();
-        refreshStudentList();
-      })
-      .catch(error => {
-        console.error(error);
-        alert("Failed to update attendance.");
-      });
-    }
-  });
-});
-</script>
+	<script>
+		const closeUrl = "{% url 'close_attendance_session' class_event.id %}";
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="{% static 'js/attendance_otp.js' %}"></script>
 {% endblock %}

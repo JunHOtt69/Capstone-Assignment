@@ -1,24 +1,40 @@
 {% if session and session.otp_session %}
-  <div id="attendance-pie-data" data-created-at="{{ session.otp_session.created_at|date:'c' }}">
+	<div id="attendance-pie-data" data-created-at="{{ session.otp_session.created_at|date:'c' }}">
+		<div class="infoOtp">
+			<div class="otpWrapper">
+				{% if session and session.otp_session %}
+					{% for digit in session.otp_session.otp_code %}
+						<div class="otp-digit">{{ digit }}</div>
+					{% endfor %}
+				{% else %}
+					<div class="otp-digit">-</div>
+					<div class="otp-digit">-</div>
+					<div class="otp-digit">-</div>
+					<div class="otp-digit">-</div>
+				{% endif %}
+			</div>
+			<p>Valid for 1 minutes from generation.</p>
+			<div class="timeCount">
+				<p>Time left:</p>
+				<span class="countWrapper">
+					<span id="countdown">60</span>s
+				</span>
+			</div>
+		</div>
 
-    <div class="attendance-rate-box">
-      <h3>Class Attendance Rate</h3>
-      <p>{{ attendance_rate }}%</p>
-      <small>Present + Late: {{ attended_count }} / {{ total_students }}</small>
-    </div>
-
-    <h3>Current OTP: {{ session.otp_session.otp_code }}</h3>
-    <p>Valid for 1 minutes from generation.</p>
-    <p><strong>Time left:</strong> <span id="countdown">60</span>s</p>
-
-    <p><strong>Present:</strong> <span id="present-count">{{ present }}</span></p>
-    <p><strong>Late:</strong> <span id="late-count">{{ late }}</span></p>
-    <p><strong>Absent:</strong> <span id="absent-count">{{ absent }}</span></p>
-
-    <div style="max-width:420px;margin-top:20px;">
-      <canvas id="attendancePie"></canvas>
-    </div>
-  </div>
+		<div class="canvas">
+			<canvas id="attendancePie"></canvas>
+		
+			<div class="canvasDesc">
+				<p><strong>Total:</strong> <span>{{ total_students }}</span></p>
+				<div class="counts">
+					<span id="present-count">{{ present }}</span>|
+					<span id="late-count">{{ late }}</span>|
+					<span id="absent-count">{{ absent }}</span>
+				</div>
+			</div>
+		</div>
+	</div>
 {% else %}
-  <p>No active attendance session.</p>
+  	<p>No active attendance session.</p>
 {% endif %}
