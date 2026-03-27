@@ -90,14 +90,19 @@ document.addEventListener('DOMContentLoaded', function() {
         tagLate.innerHTML = `Late: ${data.late}`;
         tagAbsent.innerHTML = `Absent: ${data.absent}`;
 
-        console.log(data.att_rate);
-        console.log(data.present);
-        console.log(data.absent);
+        const dynamicForm = document.getElementById('auto-open-form-template');
 
-        editBtn.href = `/attendance/lecturer-otp/${data.id}/?from_past=1&intake_code=${intake_code}&subject_id=${subject_id}`;
+        dynamicForm.action = `/attendance/lecturer-otp/${data.id}/`;
 
-        console.log(intake_code);
-        console.log(subject_id);
+        document.getElementById('hidden_intake').value = intake_code;
+        document.getElementById('hidden_subject').value = subject_id;
+
+        const dynamicEditBtn = document.getElementById('dynamicEditBtn');
+        dynamicEditBtn.onclick = function() {
+            dynamicForm.submit();
+        };
+
+        
         tableBody.innerHTML = ''; 
         if (data.absent_list.length > 0) {
             data.absent_list.forEach(student => {

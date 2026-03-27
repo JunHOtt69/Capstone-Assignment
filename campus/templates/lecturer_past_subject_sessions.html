@@ -52,25 +52,17 @@
                 <div class="attendanceRate">
                     <div class="attInfowrap">
                         <span>Class Attendance Rate</span>
-                        <h3>0%</h3>
+                        <h3></h3>
                         <div class="tags">
-                            <div class="tag total">
-                                Total: 
-                            </div>
-                            <div class="tag present">
-                                Present: 
-                            </div>
-                            <div class="tag late">
-                                Late: 
-                            </div>
-                            <div class="tag absent">
-                                Absent: 
-                            </div>
+                            <div class="tag total"></div>
+                            <div class="tag present"></div>
+                            <div class="tag late"></div>
+                            <div class="tag absent"></div>
                         </div>
                     </div>
 
-                    <a href="" class="editSession">
-                        Edit Attendance
+                    <a href="javascript:void(0);" id="dynamicEditBtn" class="today-btn">
+                        Open Attendance Session
                     </a>
                 </div>
                 <hr>
@@ -93,6 +85,14 @@
             </div>
         </div>
     </section>
+
+    <form id="auto-open-form-template" method="POST" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="open_session">
+        <input type="hidden" name="from_past" value="1">
+        <input type="hidden" name="intake_code" id="hidden_intake">
+        <input type="hidden" name="subject_id" id="hidden_subject">
+    </form>
 </div>
 {% endblock %}
 

@@ -40,8 +40,8 @@
                                 <a id="i-Timetable" href="{% url "view_timetable" %}">Timetable</a>
                             </li>
 
-                            <li class="{% if request.resolver_match.url_name in 'my_attendance_rate lecturer_past_subject_sessions attendance_lecturer_otp attendance_signup attendance' %}active{% endif %}">
-                                <a id="i-Attendance" href="{% url "my_attendance_rate" %}">Attendance</a>
+                            <li class="{% if request.resolver_match.url_name in ' lecturer_past_subject_sessions attendance_lecturer_otp attendance_signup attendance' %}active{% endif %}">
+                                <a id="i-Attendance" href="{% url "attendance" %}">Attendance</a>
                             </li>
                         {% endif %}
 
@@ -334,10 +334,10 @@
                 {% endif %}
             "><a href="{% url 'attendance_signup' %}">Enter Attendance Code</a></span>
             <span class="item
-                {% if request.resolver_match.url_name == '' %}
+                {% if request.resolver_match.url_name == 'attendance' %}
                     active
                 {% endif %}
-            "><a href="">My Attendance Rate</a></span>
+            "><a href="{% url "attendance" %}">My Attendance Rate</a></span>
         </div>
     {% elif user_role == 'lecturer'%}
         <div class="functionG1">

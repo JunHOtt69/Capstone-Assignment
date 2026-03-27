@@ -13,13 +13,6 @@
 {% if user_role == 'student' %}
     <h2>Attendance Dashboard</h2>
     <div class="attendance-container">
-        <div class="student-box">
-            <hr>
-            <h4><strong>Name:</strong> {{ student_name|title }}</h4>
-            <p><strong>Intake Code:</strong> {{ intake_code }}</p>
-            <hr>
-        </div>
-
         <div class="overall-box">
             <h2>Overall Attendance</h2>
             <h3>{{ overall_percentage }}%</h3>
