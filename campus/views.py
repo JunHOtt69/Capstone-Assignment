@@ -442,19 +442,22 @@ def attendance(request):
             status="scheduled"
         ).select_related(
             "term",
+            "term__course",
             "subject_component",
             "subject_component__subject"
         )
 
-        today_classes = all_classes.filter(date=today).order_by("date")
+        today_classes = all_classes.filter(date=today).order_by('session__start_time')
 
         past_classes = all_classes.filter(date__lt=today).order_by("-date")
 
         grouped_past_map = {}
 
         for cls in past_classes:
+            intake_obj = cls.term
+            intake_code = intake_obj.intake_code if intake_obj else "N/A"
 
-            intake_code = cls.term.intake_code if cls.term else "N/A"
+            course_name = intake_obj.course.course_name if intake_obj and intake_obj.course else "Unknown Course"
 
             subject_obj = cls.subject_component.subject if cls.subject_component else None
             subject_id = subject_obj.subject_id if subject_obj else 0
@@ -464,6 +467,7 @@ def attendance(request):
             if intake_code not in grouped_past_map:
                 grouped_past_map[intake_code] = {
                     "intake_code": intake_code,
+                    "course_name": course_name,
                     "subjects": {}
                 }
 

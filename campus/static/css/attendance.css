@@ -1,10 +1,56 @@
-.attendance-container{
-    padding: 5px;
+main{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+
 }
+
+.pageTitle{
+    width: 100%;
+    margin: 1vw 20vw 2vw !important;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.pageTitle h1{
+    letter-spacing: 0.02em;
+}
+
+.attendance-container{
+    width: 100%;
+    padding: 0 20vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1vw;
+}
+
+.current, .past{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    gap: 0.5vw;
+}
+
+.cardWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    gap: 0.5vw;
+}
+
 .attendance-container .student-box{
     border: 2px solid black;
 }
-
 
 .attendance-container .overall-box {
   text-align: center; 
@@ -124,81 +170,159 @@
 
 
 .today-card{
-    max-width: 1500px;
-    width: 90%;
-    border: 3px solid black;
-    border-radius: 12px;
-    padding: 20px;
-    background-color: greenyellow;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
-    margin: 20px auto;
+    width: 100%;
+    padding: 0.5vw 1vw 0.5vw 2vw;
+    border-radius: 0.5vw;
+    background-color: white;
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5vw;
+    transition: all .2s;
 }
 
-.today-card h3{
-    margin: 0 0 14px 0;
-    font-size: 2.2rem;
-    color: black;
-    text-align: center;
+.today-card:hover{
+    box-shadow: 0.1vw 0.2vw 0.5vw rgba(var(--black), 0.2);
+}
+
+.today-card::before{
+    content: '○';
+    position: absolute;
+    left: 1vw;
+    transform: translateX(-50%);
+    color: rgba(var(--black), 1);
+    font-size: var(--p-fontsize);
+    line-height: 1;
+    pointer-events: none;
+}
+
+.today-card::after{
+    content: '';
+    position: absolute;
+    left: 0.98vw;
+    top: calc(0.84vw + 0.3vw);
+    width: 1px;
+    height: 100%;
+    border-left: 0.05vw dashed rgba(var(--black), 1);
+    z-index: 5;
+    pointer-events: none;
+}
+
+.today-card:last-child:after{
+    display: none;
 }
 
 .today-card-info{
-    margin-top: 10px;
+    margin: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 1vw;
 }
 
 .today-card-info p{
-    margin: 6px 0;
-    color: black;
-    font-size: 1rem;
+    margin: 0;
+    font-size: var(--xs-fontsize);
+    color: rgba(var(--black), 1);
+    width: 10vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .today-btn{
-    display: inline-block;
-    margin-top: 14px;
-    padding: 10px 16px;
-    border: 2px solid black;
-    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.3vw 0.7vw;
+    border: 0.1vw solid rgba(var(--black), 1);
+    border-radius:0.2vw;
     background-color: white;
-    color: black;
+    color: rgba(var(--black), 1);
     text-decoration: none;
     font-weight: bold;
+    transition: all .2s;
+    user-select: none;
+    font-size: var(--xs-fontsize);
 }
 
 .today-btn:hover{
-    background-color: black;
-    color: white;
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+}
+
+.today-card.no-class::before{
+    display: none;
+}
+
+.today-card.no-class:hover{
+    box-shadow: none;
 }
 
 .no-class{
     text-align: center;
+    font-size: var(--p-fontsize);
+    background-color: rgba(var(--gray), 0.3);
+    padding: 2vw 1vw;
+    justify-content: center;
+    align-items: center;
+    gap: 0.2vw;
+}
+
+.no-class p{
+    font-size: var(--xs-fontsize);
+}
+
+.today-card .classSubject{
+    font-size: var(--p-fontsize);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 30vw;
+}
+
+.cardInfoWrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.intakeWrapper{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    gap: 1vw;
 }
 
 
 .past-card{
-    max-width: 1500px;
-    width: 90%;
-    margin: 24px auto;
-    background-color: greenyellow;
-    border: 3px solid black;
-    border-radius: 14px;
+    width: 100%;
+    margin: 0;
+    background-color: white;
+    border: 0.01vw solid rgba(var(--black), 1);
+    border-radius: 0.5vw;
     overflow: hidden;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.15);
 }
 
 .past-card-header{
-    background-color: #a6e22e;
+    background-color: rgba(var(--periwinkle), 0.3);
     color: black;
-    font-size: 1.3rem;
-    font-weight: bold;
-    padding: 16px 20px;
-    border-bottom: 2px solid black;
+    font-size: var(--p-fontsize);
+    padding: 0.5vw 1vw;
+    transition: all .2s;
 }
 
 .past-subject-row{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px 20px;
-    border-top: 2px solid black;
+    padding: 0.5vw 1vw;
+    transition: all .2s;
 }
 
 .past-subject-row:hover{
@@ -207,54 +331,15 @@
 
 .past-subject-left{
     display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
     flex-direction: column;
-    gap: 5px;
+    gap: 0.2vw;
 }
 
-.past-subject-name{
-    color: black;
-    font-size: 1.1rem;
-    font-weight: bold;
+.past-subject-left span{
+    font-size: var(--xs-fontsize);
 }
-
-.past-subject-meta{
-    color: #006400;
-    font-size: 0.95rem;
-    font-weight: 600;
-}
-
-.past-subject-right{
-    display: flex;
-    align-items: center;
-}
-
-.past-edit-btn{
-    display: inline-block;
-    padding: 9px 15px;
-    border-radius: 10px;
-    border: 2px solid black;
-    color: black;
-    text-decoration: none;
-    font-weight: bold;
-    background-color: white;
-}
-
-.past-edit-btn:hover{
-    background-color: black;
-    color: white;
-}
-
-.past-empty{
-    max-width: 1500px;
-    width: 90%;
-    margin: 20px auto;
-    background-color: greenyellow;
-    color: black;
-    border: 3px solid black;
-    border-radius: 14px;
-    padding: 18px 20px;
-}
-
 
 .past-session-list-card{
     max-width: 1500px;

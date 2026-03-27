@@ -11,7 +11,6 @@
 {% block content %}
 
 {% if user_role == 'student' %}
-
     <h2>Attendance Dashboard</h2>
     <div class="attendance-container">
         <div class="student-box">
@@ -98,83 +97,89 @@
     </div>
 
 {% elif user_role == 'lecturer' %}
+    <div class="pageTitle">
+        <h2>Attendance Management</h2>
+    </div>
+    <div class="attendance-container">
+        <section class="current">
+            <h3>Active & Upcoming Classes</h3>
 
-<h2>Attendance Management</h2>
-<div class="attendance-container">
+            <div class="cardWrapper">
+                {% if today_classes %}
+                    {% for cls in today_classes %}
+                    <div class="today-card">
+                        <span class="classSubject">
+                            {{ cls.subject_component.subject.subject_code }} - 
+                            {{ cls.subject_component.subject.subject_name }}
+                        </span>
 
-    <h2>Today's Classes</h2>
+                        <div class="cardInfoWrapper">
+                            <div class="today-card-info">
+                                <p><strong>Time:</strong> {{ cls.session.start_time|time:"h:i a" }} - {{ cls.session.end_time|time:"h:i a" }}</p>
+                                <p><strong>Classroom:</strong>
+                                    {{ cls.session.facility.facility_name }}
+                                </p> 
+                                {% if cls.term %}
+                                    <p><strong>Intake:</strong> {{ cls.term.intake_code }}</p>
+                                {% endif %}
+                            </div>
 
-    {% if today_classes %}
-        {% for cls in today_classes %}
-        <div class="today-card">
-            <h3>
-                {{ cls.subject_component.subject.subject_code }} - 
-                {{ cls.subject_component.subject.subject_name }}
-            </h3>
-
-            <div class="today-card-info">
-                <p><strong>Date:</strong> {{ cls.date }}</p>
-                {% if cls.term %}
-                    <p><strong>Intake:</strong> {{ cls.term.intake_code }}</p>
+                            <a href="{% url 'attendance_lecturer_otp' cls.id %}" class="today-btn">
+                                Open Attendance Session
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="today-card no-class">
+                        <span>No class today</span>
+                        <p>You have no classes scheduled for today.</p>
+                    </div>
                 {% endif %}
             </div>
+        </section>
 
-            <a href="{% url 'attendance_lecturer_otp' cls.id %}" class="today-btn">
-                Open Attendance Session
-            </a>
-        </div>
-        {% endfor %}
-    {% else %}
-        <div class="today-card no-class">
-            <h3>No class today</h3>
-            <p>You have no classes scheduled for today.</p>
-        </div>
-    {% endif %}
+        <section class="past">
+            <h3>Previous Attendance Records</h3>
+            {% if grouped_past %}
+                <div class="intakeWrapper">
+                    {% for intake in grouped_past %}
+                    <div class="past-card">
+                        <div class="past-card-header">
+                            <span><strong>{{ intake.intake_code }}</strong> - {{ intake.course_name }}</span>
+                        </div>
 
-    <h2>Past Sessions</h2>
+                        {% for subj in intake.subjects %}
+                        <div class="past-subject-row">
+                            <div class="past-subject-left">
+                                <span>
+                                    <strong>{{ subj.subject_code }} - {{ subj.subject_name }}</strong>
+                                </span>
+                                <span>
+                                    Classes: {{ subj.classes|length }}
+                                </span>
+                            </div>
 
-    {% if grouped_past %}
-        {% for intake in grouped_past %}
-        <div class="past-card">
-            <div class="past-card-header">
-                {{ intake.intake_code }}
-            </div>
-
-            {% for subj in intake.subjects %}
-            <div class="past-subject-row">
-                <div class="past-subject-left">
-                    <div class="past-subject-name">
-                        {{ subj.subject_code }} - {{ subj.subject_name }}
+                            <a href="{% url 'lecturer_past_subject_sessions' intake.intake_code subj.subject_id %}" class="today-btn">
+                                Manage Sessions
+                            </a>
+                        </div>
+                        {% endfor %}
                     </div>
-                    <div class="past-subject-meta">
-                        Classes: {{ subj.classes|length }}
-                    </div>
+                    {% endfor %}
                 </div>
-
-                <div class="past-subject-right">
-                    <a href="{% url 'lecturer_past_subject_sessions' intake.intake_code subj.subject_id %}" class="past-edit-btn">
-                        Edit Session
-                    </a>
-
-                    <a href="{% url 'lecturer_class_attendance_rate' intake.intake_code subj.subject_id %}" class="past-rate-btn">
-                        Class Attendance Rate
-                    </a>
+            {% else %}
+                <div class="today-card no-class">
+                    <span>No past sessions available.</span>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endfor %}
-    {% else %}
-        <div class="past-empty">
-            No past sessions available.
-        </div>
-    {% endif %}
-
-</div>
-
+            {% endif %}
+        </section>
+    </div>
 {% endif %}
 
 {% endblock %}
+
+
 {% block background_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {

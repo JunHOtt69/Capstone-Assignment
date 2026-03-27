@@ -241,6 +241,10 @@ main{
     padding-top: 3vw;
 }
 
+.ticketOverview span{
+    font-size: var(--xs-fontsize);
+}
+
 .ticketOverview .progress{
     position: absolute;
     display: flex;
