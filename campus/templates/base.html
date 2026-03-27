@@ -37,21 +37,21 @@
 
                         {% if user_role == 'student' or user_role == 'lecturer' %}
                             <li class="{% if request.resolver_match.url_name in 'view_timetable manage_timetable navigate_to_class' %}active{% endif %}">
-                                <a id="i-Timetable">Timetable</a>
+                                <a id="i-Timetable" href="{% url "view_timetable" %}">Timetable</a>
                             </li>
 
-                            <li class="{% if request.resolver_match.url_name == '' %}active{% endif %}">
-                                <a id="i-Attendance">Attendance</a>
+                            <li class="{% if request.resolver_match.url_name in 'my_attendance_rate lecturer_past_subject_sessions attendance_lecturer_otp attendance_signup attendance' %}active{% endif %}">
+                                <a id="i-Attendance" href="{% url "my_attendance_rate" %}">Attendance</a>
                             </li>
                         {% endif %}
 
                         <li class="{% if request.resolver_match.url_name in 'navigation editmap point_of_interest facility_list my_bookings review_booking_request facility_status' %}active{% endif %}">
-                            <a id="i-Services">Services</a>
+                            <a id="i-Services" href="{% url "navigation" %}">Services</a>
                         </li>
 
                         {% if user_role == 'admin' %}
                             <li class="{% if request.resolver_match.url_name in 'user_management create_user_manually academic_management manage_academic_term manage_timetable manage_courses bulk_user_creation user_crud' %}active{% endif %}">
-                                <a id="i-Management">Management</a>
+                                <a id="i-Management" href="{% url 'user_management' %}">Management</a>
                             </li>
                         {% endif %}
                     {% endif %}
@@ -343,11 +343,17 @@
         <div class="functionG1">
             <span class="title">Attendance Management</span>
             {% if closest_class_event %}
-                <a href="{% url 'attendance_lecturer_otp' closest_class_event.id %}">
+                <span class="item
+                    {% if request.resolver_match.url_name == 'attendance_lecturer_otp' %}
+                    active
+                    {% endif %}
+                ">
+                    <a href="{% url 'attendance_lecturer_otp' closest_class_event.id %}">
                     Open Class Attendance
-                </a>
+                    </a>
+                </span>
             {% else %}
-                <span class="item" title="No live session at this time">
+                <span class="item">
                     No Active Session
                 </span>
             {% endif %}
@@ -564,10 +570,26 @@
             "><a href="{% url 'view_timetable' %}">View Timetable</a></span>
             {% if user_role == 'student' %}
                 <span class="item
-                
-                "><a href="">Enter Attendance Code</a></span>
+                    {% if request.resolver_match.url_name == 'attendance_signup' %}
+                    active
+                    {% endif %}
+                "><a href="{% url "attendance_signup" %}">Enter Attendance Code</a></span>
             {% elif user_role == 'lecturer'%}
-                <span class="item"><a href="">Open Attendance Session</a></span>
+                {% if closest_class_event %}
+                    <span class="item
+                        {% if request.resolver_match.url_name == 'attendance_lecturer_otp' %}
+                        active
+                        {% endif %}
+                    ">
+                        <a href="{% url 'attendance_lecturer_otp' closest_class_event.id %}">
+                        Open Class Attendance
+                        </a>
+                    </span>
+                {% else %}
+                    <span class="item">
+                        No Active Session
+                    </span>
+                {% endif %}
             {% endif %}
             <span class="item 
                 {% if request.resolver_match.url_name == 'navigate_to_class' %}
@@ -579,7 +601,11 @@
                 active
                 {% endif %}
             "><a href="{% url 'facility_status' %}">Facility Availability</a></span>
-            <span class="item"><a href="">My Profile</a></span>
+            <span class="item
+                {% if request.resolver_match.url_name == 'my_profile' %}
+                active
+                {% endif %} 
+            "><a href="{% url "my_profile" %}">My Profile</a></span>
             <span class="item
                 {% if request.resolver_match.url_name == 'submit_feedback' %}
                 active

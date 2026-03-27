@@ -3824,7 +3824,7 @@ def reject_booking(request, booking_id):
     return redirect("review_booking_request")
 
 #Facility Status
-@role_required(allowed_roles=['admin'])
+@login_required
 def facility_status(request):
     selected_date = request.GET.get("date")
 
