@@ -180,7 +180,8 @@ def admin_dashboard(request):
     active_lecturers = User.objects.filter(groups__name='lecturer', is_active=True).count()
     active_admins = User.objects.filter(groups__name='admin', is_active=True).count()
 
-    status_counts = SupportTicket.objects.values('status').annotate(total=Count('status'))
+    my_tickets = SupportTicket.objects.filter(assigned_to=request.user)
+    status_counts = my_tickets.values('status').annotate(total=Count('status'))
     counts = {item['status']: item['total'] for item in status_counts}
 
     escalated_count = SupportTicket.objects.filter(
@@ -194,7 +195,7 @@ def admin_dashboard(request):
         activities__action='escalation'
     ).distinct().count()
 
-    total = SupportTicket.objects.count()
+    total = my_tickets.count()
 
     recent_logs = LogEntry.objects.select_related('user', 'content_type').all()[:10]
 

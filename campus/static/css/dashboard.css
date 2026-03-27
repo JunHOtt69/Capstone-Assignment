@@ -266,7 +266,7 @@ main{
 
 .progress svg #background{
     stroke: rgba(var(--black), 0.5);
-    stroke-dasharray: 125.6;
+    stroke-dasharray: 125.6; 
     stroke-dashoffset: 0;
 }
 
@@ -277,7 +277,8 @@ main{
     
     transform: rotate(180deg);
     transform-origin: 50% 100%;
-    
+    stroke-dasharray: 125.6; 
+    stroke-dashoffset: 0;
     transition: stroke-dashoffset 0.8s ease, stroke-dasharray 0.8s ease, transform 0.3s ease, stroke-width 0.3s ease;
 }
 

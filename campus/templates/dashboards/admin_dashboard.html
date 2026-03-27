@@ -76,25 +76,25 @@
                             </g>
                         </svg>
                     </div>
-                    <h4 class="percentage">{{ tickets.rate }}%</h4>
+                    <h4 class="percentage">{{ tickets.rate|default:0 }}%</h4>
                     <span>Resolved</span>
                 </div>
                 <div class="tags" data-total={{ tickets.total|default:0 }} >
-                    <div class="tag in_progress" data-in_progress = {{ tickets.in_progress_non_escalated }}>
+                    <div class="tag in_progress" data-in_progress = {{ tickets.in_progress_non_escalated|default:0 }}>
                         <span>In Progress</span>
-                        <p>{{ tickets.in_progress|cool_number }}</p>
+                        <p>{{ tickets.in_progress|cool_number|default:0 }}</p>
                     </div>
-                    <div class="tag escalate" data-escalated = {{ tickets.escalated }}>
+                    <div class="tag escalate" data-escalated = {{ tickets.escalated|default:0 }}>
                         <span>Escalated</span>
-                        <p>{{ tickets.escalated|cool_number }}</p>
+                        <p>{{ tickets.escalated|cool_number|default:0 }}</p>
                     </div>
-                    <div class="tag resolved" data-resolved = {{ tickets.resolved }}>
+                    <div class="tag resolved" data-resolved = {{ tickets.resolved|default:0 }}>
                         <span>Resolved</span>
-                        <p>{{ tickets.resolved|cool_number }}</p>
+                        <p>{{ tickets.resolved|cool_number|default:0 }}</p>
                     </div>
-                    <div class="tag close" data-closed = {{ tickets.closed }}>
+                    <div class="tag close" data-closed = {{ tickets.closed|default:0 }}>
                         <span>Closed</span>
-                        <p>{{ tickets.closed|cool_number }}</p>
+                        <p>{{ tickets.closed|cool_number|default:0 }}</p>
                     </div>
                 </div>
             </div>
