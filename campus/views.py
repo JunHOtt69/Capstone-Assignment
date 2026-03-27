@@ -308,130 +308,87 @@ def student_dashboard(request):
 def attendance(request):
     # STUDENT VIEW
     if request.user.groups.filter(name="student").exists():
-        marks = AttendanceMark.objects.filter(student=request.user).select_related(
-            "session",
-            "session__class_event",
-            "session__class_event__term",
-            "session__class_event__subject_component",
-            "session__class_event__subject_component__subject",
-        ).order_by("-session__created_at")
+        enrollment = get_object_or_404(course_enrollment, student=request.user)
+        student_term = enrollment.term
+        
+        all_sessions = AttendanceSession.objects.filter(
+            class_event__term=student_term
+        ).select_related(
+            'class_event__subject_component__subject'
+        ).order_by('class_event__semester')
 
-        # overall attendance = all semesters, all marks
-        total_marks = marks.count()
-        attended_count = marks.filter(status__in=["PRESENT", "LATE"]).count()
-        overall_percentage = round((attended_count / total_marks) * 100, 1) if total_marks > 0 else 0
+        student_marks = AttendanceMark.objects.filter(
+            student=request.user,
+            session__in=all_sessions
+        ).values_list('session_id', 'status')
+        
+        attendance_lookup = {session_id: status for session_id, status in student_marks}
 
-        intake_code = "N/A"
-        if hasattr(request.user, "student_profile"):
-            intake_code = request.user.student_profile.tp_id
+        report_data = {}
 
-        current_sem = "N/A"
-        current_courses = []
-        previous_sem_data = []
-        semester_percentage = 0
+        for sess in all_sessions:
+            sem_num = sess.class_event.semester
+            subj_obj = sess.class_event.subject_component.subject
+            subj_id = subj_obj.subject_id
+            
+            if sem_num not in report_data:
+                report_data[sem_num] = {}
+                
+            if subj_id not in report_data[sem_num]:
+                report_data[sem_num][subj_id] = {
+                    'subject_id': subj_obj.subject_id,
+                    'subject_code': subj_obj.subject_code,
+                    'subject_name': subj_obj.subject_name,
+                    'present_count': 0,
+                    'total_sessions': 0,
+                }
 
-        enrollment = course_enrollment.objects.filter(
-            student=request.user
-        ).select_related("term", "term__course").first()
+            report_data[sem_num][subj_id]['total_sessions'] += 1
+            
+            status = attendance_lookup.get(sess.id)
+            if status in ['PRESENT', 'LATE']:
+                report_data[sem_num][subj_id]['present_count'] += 1
 
-        if enrollment and enrollment.term:
-            current_sem = enrollment.term.current_semester
-            current_course = enrollment.term.course
+        formatted_semesters = []
+        total_present_overall = 0
+        total_sessions_overall = 0
 
-            # only marks for current term
-            current_term_marks = marks.filter(
-                session__class_event__term=enrollment.term
-            )
+        for sem in sorted(report_data.keys()):
+            sem_subjects = []
+            sem_present = 0
+            sem_total = 0
+            
+            for subj_id, data in report_data[sem].items():
+                percentage = (data['present_count'] / data['total_sessions'] * 100) if data['total_sessions'] > 0 else 0
+                data['percentage'] = round(percentage, 1)
+                
+                sem_subjects.append(data)
+                sem_present += data['present_count']
+                sem_total += data['total_sessions']
+            
+            sem_rate = (sem_present / sem_total * 100) if sem_total > 0 else 0
+            
+            formatted_semesters.append({
+                'semester_number': sem,
+                'semester_rate': round(sem_rate, 1),
+                'subjects': sem_subjects
+            })
+            
+            total_present_overall += sem_present
+            total_sessions_overall += sem_total
 
-            # current semester subjects
-            current_subjects = course_subject.objects.filter(
-                course=current_course,
-                recommended_semester=current_sem
-            ).select_related("subject")
-
-            semester_total_marks = 0
-            semester_attended_marks = 0
-
-            for cs in current_subjects:
-                subject_marks = current_term_marks.filter(
-                    session__class_event__subject_component__subject_id=cs.subject_id
-                )
-
-                subject_total = subject_marks.count()
-                subject_attended = subject_marks.filter(
-                    status__in=["PRESENT", "LATE"]
-                ).count()
-
-                subject_percentage = round(
-                    (subject_attended / subject_total) * 100, 1
-                ) if subject_total > 0 else 0
-
-                current_courses.append({
-                    "name": cs.subject.subject_name,
-                    "percentage": subject_percentage
-                })
-
-                semester_total_marks += subject_total
-                semester_attended_marks += subject_attended
-
-            semester_percentage = round(
-                (semester_attended_marks / semester_total_marks) * 100, 1
-            ) if semester_total_marks > 0 else 0
-
-            # previous semesters
-            for sem in range(1, current_sem):
-                prev_subjects = course_subject.objects.filter(
-                    course=current_course,
-                    recommended_semester=sem
-                ).select_related("subject")
-
-                sem_courses = []
-                sem_total_marks = 0
-                sem_attended_marks = 0
-
-                for ps in prev_subjects:
-                    prev_subject_marks = marks.filter(
-                        session__class_event__subject_component__subject_id=ps.subject_id
-                    )
-
-                    prev_subject_total = prev_subject_marks.count()
-                    prev_subject_attended = prev_subject_marks.filter(
-                        status__in=["PRESENT", "LATE"]
-                    ).count()
-
-                    prev_subject_percentage = round(
-                        (prev_subject_attended / prev_subject_total) * 100, 1
-                    ) if prev_subject_total > 0 else 0
-
-                    sem_courses.append({
-                        "name": ps.subject.subject_name,
-                        "percentage": prev_subject_percentage
-                    })
-
-                    sem_total_marks += prev_subject_total
-                    sem_attended_marks += prev_subject_attended
-
-                sem_percentage = round(
-                    (sem_attended_marks / sem_total_marks) * 100, 1
-                ) if sem_total_marks > 0 else 0
-
-                previous_sem_data.append({
-                    "semester": sem,
-                    "percentage": sem_percentage,
-                    "courses": sem_courses
-                })
+        overall_rate = (total_present_overall / total_sessions_overall * 100) if total_sessions_overall > 0 else 0
 
         context = {
-            "student_name": request.user.get_full_name() or request.user.username,
-            "intake_code": intake_code,
-            "overall_percentage": overall_percentage,
-            "current_sem": current_sem,
-            "current_courses": current_courses,
-            "semester_percentage": semester_percentage,
-            "previous_sem_data": previous_sem_data,
+            'overall_rate': round(overall_rate, 1),
+            'total_present': total_present_overall,
+            'total_sessions': total_sessions_overall,
+            'semesters': formatted_semesters,
+            'intake_code': student_term.intake_code,
         }
 
         return render(request, "attendance.html", context)
+        
     
     # LECTURER VIEW
     if request.user.groups.filter(name="lecturer").exists():
@@ -498,98 +455,151 @@ def attendance(request):
     return render(request, "attendance.html")
 
 @login_required
-@role_required(['lecturer'])
-def lecturer_past_subject_sessions(request, intake_code, subject_id):
-    today = timezone.localdate()
-    
-    past_classes = class_session.objects.filter(
-        lecturer=request.user,
-        term__intake_code=intake_code,
-        subject_component__subject__subject_id=subject_id,
-        date__lt=today,
-        status="scheduled"
-    ).select_related(
-        "term", 
-        "term__course",
-        "subject_component", 
-        "subject_component__subject",
-        "session",
-        "session__facility"
-    ).order_by("-date")
-
-    subject_obj = None
-    if past_classes.exists():
-        subject_obj = past_classes.first().subject_component.subject
-
-    past_classes_data = []
-    
-    for cls in past_classes:
-        att_session = AttendanceSession.objects.filter(
-            class_event=cls,
-            lecturer=request.user
-        ).first()
-
-        enrolled_students = User.objects.filter(
-            groups__name="student",
-            course_enrollment__term=cls.term,
-            course_enrollment__term__course__course_subject__subject=cls.subject_component.subject
-        ).select_related('student_profile').distinct()
-
-        total_students = enrolled_students.count()
-        present_count = 0
-        late_count = 0
-        absent_students = []
-
-        if att_session:
-            marks = AttendanceMark.objects.filter(session=att_session).select_related('student')
-            
-            present_count = marks.filter(status="PRESENT").count()
-            late_count = marks.filter(status="LATE").count()
-            
-            marked_student_ids = marks.values_list('student_id', flat=True)
-
-            absent_list = enrolled_students.exclude(id__in=marked_student_ids) | \
-                          enrolled_students.filter(id__in=marks.filter(status="ABSENT").values_list('student_id', flat=True))
-            
-            for student in absent_list.distinct():
-                tp_id = student.student_profile.tp_id if hasattr(student, 'student_profile') else "N/A"
-    
-                absent_students.append({
-                    "name": student.get_full_name() or student.username,
-                    "id": tp_id 
-                })
-        else:
-            for student in enrolled_students:
-                tp_id = student.student_profile.tp_id if hasattr(student, 'student_profile') else "N/A"
+@role_required(['lecturer', 'student'])
+def subject_session(request, intake_code, subject_id):
+    if request.user.groups.filter(name="student").exists():
+        today = timezone.localdate()
         
-                absent_students.append({
-                    "name": student.get_full_name() or student.username,
-                    "id": tp_id
-                })
+        opened_attendance_sessions = AttendanceSession.objects.filter(
+            class_event__term__intake_code=intake_code,
+            class_event__subject_component__subject__subject_id=subject_id,
+            class_event__date__lt=today,
+            class_event__status="scheduled"
+        ).select_related(
+            "class_event", 
+            "class_event__session", 
+            "class_event__subject_component__subject"
+        ).order_by("-class_event__date")
 
-        attended = present_count + late_count
-        absent_count = max(total_students - attended, 0)
-        rate = round((attended / total_students * 100), 1) if total_students > 0 else 0
+        subject_obj = None
+        if opened_attendance_sessions.exists():
+            subject_obj = opened_attendance_sessions.first().class_event.subject_component.subject
 
-        past_classes_data.append({
-            "id": cls.id,
-            "date": cls.date.strftime('%Y-%m-%d'),
-            "start_time": cls.session.start_time.strftime('%H:%M') if cls.session else "",
-            "att_rate": rate,
-            "present": present_count,
-            "late": late_count,
-            "absent": absent_count,
-            "absent_list": absent_students
-        })
+        past_classes_data = []
+        
+        for att_sess in opened_attendance_sessions:
+            cls = att_sess.class_event 
+            
+            mark = AttendanceMark.objects.filter(
+                session=att_sess,
+                student=request.user
+            ).first()
 
-    context = {
-        "intake_code": intake_code,
-        "subject_obj": subject_obj,
-        "past_classes": past_classes, 
-        "past_classes_json": json.dumps(past_classes_data),
-    }
+            attendance_status = mark.status if mark else "ABSENT"
 
-    return render(request, "lecturer_past_subject_sessions.html", context)
+            past_classes_data.append({
+                "id": cls.id,
+                "date": cls.date.strftime('%Y-%m-%d'),
+                "start_time": cls.session.start_time.strftime('%H:%M') if cls.session else "",
+                "end_time": cls.session.end_time.strftime('%H:%M') if cls.session else "",
+                "status": attendance_status,
+                "class_name": cls.subject_component.subject.subject_name,
+                "class_type": cls.subject_component.class_type, 
+                "facility": cls.session.facility.facility_name if cls.session and cls.session.facility else "N/A",
+                "lecturer": cls.lecturer.get_full_name() or cls.lecturer.username,
+            })
+
+        context = {
+            "intake_code": intake_code,
+            "subject_obj": subject_obj,
+            "past_classes_json": json.dumps(past_classes_data),
+        }
+
+        return render(request, "subject_session.html", context)
+    
+    elif request.user.groups.filter(name="lecturer").exists():
+        today = timezone.localdate()
+        
+        past_classes = class_session.objects.filter(
+            lecturer=request.user,
+            term__intake_code=intake_code,
+            subject_component__subject__subject_id=subject_id,
+            date__lt=today,
+            status="scheduled"
+        ).select_related(
+            "term", 
+            "term__course",
+            "subject_component", 
+            "subject_component__subject",
+            "session",
+            "session__facility"
+        ).order_by("-date")
+
+        subject_obj = None
+        if past_classes.exists():
+            subject_obj = past_classes.first().subject_component.subject
+
+        past_classes_data = []
+        
+        for cls in past_classes:
+            att_session = AttendanceSession.objects.filter(
+                class_event=cls,
+                lecturer=request.user
+            ).first()
+
+            enrolled_students = User.objects.filter(
+                groups__name="student",
+                course_enrollment__term=cls.term,
+                course_enrollment__term__course__course_subject__subject=cls.subject_component.subject
+            ).select_related('student_profile').distinct()
+
+            total_students = enrolled_students.count()
+            present_count = 0
+            late_count = 0
+            absent_students = []
+
+            if att_session:
+                marks = AttendanceMark.objects.filter(session=att_session).select_related('student')
+                
+                present_count = marks.filter(status="PRESENT").count()
+                late_count = marks.filter(status="LATE").count()
+                
+                marked_student_ids = marks.values_list('student_id', flat=True)
+
+                absent_list = enrolled_students.exclude(id__in=marked_student_ids) | \
+                            enrolled_students.filter(id__in=marks.filter(status="ABSENT").values_list('student_id', flat=True))
+                
+                for student in absent_list.distinct():
+                    tp_id = student.student_profile.tp_id if hasattr(student, 'student_profile') else "N/A"
+        
+                    absent_students.append({
+                        "name": student.get_full_name() or student.username,
+                        "id": tp_id 
+                    })
+            else:
+                for student in enrolled_students:
+                    tp_id = student.student_profile.tp_id if hasattr(student, 'student_profile') else "N/A"
+            
+                    absent_students.append({
+                        "name": student.get_full_name() or student.username,
+                        "id": tp_id
+                    })
+
+            attended = present_count + late_count
+            absent_count = max(total_students - attended, 0)
+            rate = round((attended / total_students * 100), 1) if total_students > 0 else 0
+
+            past_classes_data.append({
+                "id": cls.id,
+                "date": cls.date.strftime('%Y-%m-%d'),
+                "start_time": cls.session.start_time.strftime('%H:%M') if cls.session else "",
+                "att_rate": rate,
+                "present": present_count,
+                "late": late_count,
+                "absent": absent_count,
+                "absent_list": absent_students
+            })
+
+        context = {
+            "intake_code": intake_code,
+            "subject_obj": subject_obj,
+            "past_classes": past_classes, 
+            "past_classes_json": json.dumps(past_classes_data),
+        }
+
+        return render(request, "subject_session.html", context)
+    
+    return render(request, "subject_session.html")
 
 @login_required
 @role_required(['student'])
@@ -710,7 +720,7 @@ def attendance_lecturer_otp(request, class_event_id):
     return_to_past_url = None
     if from_past and intake_code and subject_id:
         return_to_past_url = reverse(
-            "lecturer_past_subject_sessions",
+            "subject_session",
             args=[intake_code, subject_id]
         )
     
@@ -1071,7 +1081,7 @@ def generate_user_id(role):
     }
 
     prefix = prefixes.get(role)
-    year = datetime.datetime.now().strftime("%y")
+    year = datetime.now().strftime("%y")
     
     model_map = {
         'admin': admin_profiles,
@@ -4253,15 +4263,15 @@ def _get_lecturer_week_hours(lecturer_user, week_monday):
     ).select_related('session')
     total_hours = 0
     for cs in sessions:
-        delta = datetime.datetime.combine(datetime.date.today(), cs.session.end_time) - \
-                datetime.datetime.combine(datetime.date.today(), cs.session.start_time)
+        delta = datetime.combine(date.today(), cs.session.end_time) - \
+                datetime.combine(date.today(), cs.session.start_time)
         total_hours += delta.total_seconds() / 3600
     return total_hours
 
 def _get_session_duration_hours(sess):
     """Calculate duration of a session in hours."""
-    delta = datetime.datetime.combine(datetime.date.today(), sess.end_time) - \
-            datetime.datetime.combine(datetime.date.today(), sess.start_time)
+    delta = datetime.combine(date.today(), sess.end_time) - \
+            datetime.combine(date.today(), sess.start_time)
     return delta.total_seconds() / 3600
 
 def _find_or_create_assignment(term_obj, subj, available_lecturers):
@@ -4764,6 +4774,7 @@ def generate_timetable(request):
         occupied_intake.add((ex.term_id, ex.date, st))
         occupied_lecturer.add((ex.lecturer_id, ex.date, st))
         occupied_facility.add((ex.session.facility_id, ex.date, st))
+        
         hrs = _get_session_duration_hours(ex.session)
         lecturer_week_hours[ex.lecturer_id] = lecturer_week_hours.get(ex.lecturer_id, 0) + hrs
         # Seed scoring state
@@ -4866,7 +4877,8 @@ def generate_timetable(request):
                 lecturer=assigned_lecturer,
                 term=term_obj,
                 date=best_date,
-                status='scheduled'
+                status='scheduled',
+                semester=term_obj.current_semester,
             )
             created_sessions.append(new_cs)
 
@@ -4964,6 +4976,8 @@ def generate_timetable(request):
         action_flag=ADDITION,
         message=f"Generated timetable: {len(created_sessions)} session(s) created, {len(errors)} error(s)"
     )
+
+    print(errors)
 
     return JsonResponse({
         'success': True,
@@ -5198,7 +5212,8 @@ def replicate_preference(request):
                     lecturer=pref.lecturer,
                     term=term_obj,
                     date=target_date,
-                    status='scheduled'
+                    status='scheduled',
+                    semester=term_obj.current_semester,
                 )
                 total_created += 1
 

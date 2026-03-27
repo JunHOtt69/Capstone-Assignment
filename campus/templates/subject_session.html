@@ -48,41 +48,56 @@
         </div>
         <div class="classInfo">
             <div class="empty">Please choose a date to review class attendance.</div>
-            <div class="attendanceWrap hide">
-                <div class="attendanceRate">
-                    <div class="attInfowrap">
-                        <span>Class Attendance Rate</span>
-                        <h3></h3>
-                        <div class="tags">
-                            <div class="tag total"></div>
-                            <div class="tag present"></div>
-                            <div class="tag late"></div>
-                            <div class="tag absent"></div>
+            
+            {% if user_role == "lecturer" %}
+                <div class="attendanceWrap hide">
+                    <div class="attendanceRate">
+                        <div class="attInfowrap">
+                            <span>Class Attendance Rate</span>
+                            <h3></h3>
+                            <div class="tags">
+                                <div class="tag total"></div>
+                                <div class="tag present"></div>
+                                <div class="tag late"></div>
+                                <div class="tag absent"></div>
+                            </div>
+                        </div>
+
+                        <a href="javascript:void(0);" id="dynamicEditBtn" class="today-btn">
+                            Open Attendance Session
+                        </a>
+                    </div>
+                    <hr>
+                    <div class="studentList">
+                        <span class="listTitle">Absent Student List</span>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="no-col">No.</th>
+                                        <th class="id">Unique ID</th>
+                                        <th class="name">Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-
-                    <a href="javascript:void(0);" id="dynamicEditBtn" class="today-btn">
-                        Open Attendance Session
-                    </a>
                 </div>
-                <hr>
-                <div class="studentList">
-                    <span class="listTitle">Absent Student List</span>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="no-col">No.</th>
-                                    <th class="id">Unique ID</th>
-                                    <th class="name">Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+            {% elif user_role == "student" %}
+                <div class="classDetails hide">
+                    <div class="wrap1">
+                        <span><strong class="classNameDisplay">class name</strong> - <span class="classTypeDisplay">type</span></span>
+                        <span class="time"><span class="startTime"></span> - <span class="endTime"></span></span>
+                    </div>
+                    <div class="wrap2">
+                        <span class="facilityName">facility</span>
+                        <span class="lecturerNameDisplay">lecturername</span>
+                        <span class="tag {{status}}">status</span>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </section>
 
@@ -98,6 +113,7 @@
 
 {% block extra_scripts %}
     <script>
+        const user_role = "{{ user_role }}";
         const pastClasses = {{ past_classes_json|safe }};
         const intake_code = "{{ intake_code }}";
         const subject_id = "{{ subject_obj.subject_id }}";

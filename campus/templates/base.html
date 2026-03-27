@@ -40,7 +40,7 @@
                                 <a id="i-Timetable" href="{% url "view_timetable" %}">Timetable</a>
                             </li>
 
-                            <li class="{% if request.resolver_match.url_name in ' lecturer_past_subject_sessions attendance_lecturer_otp attendance_signup attendance' %}active{% endif %}">
+                            <li class="{% if request.resolver_match.url_name in ' subject_session attendance_lecturer_otp attendance_signup attendance' %}active{% endif %}">
                                 <a id="i-Attendance" href="{% url "attendance" %}">Attendance</a>
                             </li>
                         {% endif %}

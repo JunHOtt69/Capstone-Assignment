@@ -33,9 +33,9 @@ urlpatterns = [
     
     path("attendance/student-list-partial/<int:class_event_id>/", views.attendance_student_list_partial, name="attendance_student_list_partial"),
     
-    path("attendance/lecturer/past-subject/<str:intake_code>/<int:subject_id>/",
-    views.lecturer_past_subject_sessions,
-    name="lecturer_past_subject_sessions"),
+    path("attendance/past-subject/<str:intake_code>/<int:subject_id>/",
+    views.subject_session,
+    name="subject_session"),
 
     #campus map
     path("navigation/", views.navigation, name="navigation"),
