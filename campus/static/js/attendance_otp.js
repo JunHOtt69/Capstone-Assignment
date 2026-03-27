@@ -111,6 +111,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    startRealTimeUpdates();
+
 	document.addEventListener("submit", function (e) {
 		const form = e.target;
 
@@ -183,3 +185,22 @@ window.addEventListener('beforeunload', function (e) {
         });
     }
 });
+
+function startRealTimeUpdates() {
+    const formWrapper = document.querySelector('.formWrapper');
+    
+    const updateInterval = setInterval(() => {
+        const isSessionOpen = formWrapper && formWrapper.getAttribute('data-session') === 'open';
+
+        if (isSessionOpen) {
+            console.log("Real-time sync: Fetching latest attendance data...");
+            refreshAttendancePie();
+            refreshStudentList();
+        } else {
+            clearInterval(updateInterval); 
+        }
+    }, 5000); 
+
+    // Store the interval ID globally so we can stop it if needed
+    window.attendanceUpdateInterval = updateInterval;
+}
