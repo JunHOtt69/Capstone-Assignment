@@ -43,22 +43,28 @@
                                 <circle id="background" cx="50%" cy="100%" r="40"/>
                                 
                                 <circle id="circle_present" cx="50%" cy="100%" r="40" />
+                                <circle id="circle_late" cx="50%" cy="100%" r="40" />
                                 <circle id="circle_absent" cx="50%" cy="100%" r="40" />
                             </g>
                         </svg>
                     </div>
-                    <h4 class="percentage">{{ attendance.rate }}%</h4>
+                    <h4 class="percentage">{{ overall_rate|default:0 }}%</h4>
                     <span>Overall Intake Attendance</span>
                 </div>
 
-                <div class="tags" data-total="{{ attendance.total|default:0 }}">
-                    <div class="tag present" data-present="{{ attendance.present|default:0 }}">
+                <div class="tags" data-total="{{ total_session|default:0 }}">
+                    <div class="tag present" data-present="{{ total_present|default:0 }}">
                         <span>Present</span>
-                        <p>{{ attendance.present|cool_number }}</p>
+                        <p>{{ total_present|cool_number|default:0 }}</p>
                     </div>
-                    <div class="tag absent" data-absent="{{ attendance.absent|default:0 }}">
+                    <div class="tag late" data-late="{{ total_late|default:0 }}">
+                        <span>Late</span>
+                        <p>{{ total_late|cool_number|default:0 }}</p>
+                    </div>
+                    
+                    <div class="tag absent" data-absent="{{ total_absent|default:0 }}">
                         <span>Absent</span>
-                        <p>{{ attendance.absent|cool_number }}</p>
+                        <p>{{ total_absent|cool_number|default:0 }}</p>
                     </div>
                 </div>
             </div>

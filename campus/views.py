@@ -254,10 +254,49 @@ def lecturer_dashboard(request):
             'nav_url': nav_url,
         })
 
+    held_sessions = AttendanceSession.objects.filter(lecturer=request.user)
+    total_held_sessions_count = held_sessions.count()
+    
+    overall_rate = 0
+    total_present = 0
+    total_late = 0
+    total_absent = 0
+    total_capacity = 0
+    total_session = total_held_sessions_count
+
+    if total_held_sessions_count > 0:
+        relevant_terms = held_sessions.values_list('class_event__term', flat=True).distinct()
+        total_enrolled_students = User.objects.filter(
+            groups__name="student",
+            course_enrollment__term__in=relevant_terms
+        ).count()
+
+        total_capacity = total_held_sessions_count * total_enrolled_students
+
+        total_present = AttendanceMark.objects.filter(
+            session__in=held_sessions,
+            status='PRESENT'
+        ).count()
+
+        total_late = AttendanceMark.objects.filter(
+            session__in=held_sessions,
+            status='LATE'
+        ).count()
+
+        if total_capacity > 0:
+            total_absent = total_capacity - total_present - total_late
+            overall_rate = round(((total_present + total_late) / total_capacity) * 100, 1)
+
     context = {
         'lecturer_name': lecturer_name,
         'today': today,
         'todayClass': formatted_classes,
+        'total_session': total_session,
+        'overall_rate': overall_rate,
+        'total_present': total_present,
+        'total_late': total_late,
+        'total_absent': total_absent,
+        'total_capacity': total_capacity,
     }
     
     return render(request, "dashboards/lecturer_dashboard.html", context)
@@ -270,7 +309,16 @@ def student_dashboard(request):
     today_classes = []
     student_name = f"{request.user.first_name} {request.user.last_name}" or request.user.username
 
+    overall_rate = 0
+    total_present = 0
+    total_late = 0
+    total_absent = 0
+    total_held_sessions = 0
+    formatted_classes = []
+
     if enrollment:
+        student_term = enrollment.term
+
         today_classes = class_session.objects.filter(
             term=enrollment.term,
             date=today
@@ -281,24 +329,48 @@ def student_dashboard(request):
             'lecturer'
         ).order_by('session__start_time')
 
-    formatted_classes = []
-    for cs in today_classes:
-        facility_name = cs.session.facility.facility_name
-        params = urlencode({'destination': facility_name})
-        nav_url = f"{reverse('navigation')}?{params}"
+        for cs in today_classes:
+            facility_name = cs.session.facility.facility_name
+            params = urlencode({'destination': facility_name})
+            nav_url = f"{reverse('navigation')}?{params}"
 
-        formatted_classes.append({
-            'class_code': cs.subject_component.subject.subject_code,
-            'class_time': f"{cs.session.start_time.strftime('%I:%M %p')} - {cs.session.end_time.strftime('%I:%M %p')}",
-            'classroom': facility_name,
-            'lectureName': cs.lecturer.get_full_name() or cs.lecturer.username,
-            'nav_url': nav_url,
-        })
+            formatted_classes.append({
+                'class_code': cs.subject_component.subject.subject_code,
+                'class_time': f"{cs.session.start_time.strftime('%I:%M %p')} - {cs.session.end_time.strftime('%I:%M %p')}",
+                'classroom': facility_name,
+                'lectureName': cs.lecturer.get_full_name() or cs.lecturer.username,
+                'nav_url': nav_url,
+            })
+        
+        total_held_sessions = AttendanceSession.objects.filter(
+            class_event__term=student_term
+        ).count()
+
+        if total_held_sessions > 0:
+            total_present = AttendanceMark.objects.filter(
+                student=request.user,
+                session__class_event__term=student_term,
+                status='PRESENT'
+            ).count()
+
+            total_late = AttendanceMark.objects.filter(
+                student=request.user,
+                session__class_event__term=student_term,
+                status='LATE'
+            ).count()
+
+            total_absent = total_held_sessions - total_present - total_late
+            overall_rate = round(((total_present + total_late) / total_held_sessions) * 100, 1)
 
     context = {
         'student_name': student_name,
         'today': today,
         'todayClass': formatted_classes,
+        'total_session': total_held_sessions,
+        'overall_rate': overall_rate,
+        'total_present': total_present,
+        'total_late': total_late,
+        'total_absent': total_absent,
     }
     
     return render(request, 'dashboards/student_dashboard.html', context)
