@@ -71,15 +71,16 @@ footer{
     width: 100%;
     user-select: auto;
     height: max-content;
-    background-color: rgba(var(--black), 0.95);
+    background-color: rgba(var(--black), 0.85);
     color: white;
-    padding: 2vw 20vw 1vw;
+    padding: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 1vw;
+    gap: 3vw;
     flex-shrink: 0;
+    box-shadow: inset 0 2vw 1vw -0.5vw rgba(var(--black), 1);
 }
 
 footer p,
@@ -91,9 +92,10 @@ footer .upperFooter{
     height: max-content;
     width: 100%;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: flex-start;
     gap: 5vw;
+    padding: 2vw 20vw;
 }
 
 .upperFooter .AboutUs{
@@ -106,7 +108,32 @@ footer .upperFooter{
     gap: 0.5vw;
 }
 
+.upperFooter .linksWraper{
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 5vw;
+}
+
 .upperFooter .quickLinks{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.5vw;
+}
+
+.upperFooter .credits{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.5vw;
+    height: 10vw;
+}
+
+.upperFooter .credits ul{
+    list-style-type: none;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -125,11 +152,28 @@ footer .upperFooter{
     gap: 0.5vw;
 }
 
+.upperFooter .credits ul li,
 .quickLinks ul a{
-    color: white;
+    color: rgba(var(--gray), 0.8);
     text-decoration: none;
     cursor: pointer;
     transition: color 0.2s;
+    font-size: var(--xs-fontsize);
+    transition: all .2s;
+}
+
+.upperFooter .credits ul li:hover,
+.quickLinks ul a:hover{
+    color: white;
+    font-size: calc(var(--xs-fontsize) + 0.01vw);
+}
+
+.bottomFooter{
+    width: 100%;
+    padding: 0.2vw;
+    background-color: greenyellow;
+    color: rgba(var(--black), 1);
+    user-select: none;
 }
 
 h1, h2, h3, h4, h5, p, input, textarea, button, li, ul, a{
