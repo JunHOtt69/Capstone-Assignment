@@ -117,9 +117,10 @@
                             <td>{{ log.action_time }}</td>
                         
                             <td>
-                                <strong>{{ log.user.username }}</strong> 
+                                <p style="font-size: var(--xs-fontsize);"><strong>{{ log.user.username }}</strong> 
                                 {{ log.get_action_flag_display|lower }}ed 
-                                "{{ log.object_repr }}" 
+                                "{{ log.object_repr }}"</p>
+                                <p style="font-size: var(--xs-fontsize); margin-top: 0.1vw;">{{ log.change_message }}</p> 
                             </td>
                         </tr>
                     {% empty %}

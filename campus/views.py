@@ -184,12 +184,12 @@ def admin_dashboard(request):
     status_counts = my_tickets.values('status').annotate(total=Count('status'))
     counts = {item['status']: item['total'] for item in status_counts}
 
-    escalated_count = SupportTicket.objects.filter(
+    escalated_count = my_tickets.filter(
         status='in_progress',
         activities__action='escalation'
         ).distinct().count()
 
-    in_progress_non_escalated = SupportTicket.objects.filter(
+    in_progress_non_escalated = my_tickets.filter(
         status='in_progress'
     ).exclude(
         activities__action='escalation'
