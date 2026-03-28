@@ -31,9 +31,9 @@ function refreshAttendancePie() {
     fetch(url)
 		.then(response => response.text())
 		.then(html => {
-		document.getElementById("attendance-pie-wrapper").innerHTML = html;
-		renderAttendancePie();
-		startCountdown();
+			document.getElementById("attendance-pie-wrapper").innerHTML = html;
+			renderAttendancePie();
+			startCountdown();
 		})
 		.catch(error => {
 		console.error("Failed to refresh pie chart partial:", error);
@@ -58,8 +58,10 @@ function startCountdown() {
 	const countdownEl = document.getElementById("countdown");
 	const pieData = document.getElementById("attendance-pie-data");
     const countWrapper = document.querySelector(".countWrapper");
-
-	if (!countdownEl || !pieData) return;
+	
+	if (!countdownEl || !pieData){
+		return
+	};
 
 	const createdAtStr = pieData.dataset.createdAt;
 	if (!createdAtStr) return;
@@ -73,15 +75,15 @@ function startCountdown() {
 		const distance = expiryTime - now;
 
 		if (distance <= 0) {
-		countdownEl.textContent = "0";
-        countWrapper.style.setProperty('--progress', '0%');
+			countdownEl.textContent = "0";
+			countWrapper.style.setProperty('--progress', '0%');
 
-            if (window.attendanceCountdownInterval) {
-                clearInterval(window.attendanceCountdownInterval);
-            }
+			if (window.attendanceCountdownInterval) {
+				clearInterval(window.attendanceCountdownInterval);
+			}
 
-            refreshAttendancePie();
-            return;
+			refreshAttendancePie();
+			return;
 		}
 
 		const seconds = Math.floor(distance / 1000);
@@ -112,7 +114,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     startRealTimeUpdates();
-
 	document.addEventListener("submit", function (e) {
 		const form = e.target;
 
@@ -193,7 +194,6 @@ function startRealTimeUpdates() {
         const isSessionOpen = formWrapper && formWrapper.getAttribute('data-session') === 'open';
 
         if (isSessionOpen) {
-            console.log("Real-time sync: Fetching latest attendance data...");
             refreshAttendancePie();
             refreshStudentList();
         } else {
@@ -201,6 +201,5 @@ function startRealTimeUpdates() {
         }
     }, 5000); 
 
-    // Store the interval ID globally so we can stop it if needed
     window.attendanceUpdateInterval = updateInterval;
 }

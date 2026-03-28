@@ -6,7 +6,8 @@ import base64
 from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
-from .models import announcement, announcementTarget, class_session
+from django.contrib.auth.models import User
+from .models import announcement, announcementTarget, class_session, SubjectComponent, AttendanceSession, AttendanceMark
 import pytz
 
 #returning card ID
@@ -161,7 +162,6 @@ def today_schedule(request):
     else:
         today = timezone.localdate()
 
-    # Determine classes for today based on role
     if hasattr(u, 'student_profile') and hasattr(u, 'course_enrollment'):
         sessions = class_session.objects.filter(
             term=u.course_enrollment.term,
@@ -170,6 +170,7 @@ def today_schedule(request):
         ).select_related(
             'session__facility', 'subject_component__subject'
         ).order_by('session__start_time')
+        is_student=True
     elif hasattr(u, 'lecturer_profile'):
         sessions = class_session.objects.filter(
             lecturer=u,
@@ -178,17 +179,81 @@ def today_schedule(request):
         ).select_related(
             'session__facility', 'subject_component__subject'
         ).order_by('session__start_time')
+        is_student=False
     else:
         return {'classList': []}
 
+    attendance_rate = 0
+    att_color = None 
     class_list = []
     for cs in sessions:
         start = cs.session.start_time.strftime('%I:%M %p')
         end = cs.session.end_time.strftime('%I:%M %p')
+
+        if is_student:
+            target_subject = cs.subject_component.subject
+            student_term = u.course_enrollment.term
+            
+            all_subject_components = SubjectComponent.objects.filter(subject=target_subject)
+            
+            total_held_sessions = AttendanceSession.objects.filter(
+                class_event__term=student_term,
+                class_event__subject_component__in=all_subject_components
+            ).count()
+            
+            if total_held_sessions > 0:
+                present_count = AttendanceMark.objects.filter(
+                    student=u,
+                    session__class_event__term=student_term,
+                    session__class_event__subject_component__in=all_subject_components,
+                    status__in=['PRESENT', 'LATE']
+                ).count()
+                
+                rate = (present_count / total_held_sessions) * 100
+                attendance_rate = f"{round(rate, 1)}%"
+                att_color = 'danger' if rate < 80 else 'success'
+            else:
+                attendance_rate = "New Subject"
+                att_color = 'new'
+
+        else:
+            target_subject = cs.subject_component.subject
+            all_subject_components = SubjectComponent.objects.filter(subject=target_subject)
+
+            held_sessions = AttendanceSession.objects.filter(
+                lecturer=u,
+                class_event__subject_component__in=all_subject_components
+            )
+
+            total_sessions_count = held_sessions.count()
+
+            if total_sessions_count > 0:
+                enrolled_count = User.objects.filter(
+                    groups__name="student",
+                    course_enrollment__term=cs.term
+                ).count()
+
+                total_possible_marks = total_sessions_count * enrolled_count
+
+                if total_possible_marks > 0:
+                    actual_present_count = AttendanceMark.objects.filter(
+                        session__in=held_sessions,
+                        status__in=['PRESENT', 'LATE']
+                    ).count()
+
+                    rate_val = (actual_present_count / total_possible_marks) * 100
+                    attendance_rate = f"{round(rate_val, 1)}%"
+                    att_color = "danger" if rate_val < 80 else "success"
+            else:
+                attendance_rate = "No Sessions Yet"
+                att_color = "neutral"
+
         class_list.append({
             'class_time': f"{start} - {end}",
             'class_code': cs.subject_component.subject.subject_code,
             'classroom': cs.session.facility.facility_name,
+            'attendance_rate': attendance_rate,
+            'att_color': att_color,
         })
 
     return {'classList': class_list}

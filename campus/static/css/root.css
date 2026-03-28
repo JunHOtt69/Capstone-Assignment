@@ -475,6 +475,18 @@ p{
     font-size: var(--xs-fontsize);
 }
 
+.class .attendanceDD.new{
+    color: rgba(var(--dark-blue), 0.7);
+}
+
+.class .attendanceDD.danger{
+    color: red;
+}
+
+.class .attendanceDD.success{
+    color: rgba(var(--sea-green), 0.7);
+}
+
 .functionG2 .classWrapper .class::before{
     content: '○';
     position: absolute;

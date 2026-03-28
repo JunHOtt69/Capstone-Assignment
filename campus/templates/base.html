@@ -312,9 +312,9 @@
                     <div class="class">
                         <span>{{ class.class_time }} - {{ class.class_code }} ({{ class.classroom }})</span>
                         {% if user_role == 'student' %}
-                            <span>Attendance: {{ class.attendance_rate }}%</span>
+                            <span class="attendanceDD {{ class.att_color }}">Attendance: {{ class.attendance_rate }}</span>
                         {% elif user_role == 'lecturer'%}
-                            <span>Student attendance: {{ class.attendance_rate }}%</span>
+                            <span class="attendanceDD {{ class.att_color }}">Student attendance: {{ class.attendance_rate }}</span>
                         {% endif %}
                     </div>
                 {% endfor %}
