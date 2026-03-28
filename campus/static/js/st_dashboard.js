@@ -6,9 +6,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (total === 0) return;
 
     const segments = [
-        { id: 'circle_present', attr: 'data-present' },
-        { id: 'circle_absent',  attr: 'data-absent' }
+        { id: 'circle_present', attr: 'data-present'},
+        { id: 'circle_late',    attr: 'data-late'},
+        { id: 'circle_absent',  attr: 'data-absent'}
     ];
+
+    let sumOfParts = 0;
+    segments.forEach(item => {
+        const tagEl = document.querySelector(`[${item.attr}]`);
+        if (tagEl) {
+            sumOfParts += parseInt(tagEl.getAttribute(item.attr)) || 0;
+        }
+    });
+
+    if (sumOfParts !== total) {
+        console.error(`SmartCampus Error: Attendance count mismatch! Total: ${total}, Sum of Parts: ${sumOfParts}. Chart will not render.`);
+        segments.forEach(item => {
+            const circle = document.getElementById(item.id);
+            if (circle) circle.style.display = 'none';
+        });
+        return; 
+    }
 
     const maxPath = 125.6;
     let accumulatedPercent = 0;
