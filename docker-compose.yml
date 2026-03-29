@@ -23,8 +23,12 @@ services:
   web:
     build: .
     command: >
-      sh -c "python manage.py migrate &&
-         python manage.py runserver 0.0.0.0:8000"
+      sh -c "until nc -z db 3306; do
+               echo 'Waiting for MySQL to be ready...'
+               sleep 2
+             done &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
       - ./media:/app/media
@@ -34,7 +38,6 @@ services:
       db:
         condition: service_healthy
     environment:
-      # This tells Django to look for 'db' instead of 'localhost'
       - DB_HOST=db
       - DB_PASSWORD=${DB_PASSWORD}
 
