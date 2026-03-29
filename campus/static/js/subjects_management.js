@@ -1,10 +1,4 @@
-/* ============================================================
-   SUBJECTS MANAGEMENT JS
-   ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
-
-    // ---- Elements ----
-
     var subjectSearch   = document.getElementById('subjectSearch');
     var subjectsBody    = document.getElementById('subjectsBody');
     var addSubjectBtn   = document.getElementById('addSubjectBtn');
@@ -27,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var componentTypes = ['Lecture', 'Tutorial', 'Lab', 'Practical', 'Fieldwork'];
 
-    // ---- CSRF ----
     function getCSRF() {
         var cookie = document.cookie.split(';').find(function (c) {
             return c.trim().startsWith('csrftoken=');
@@ -35,12 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return cookie ? cookie.split('=')[1] : '';
     }
 
-    // ---- Info Bar ----
     function showInfo(msg, type) {
         showNotif(type, msg);
     }
 
-    // ---- Search filter ----
     subjectSearch.addEventListener('input', function () {
         var query = this.value.toLowerCase();
         var rows = subjectsBody.querySelectorAll('tr[data-id]');
@@ -51,7 +42,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ---- Component Row ----
     function addComponentRow(type, hours, totalHours, componentId) {
         var row = document.createElement('div');
         row.className = 'componentRow';
@@ -99,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function () {
         componentsList.appendChild(row);
     }
 
-    // ---- Open Create Modal ----
     addSubjectBtn.addEventListener('click', function () {
         modalTitle.textContent = 'Create Subject';
         editSubjectId.value = '';
@@ -110,12 +99,10 @@ document.addEventListener('DOMContentLoaded', function () {
         subjectModal.style.display = 'flex';
     });
 
-    // ---- Add Component ----
     addComponentBtn.addEventListener('click', function () {
         addComponentRow('Lecture', 2, 0);
     });
 
-    // ---- Close Modals ----
     closeModal.addEventListener('click', function () { subjectModal.style.display = 'none'; });
     cancelBtn.addEventListener('click', function () { subjectModal.style.display = 'none'; });
     subjectModal.addEventListener('click', function (e) {
@@ -127,7 +114,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.target === deleteModal) deleteModal.style.display = 'none';
     });
 
-    // ---- Save Subject ----
     saveSubjectBtn.addEventListener('click', function () {
         var code = subjectCode.value.trim();
         var name = subjectName.value.trim();
@@ -177,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(function () { showInfo('Network error.', 'error'); });
     });
 
-    // ---- Edit Subject ----
     function bindEditButtons() {
         subjectsBody.querySelectorAll('.editBtn').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -206,13 +191,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---- Delete Subject ----
     function bindDeleteButtons() {
         subjectsBody.querySelectorAll('.removeBtn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var sid = this.getAttribute('data-id');
-
-                // Fetch usage info before showing delete modal
                 fetch('/academic/subjects/check-usage/?subject_id=' + encodeURIComponent(sid))
                     .then(function (r) { return r.json(); })
                     .then(function (data) {
@@ -258,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(function () { showInfo('Network error.', 'error'); });
     });
 
-    // ---- Init ----
     bindEditButtons();
     bindDeleteButtons();
 });

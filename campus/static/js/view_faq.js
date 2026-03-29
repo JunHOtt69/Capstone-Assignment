@@ -165,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/suggestions/?q=${encodeURIComponent(query)}`);
             const data = await response.json();
 
-            // Prevent out-of-order responses from replacing newer results.
             if (requestId !== suggestionRequestId) {
                 return;
             }
@@ -255,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const newMax = parseInt(maxPagesInput.value, 10) || 1;
             updateUI(newMax);
         } catch (error) {
-            // Keep current content rendered if fetch fails.
         }
     };
 

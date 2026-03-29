@@ -297,7 +297,7 @@ main{
     display: flex;
     flex-wrap: wrap; 
     width: 100%;
-    background-color: transparent; /* Changed from blue for better visibility */
+    background-color: transparent;
 }
 
 .faqItem {
@@ -481,7 +481,6 @@ main{
     font-size: var(--xs-fontsize);
 }
 
-/* Clamping logic for 3 lines with ellipsis */
 .contentOV {
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -1605,7 +1604,6 @@ form .contentInput{
     margin-top: 0.5vw;
 }
 
-/* announcement */
 .individualControl:has(#studentToggle[data-value="true"]) #intakeWrapper{
     display: none;
 }

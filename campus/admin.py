@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import academic_rules, academic_term, admin_profiles, course, course_enrollment, course_subject, departments, facilities, lecturer_profiles, lecturer_subjects, session, student_profiles, subject, SubjectComponent, faq, booking, SupportTicket, announcement
-# Register your models here.
 
 @admin.register(academic_rules)
 class academic_rulesAdmin(admin.ModelAdmin):

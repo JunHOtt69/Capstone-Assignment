@@ -478,7 +478,6 @@ p #id_start_date{
     fill: white;
 }
 
-/* Sortable headers */
 #termsList thead th.sortable{
     cursor: pointer;
     user-select: none;
@@ -489,7 +488,6 @@ p #id_start_date{
     background-color: rgba(var(--dark-green), 0.4);
 }
 
-/* Status badges */
 #termsList td .status.active{
     color: green;
     font-weight: bold;
@@ -500,7 +498,6 @@ p #id_start_date{
     font-weight: bold;
 }
 
-/* Edit Modal */
 .editModal{
     display: none;
     position: fixed;
@@ -634,7 +631,6 @@ p #id_start_date{
     color: rgba(var(--black), 1);
 }
 
-/* Delete Modal */
 .deleteModalHeader{
     background-color: #c0392b !important;
 }

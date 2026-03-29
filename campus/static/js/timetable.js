@@ -1,6 +1,3 @@
-/* ============================================================
-   TIMETABLE MODULE JS
-   ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
     const termDropdown = document.getElementById('termDropdown');
     const termOptions  = document.getElementById('termOptions');
@@ -22,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const skippedDatesSection = document.getElementById('skippedDatesSection');
     const skippedDatesList = document.getElementById('skippedDatesList');
 
-    // Modals
     const missingModal = document.getElementById('missingModal');
     const closeMissingModal = document.getElementById('closeMissingModal');
     const missingModalBody = document.getElementById('missingModalBody');
@@ -45,26 +41,20 @@ document.addEventListener('DOMContentLoaded', function () {
     let allTimeSlots = [];
     let selectedSemester = null;
 
-    // CSRF
     function getCSRF() {
         const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
         return cookie ? cookie.split('=')[1] : '';
     }
 
-    // ── Date helpers (pure arithmetic, no Date object timezone issues) ──
-
-    /** Parse 'YYYY-MM-DD' → {y, m, d} */
     function parseParts(s) {
         const p = s.split('-');
         return { y: +p[0], m: +p[1], d: +p[2] };
     }
 
-    /** Days in a given month (1-indexed). Handles leap years. */
     function daysInMonth(y, m) {
         return new Date(y, m, 0).getDate();
     }
 
-    /** Add `n` days to a YYYY-MM-DD string and return YYYY-MM-DD. */
     function addDays(dateStr, n) {
         const p = parseParts(dateStr);
         let y = p.y, m = p.m, d = p.d + n;
@@ -73,22 +63,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     }
 
-    /** Return the Monday (ISO weekday 1) of the week containing dateStr. */
     function getMondayOfWeek(dateStr) {
-        const dt = new Date(dateStr + 'T12:00:00');   // noon avoids DST edge
-        const dow = dt.getDay();                       // 0=Sun … 6=Sat
-        const offset = dow === 0 ? -6 : 1 - dow;      // shift to Monday
+        const dt = new Date(dateStr + 'T12:00:00');
+        const dow = dt.getDay();
+        const offset = dow === 0 ? -6 : 1 - dow;
         return addDays(dateStr, offset);
     }
 
-    /** Format 'YYYY-MM-DD' → '28 Jan 2026' style. */
     function formatDate(dateStr) {
         const p = parseParts(dateStr);
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         return `${p.d} ${months[p.m - 1]} ${p.y}`;
     }
 
-    /** Return 1-based week number within the term. */
     function getWeekNumber(mondayStr, termStartStr) {
         const m = new Date(mondayStr + 'T12:00:00');
         const s = new Date(getMondayOfWeek(termStartStr) + 'T12:00:00');
@@ -96,26 +83,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return diff + 1;
     }
 
-    /** Compare two YYYY-MM-DD strings: <0, 0, >0 */
     function cmpDate(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 
     function showInfo(msg, type) {
         showNotif(type, msg);
     }
 
-    /** Get today as YYYY-MM-DD string. */
     function getTodayStr() {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     }
 
-    /** Check if the displayed week is a future week (after the current week). */
     function isFutureWeek() {
         const todayMonday = getMondayOfWeek(getTodayStr());
         return cmpDate(currentWeekMonday, todayMonday) > 0;
     }
 
-    /** Update week label and disable prev/next when at bounds. */
     function updateWeekNav() {
         if (!currentWeekMonday || !termStart || !termEnd) return;
         const friday = addDays(currentWeekMonday, 4);
@@ -128,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const lastMonday = getMondayOfWeek(termEnd);
         nextWeekBtn.disabled = cmpDate(currentWeekMonday, lastMonday) >= 0;
 
-        // Disable generate & delete for current or past weeks
         const future = isFutureWeek();
         if (future) {
             generateBtn.disabled = false;
@@ -147,8 +129,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Term selection
-    // Term selection (custom dropdown)
     termDropdown.querySelector('.selectedLabel').addEventListener('click', function () {
         termDropdown.classList.add('active');
     });
@@ -163,7 +143,6 @@ document.addEventListener('DOMContentLoaded', function () {
         termStart = e.target.getAttribute('data-start');
         termEnd = e.target.getAttribute('data-end');
 
-        // Auto-set semester from the intake's current semester
         selectedSemester = parseInt(e.target.getAttribute('data-current-semester')) || 1;
 
         currentWeekMonday = getMondayOfWeek(termStart);
@@ -176,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function () {
         loadTimetable();
     });
 
-    // Week navigation
     prevWeekBtn.addEventListener('click', function () {
         const termMonday = getMondayOfWeek(termStart);
         const candidate = addDays(currentWeekMonday, -7);
@@ -195,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function () {
         loadTimetable();
     });
 
-    // Load timetable data
     function loadTimetable() {
         const termId = selectedTermId;
         if (!termId || !currentWeekMonday) return;
@@ -219,11 +196,9 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(err => showInfo('Failed to load timetable: ' + err, 'error'));
     }
 
-    // Render the grid
     function renderTimetable(sessions) {
         timetableBody.innerHTML = '';
 
-        // Find all unique time slots
         const slotMap = {};
         sessions.forEach(s => {
             const key = s.start_time + '-' + s.end_time;
@@ -283,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Render skipped dates
     function renderSkippedDates(skippedDates) {
         if (!skippedDates || skippedDates.length === 0) {
             skippedDatesSection.style.display = 'none';
@@ -300,7 +274,6 @@ document.addEventListener('DOMContentLoaded', function () {
             skippedDatesList.appendChild(li);
         });
 
-        // Attach remove handlers
         skippedDatesList.querySelectorAll('.skipRemoveBtn').forEach(btn => {
             btn.addEventListener('click', function () {
                 removeSkippedDate(this.dataset.date);
@@ -308,7 +281,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Generate timetable
     generateBtn.addEventListener('click', function (e) {
         if (generateBtn.disabled || generateBtn.classList.contains('disabled')) {
             showInfo('Cannot generate timetable for current or past weeks.', 'error');
@@ -352,7 +324,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Delete week timetable
     deleteWeekBtn.addEventListener('click', function (e) {
         if (deleteWeekBtn.disabled || deleteWeekBtn.classList.contains('disabled')) {
             showInfo('Cannot delete timetable for current or past weeks.', 'error');
@@ -396,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Save preference
     savePreferenceBtn.addEventListener('click', function () {
         const termId = selectedTermId;
         if (!termId) return;
@@ -416,10 +386,8 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => showInfo('Error: ' + err, 'error'));
     });
 
-    // Replicate modal — populate week dropdown and handle submit
     replicateBtn.addEventListener('click', () => {
         if (!termStart || !termEnd) { showInfo('Please select a term first.', 'warning'); return; }
-        // Build week list
         replicateWeekSelect.innerHTML = '';
         const firstMonday = getMondayOfWeek(termStart);
         const lastMonday  = getMondayOfWeek(termEnd);
@@ -466,7 +434,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => showInfo('Error: ' + err, 'error'));
     });
 
-    // Missing classes modal
     missingBtn.addEventListener('click', function () {
         const termId = selectedTermId;
         if (!termId) return;
@@ -494,7 +461,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     missingModalBody.appendChild(div);
                 });
 
-                // Attach rearrange handlers
                 missingModalBody.querySelectorAll('.rearrangeBtn').forEach(btn => {
                     btn.addEventListener('click', function () {
                         rearrangeClass(this.dataset.id);
@@ -507,7 +473,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     closeMissingModal.addEventListener('click', () => { missingModal.style.display = 'none'; });
 
-    // Add skip date modal
     addSkipBtn.addEventListener('click', () => { skipModal.style.display = 'flex'; });
     closeSkipModal.addEventListener('click', () => { skipModal.style.display = 'none'; });
 
@@ -535,7 +500,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => showInfo('Error: ' + err, 'error'));
     });
 
-    // Remove skipped date
     function removeSkippedDate(dateStr) {
         const termId = selectedTermId;
         if (!confirm('Remove this skipped date?')) return;
@@ -554,7 +518,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => showInfo('Error: ' + err, 'error'));
     }
 
-    // Rearrange a cancelled class
     function rearrangeClass(classSessionId) {
         if (!confirm('Attempt to rearrange this class to an available slot?')) return;
 
@@ -573,7 +536,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => showInfo('Error: ' + err, 'error'));
     }
 
-    // Close modals on backdrop click
     [missingModal, skipModal, replicateModal].forEach(modal => {
         modal.addEventListener('click', function (e) {
             if (e.target === modal) modal.style.display = 'none';

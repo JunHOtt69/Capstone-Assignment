@@ -205,18 +205,15 @@ document.addEventListener('DOMContentLoaded', function () {
 					const imgData = normalizeImageData(img);
 					const row = document.createElement('div');
 					row.className = 'poi-editor-image-row';
-					
-					// Thumbnail on the left
+
 					const thumb = document.createElement('img');
 					thumb.className = 'poi-editor-thumb';
 					thumb.src = imgData.src;
 					thumb.alt = 'preview';
 
-					// Middle section for controls (file input and caption)
 					const controlsSection = document.createElement('div');
 					controlsSection.className = 'poi-editor-controls-section';
 
-					// Caption input (wider)
 					const captionLabel = document.createElement('label');
 					captionLabel.className = 'poi-editor-field-label';
 					captionLabel.textContent = 'Caption:';
@@ -232,7 +229,6 @@ document.addEventListener('DOMContentLoaded', function () {
 					captionContainer.appendChild(captionLabel);
 					captionContainer.appendChild(captionInput);
 
-					// File input for replacement
 					const fileLabel = document.createElement('label');
 					fileLabel.className = 'poi-editor-field-label';
 					fileLabel.textContent = 'Replace image:';
@@ -250,7 +246,6 @@ document.addEventListener('DOMContentLoaded', function () {
 					controlsSection.appendChild(captionContainer);
 					controlsSection.appendChild(fileContainer);
 
-					// Remove button on the right
 					const rem = document.createElement('button');
 					rem.className = 'poi-editor-remove-btn';
 
@@ -262,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function () {
 					rem.appendChild(icon);
 					rem.addEventListener('click', ()=>{ poiData[key].images.splice(idx,1); populateEditorList(); });
 
-					// File input change handler
 					fileInput.addEventListener('change', async ()=>{
 						if(!fileInput.files || !fileInput.files[0]) return;
 						const f = fileInput.files[0];
@@ -280,7 +274,6 @@ document.addEventListener('DOMContentLoaded', function () {
 						}catch(err){ showNotif('error', 'Upload error: ' + err.message); }
 					});
 
-					// Caption change handler
 					captionInput.addEventListener('change', () => {
 						if(poiData[key].images[idx]){
 							if(typeof poiData[key].images[idx] === 'string'){
@@ -291,7 +284,6 @@ document.addEventListener('DOMContentLoaded', function () {
 						}
 					});
 
-					// Assemble the row: thumbnail | controls | remove button
 					row.appendChild(thumb);
 					row.appendChild(controlsSection);
 					row.appendChild(rem);
