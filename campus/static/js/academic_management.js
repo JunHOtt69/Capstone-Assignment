@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     renderOption();
     renderCalendar('Start');
 
-    // Filter listeners
     const searchInput = document.getElementById('termSearchInput');
     const statusFilter = document.getElementById('statusFilterSelect');
 

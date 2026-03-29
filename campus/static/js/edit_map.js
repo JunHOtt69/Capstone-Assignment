@@ -12,24 +12,20 @@
   
   let mapData = { nodes: [], edges: [] };
   let nextNodeId = 1;
-  let mode = null; // 'add-terminal', 'add-path', 'add-edge', 'delete', null
-  let selectedNode = null; // For adding edges
+  let mode = null;
+  let selectedNode = null;
   let draggedNode = null;
   let dragOffset = { x: 0, y: 0 };
-  
-  // Fetch initial map data
+
   function fetchMapData() {
     return fetch(window.MAP_DATA_URL).then(r => r.json());
   }
-  
-  // Initialize editor
+
   async function init() {
     mapData = await fetchMapData();
-    // Ensure we have valid structure
     if (!mapData.nodes) mapData.nodes = [];
     if (!mapData.edges) mapData.edges = [];
-    
-    // Normalize node data to use node_id and node_type (handle both old and new formats)
+
     mapData.nodes = mapData.nodes.map(n => ({
       node_id: n.node_id || n.id,
       name: n.name,
@@ -37,14 +33,12 @@
       x: n.x,
       y: n.y
     }));
-    
-    // Also normalize edges to use 'from' and 'to'
+
     mapData.edges = mapData.edges.map(e => ({
       from: e.from,
       to: e.to
     }));
-    
-    // Determine next node ID
+
     if (mapData.nodes.length > 0) {
       const numericIds = mapData.nodes
         .filter(n => n.node_id.match(/^N\d+$/))
@@ -75,13 +69,12 @@
   }
   
   function toggleAddTerminalMode() {
-    // clicking one should clear the other
     if (mode === 'add-terminal') {
       mode = null;
     } else {
       mode = 'add-terminal';
     }
-    // reset other state
+
     if (mode !== 'add-path') addPathBtn.textContent = 'Add Pathway';
     selectedNode = null;
     updateButtonStates();
@@ -158,17 +151,20 @@
     const clickedNode = findNodeAt(x, y);
     if (!clickedNode) return;
     
-    if (!selectedNode) {
+    if (!selectedNode) 
+      {
       selectedNode = clickedNode;
       document.getElementById('node-' + clickedNode.node_id).style.stroke = 'orange';
       document.getElementById('node-' + clickedNode.node_id).style.strokeWidth = '3';
-    } else if (selectedNode.node_id === clickedNode.node_id) {
-      // Deselect
+    } 
+    
+    else if (selectedNode.node_id === clickedNode.node_id) {
       document.getElementById('node-' + selectedNode.node_id).style.stroke = getNodeStrokeColor(selectedNode);
       document.getElementById('node-' + selectedNode.node_id).style.strokeWidth = '2';
       selectedNode = null;
-    } else {
-      // Add edge
+    } 
+
+    else {
       addEdge(selectedNode.node_id, clickedNode.node_id);
       document.getElementById('node-' + selectedNode.node_id).style.stroke = getNodeStrokeColor(selectedNode);
       document.getElementById('node-' + selectedNode.node_id).style.strokeWidth = '2';
@@ -177,7 +173,6 @@
   }
   
   function addNode(x, y, type) {
-    // Generate node ID
     const nextId = 'N' + nextNodeId;
     nextNodeId++;
     
@@ -197,7 +192,6 @@
   }
   
   function addEdge(fromId, toId) {
-    // Check if edge already exists
     const exists = mapData.edges.some(e => 
       (e.from === fromId && e.to === toId) ||
       (e.from === toId && e.to === fromId)
@@ -231,14 +225,12 @@
   }
   
   function deleteAtPoint(x, y) {
-    // Check for node
     const node = findNodeAt(x, y);
     if (node) {
       deleteNode(node.node_id);
       return;
     }
-    
-    // Check for edge
+
     const edge = findEdgeAt(x, y);
     if (edge) {
       deleteEdge(edge);
@@ -254,12 +246,10 @@
       const toNode = mapData.nodes.find(n => n.node_id === edge.to);
       
       if (!fromNode || !toNode) continue;
-      
-      // Line from fromNode to toNode
+
       const x1 = fromNode.x, y1 = fromNode.y;
       const x2 = toNode.x, y2 = toNode.y;
-      
-      // Distance from point to line segment
+
       const dist = pointToLineDistance(x, y, x1, y1, x2, y2);
       
       if (dist <= threshold) {
@@ -317,8 +307,7 @@
   
   function renderMap() {
     svg.innerHTML = '';
-    
-    // Draw edges first (so they appear behind nodes)
+
     for (let edge of mapData.edges) {
       const fromNode = mapData.nodes.find(n => n.node_id === edge.from);
       const toNode = mapData.nodes.find(n => n.node_id === edge.to);
@@ -334,15 +323,12 @@
         line.setAttribute('class', 'edge');
         line.setAttribute('data-from', edge.from);
         line.setAttribute('data-to', edge.to);
-        
-        // Make edge draggable in delete mode
         line.style.cursor = 'pointer';
         
         svg.appendChild(line);
       }
     }
-    
-    // Draw nodes
+
     for (let node of mapData.nodes) {
       const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('id', 'node-' + node.node_id);
@@ -356,8 +342,7 @@
       const radius = node.node_type === 'terminal' ? TERMINAL_RADIUS : PATHWAY_RADIUS;
       circle.setAttribute('r', radius);
       circle.style.cursor = 'move';
-      
-      // Add mouse events for dragging
+
       circle.addEventListener('mousedown', (e) => {
         e.stopPropagation();
         if (mode !== 'add-edge' && mode !== 'add-terminal' && mode !== 'add-path' && mode !== 'delete') {
@@ -370,7 +355,6 @@
         }
       });
 
-      // allow renaming terminals on double-click
       circle.addEventListener('dblclick', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -384,8 +368,7 @@
       });
       
       svg.appendChild(circle);
-      
-      // Draw label
+
       const text = document.createElementNS(SVG_NS, 'text');
       text.setAttribute('x', node.x);
       text.setAttribute('y', node.y - (node.node_type === 'terminal' ? 20 : 15));
@@ -407,7 +390,6 @@
   }
   
   function saveMap() {
-    // Filter out nodes with no name (should have user-defined names)
     const nodesToSave = mapData.nodes.map(n => ({
       node_id: n.node_id,
       name: n.name || (n.node_type === 'terminal' ? `Terminal ${n.node_id}` : `Pathway ${n.node_id}`),
@@ -422,13 +404,11 @@
       nodes: nodesToSave,
       edges: edgesToSave
     };
-    
-    // Include pending image data if user uploaded a new map
+
     if (pendingImageData) {
       payload.image_data = pendingImageData;
     }
-    
-    // Send to server - use absolute path since campus app is at root level
+
     fetch('/save-map/', {
       method: 'POST',
       headers: {
@@ -443,7 +423,7 @@
     })
     .then(data => {
       showMessage(data.message || 'Map saved successfully!', 'success');
-      pendingImageData = null; // Clear pending image after successful save
+      pendingImageData = null;
       setTimeout(() => {
         window.location.href = '/navigation/';
       }, 1500);
@@ -487,12 +467,8 @@
     return cookieValue;
   }
 
-  // ============================================
-  // IMAGE UPLOAD & CROP FUNCTIONALITY
-  // ============================================
-  
   let cropper = null;
-  let pendingImageData = null; // Store cropped image data until Save Map is clicked
+  let pendingImageData = null;
   
   function setupImageUpload() {
     const uploadBtn = document.getElementById('uploadMapBtn');
@@ -504,8 +480,7 @@
     const cropImage = document.getElementById('cropImage');
     const applyCropBtn = document.getElementById('applyCropBtn');
     const cancelCropBtn = document.getElementById('cancelCropBtn');
-    
-    // Open modal
+
     uploadBtn?.addEventListener('click', () => {
       cropModal.style.display = 'flex';
       cropPreviewSection.style.display = 'none';
@@ -514,8 +489,7 @@
         cropper = null;
       }
     });
-    
-    // Close modal
+
     const closeModal = () => {
       cropModal.style.display = 'none';
       if (cropper) {
@@ -529,13 +503,11 @@
     
     closeCropModal?.addEventListener('click', closeModal);
     cancelCropBtn?.addEventListener('click', closeModal);
-    
-    // Select image button
+
     selectImageBtn?.addEventListener('click', () => {
       mapImageInput.click();
     });
-    
-    // File input change
+
     mapImageInput?.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -549,8 +521,7 @@
       reader.onload = (event) => {
         cropImage.src = event.target.result;
         cropPreviewSection.style.display = 'block';
-        
-        // Initialize Cropper.js
+
         if (cropper) {
           cropper.destroy();
         }
@@ -572,8 +543,7 @@
       
       reader.readAsDataURL(file);
     });
-    
-    // Apply cropped image
+
     applyCropBtn?.addEventListener('click', async () => {
       if (!cropper) {
         showMessage('No image selected', 'error');
@@ -584,18 +554,15 @@
       applyCropBtn.textContent = '⏳ Processing...';
       
       try {
-        // Get cropped canvas
         const canvas = cropper.getCroppedCanvas({
           width: 800,
           height: 600,
           imageSmoothingEnabled: true,
           imageSmoothingQuality: 'high',
         });
-        
-        // Store the cropped image data (will be uploaded on Save Map)
+
         pendingImageData = canvas.toDataURL('image/png');
-        
-        // Update the preview immediately
+
         const mapImage = document.getElementById('campusMapImage');
         if (mapImage) {
           mapImage.src = pendingImageData;
@@ -613,8 +580,7 @@
       }
     });
   }
-  
-  // Initialize on page load
+
   setupImageUpload();
   init();
 })();

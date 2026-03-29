@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from .models import announcement, announcementTarget, class_session, SubjectComponent, AttendanceSession, AttendanceMark
 import pytz
 
-#returning card ID
 def card_context(request):
     u = getattr(request, 'user', None)
     if not u or not u.is_authenticated:
@@ -54,12 +53,12 @@ def card_context(request):
             buffer = io.BytesIO()
 
             options = {
-                'module_height': 5.0,    # Default is 15.0 (Shorter height)
-                'module_width': 0.25,    # Increase this to make it wider 
-                'quiet_zone': 1.0,       # Margin on the sides
-                'font_size': 10,         # Size of the text under the bars
-                'text_distance': 4.0,    # Space between bars and text
-                'write_text': False       # Set to False if you want bars ONLY
+                'module_height': 5.0,
+                'module_width': 0.25,
+                'quiet_zone': 1.0,
+                'font_size': 10,
+                'text_distance': 4.0,
+                'write_text': False
             }
 
             barcode_instance = code128(str(card_id), writer= ImageWriter())

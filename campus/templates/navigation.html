@@ -14,13 +14,11 @@
 
 {% block content %}
     <div class="navigation-container">
-        <!-- Header Section -->
         <div class="navigation-header">
             <h1>Campus Navigation</h1>
             <p class="navigation-subtitle">Find your way across campus with ease</p>
         </div>
 
-        <!-- Control Toolbar -->
         <div class="control-toolbar">
             <div class="controls-grid">
                 <div class="control-group">
@@ -37,7 +35,6 @@
             </div>
         </div>
 
-        <!-- Map Container -->
         <div class="map-card">
             <div id="mapWrapper" class="map-wrapper">
                 <img src="{% static 'myapp/images/campus-map.png' %}" id="campusMapImage" />
@@ -49,7 +46,6 @@
             </div>
         </div>
 
-        <!-- Admin Edit Button -->
         {% if user.is_authenticated and user.role == 'admin' %}
         <div class="admin-actions">
             <button onclick="window.location.href='/editmap'" class="btn-secondary">

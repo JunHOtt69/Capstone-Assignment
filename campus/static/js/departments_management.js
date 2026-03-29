@@ -1,9 +1,5 @@
-/* ============================================================
-   DEPARTMENTS MANAGEMENT JS
-   ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ---- Elements ----
     const deptDropdown     = document.getElementById('deptDropdown');
     const deptOptions      = document.getElementById('deptOptions');
     const deptInfo         = document.getElementById('deptInfo');
@@ -23,18 +19,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedUserId = null;
     let cachedAvailable = [];
 
-    // ---- CSRF ----
     function getCSRF() {
         const cookie = document.cookie.split(';').find(function (c) { return c.trim().startsWith('csrftoken='); });
         return cookie ? cookie.split('=')[1] : '';
     }
 
-    // ---- Info Bar ----
     function showInfo(msg, type) {
         showNotif(type, msg);
     }
 
-    // ---- Custom dropdown: department selection ----
     deptDropdown.querySelector('.selectedLabel').addEventListener('click', function () {
         deptDropdown.classList.add('active');
     });
@@ -49,7 +42,6 @@ document.addEventListener('DOMContentLoaded', function () {
         loadLecturers();
     });
 
-    // ---- Load Lecturers ----
     function loadLecturers() {
         if (!selectedDeptId) return;
 
@@ -84,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function () { showInfo('Failed to load lecturers.', 'error'); });
     }
 
-    // ---- Subject Tags HTML ----
     function subjectTagsHTML(subjects) {
         if (!subjects || subjects.length === 0) {
             return '<span class="componentTag">None assigned</span>';
@@ -99,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }).join(' ');
     }
 
-    // ---- Bind assign buttons on lecturer rows ----
     function bindAssignButtons() {
         lecturersBody.querySelectorAll('.assignSubjectBtn').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -112,7 +102,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---- Remove subject tag ----
     lecturersBody.addEventListener('click', function (e) {
         var btn = e.target.closest('.tagRemove');
         if (!btn) return;
@@ -137,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(function () { showInfo('Network error.', 'error'); });
     });
 
-    // ---- Load available subjects for modal ----
     function loadAvailableSubjects() {
         if (!selectedUserId) return;
 
@@ -151,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function () { showInfo('Failed to load subjects.', 'error'); });
     }
 
-    // ---- Render available subjects ----
     function renderAvailable(list) {
         availableBody.innerHTML = '';
         var query = (subjectSearch.value || '').toLowerCase();
@@ -177,7 +164,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ---- Bind assign buttons in modal ----
     function bindModalAssignButtons() {
         availableBody.querySelectorAll('.cmBtnAssign').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -203,7 +189,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---- Modal Events ----
     closeAssignModal.addEventListener('click', function () {
         assignSubjectModal.style.display = 'none';
     });

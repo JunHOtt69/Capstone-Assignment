@@ -44,7 +44,6 @@ from .models import (
     timetable_preference, lecturer_assignment, skipped_date, SubjectComponent
 )
 
-#playground
 def testing(request):
     return render(request, 'testing.html')
 
@@ -52,7 +51,6 @@ def testing(request):
 def my_profile(request):
     return render(request, 'my_profile.html')
 
-#logging function
 def record_admin_action(user_id, obj, action_flag, message="", manual_pk=None,   manual_repr=None):
     LogEntry.objects.create(
         user_id=user_id,
@@ -63,7 +61,6 @@ def record_admin_action(user_id, obj, action_flag, message="", manual_pk=None,  
         change_message=message   
     )
 
-#logout user when password resetting
 class SmartPasswordResetConfirmView(PasswordResetConfirmView):
     def dispatch(self, *args, **kwargs):
         if self.request.user.is_authenticated:
@@ -125,8 +122,6 @@ If you did not request a password reset, please disregard this email or contact 
             
         return super().form_valid(form)
 
-# if applying role based view on class:
-#@method_decorator(role_required(allowed_roles=['admin']), name='dispatch')
 class RoleBasedLoginView(LoginView):
     template_name = "registration/login.html"
 
@@ -149,7 +144,6 @@ class RoleBasedLoginView(LoginView):
             return reverse_lazy("account_error")
         return reverse_lazy(target) 
 
-#redirect user to their dashboard:
 def redirect_user_by_role(user):
     if user.groups.filter(name="admin").exists():
         return "admin_dashboard"
@@ -159,8 +153,6 @@ def redirect_user_by_role(user):
         return "student_dashboard"
     return "account_error"
 
-#unauthorize redirection
-# Create your views here.
 def home(request): 
     if request.user.is_authenticated:
         return redirect(redirect_user_by_role(request.user))
@@ -375,10 +367,8 @@ def student_dashboard(request):
     
     return render(request, 'dashboards/student_dashboard.html', context)
 
-#attendance function
 @login_required
 def attendance(request):
-    # STUDENT VIEW
     if request.user.groups.filter(name="student").exists():
         enrollment = get_object_or_404(course_enrollment, student=request.user)
         student_term = enrollment.term
@@ -461,8 +451,6 @@ def attendance(request):
 
         return render(request, "attendance.html", context)
         
-    
-    # LECTURER VIEW
     if request.user.groups.filter(name="lecturer").exists():
         today = timezone.localdate()
 
@@ -1110,12 +1098,10 @@ def close_attendance_session(request, class_event_id):
 
     return redirect("attendance_lecturer_otp", class_event_id=class_event.id)
 
-#management function
 @role_required(allowed_roles=['admin'])
 def user_management(request):
     return render(request, "user_management.html")
 
-#function for create_user_manually
 def build_set_password_link(request, user):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
@@ -1233,8 +1219,6 @@ def create_user_manually(request):
                     new_user.set_unusable_password()
                     new_user.save()
 
-                    #schedule email after transaction succeeds
-                    
                     if str(role_id) == str(groups.get('admin')):
                         new_user.is_staff = True
                         new_user.save()
@@ -1257,7 +1241,6 @@ def create_user_manually(request):
                             if(dept_val and dept_val.strip()):
                                 dept_obj = departments.objects.filter(dept_id= dept_val).first()
                             lecturer_profiles.objects.create(
-                                # passing the user object, instead of the id, because the id is automatically incremented, django will handle the id extraction
                                 user = new_user,
                                 lc_id = unique_id,
                                 dept = dept_obj
@@ -1335,7 +1318,6 @@ def create_user_manually(request):
             return redirect('create_user_manually')
         
         except Exception as e:
-            # If anything fails, print to console and show error to user
             print(f"Error during user creation: {e}")
             messages.error(request, f"An error occurred: {str(e)}")
             context["selected_role"] = request.session.get('role_id')
@@ -1348,8 +1330,6 @@ def create_user_manually(request):
 
     return render(request, "partials/create_user_manually.html", context)
 
-
-#user crud
 @role_required(allowed_roles=['admin'])
 @transaction.atomic 
 def user_crud(request):
@@ -1668,8 +1648,6 @@ def bulk_user_creation(request):
     
     return render(request, 'partials/bulk_user_creation.html')
 
-
-#manage academic function
 @role_required(allowed_roles=['admin'])  
 def academic_management(request):
     return render(request, "academic_management.html")
@@ -1813,27 +1791,20 @@ def get_courses_by_level(request):
     courses = course.objects.filter(level=level).values('course_id', 'course_code',  'course_name', 'semester_week')
     return JsonResponse(list(courses), safe=False)
 
-
-#navigation, campus map
 def map_data(request):
-    """Fetch map nodes and edges from database"""
     try:
         nodes = MapNode.objects.all()
         edges = MapEdge.objects.all()
         
         if not nodes.exists():
-            # Return empty data structure if no data in DB
             return JsonResponse({"nodes": [], "edges": [], "pois": []})
-        
-        # Return with 'id' and 'type' for backward compatibility with campus_map.js
         nodes_list = [
             {
-                "id": node.node_id,           # Use 'id' for campus_map.js
+                "id": node.node_id,
                 "name": node.name,
-                "type": node.node_type,       # Use 'type' for campus_map.js
+                "type": node.node_type,
                 "x": node.x,
                 "y": node.y,
-                # Also include node_id and node_type for edit_map.js
                 "node_id": node.node_id,
                 "node_type": node.node_type,
             }
@@ -1859,7 +1830,6 @@ def navigation(request):
 @login_required
 @role_required(allowed_roles=['student', 'lecturer'])
 def navigate_to_class(request):
-    """Find the user's current or next class and redirect to navigation with the classroom pre-selected."""
     now = timezone.localtime()
     today = now.date()
     current_time = now.time()
@@ -1874,7 +1844,6 @@ def navigate_to_class(request):
     user = request.user
     user_groups = set(user.groups.values_list('name', flat=True))
 
-    # Build queryset for today's scheduled classes
     if 'student' in user_groups:
         enrollment = course_enrollment.objects.filter(student=user).select_related('term').first()
         if not enrollment or not enrollment.term:
@@ -1897,14 +1866,12 @@ def navigate_to_class(request):
         messages.info(request, "Navigate to Classroom is only available for students and lecturers.")
         return redirect('navigation')
 
-    # Find current class (in progress, including late) or next upcoming class
     current_class = None
     next_class = None
 
     for cs in today_classes.order_by('session__start_time'):
         s = cs.session
         if s.start_time <= current_time <= s.end_time:
-            # Class is currently in progress (user may be on time or late)
             current_class = cs
         elif s.start_time > current_time:
             if next_class is None:
@@ -1943,7 +1910,6 @@ def editmap(request):
     return render(request, "editmap.html")
 
 def save_map(request):
-    """Save map nodes and edges to database"""
     if request.method != 'POST':
         return JsonResponse({"error": "POST required"}, status=400)
     
@@ -1952,21 +1918,16 @@ def save_map(request):
         nodes_data = data.get('nodes', [])
         edges_data = data.get('edges', [])
         image_data = data.get('image_data', None)
-        
-        # Save new map image if provided
         if image_data:
             try:
                 import base64
                 from io import BytesIO
-                
-                # Remove data URL prefix (data:image/png;base64,)
+
                 if 'base64,' in image_data:
                     image_data = image_data.split('base64,')[1]
-                
-                # Decode base64 image
+
                 image_bytes = base64.b64decode(image_data)
-                
-                # Delete old map images
+
                 static_dir = os.path.join(settings.BASE_DIR, 'campus', 'static', 'myapp', 'images')
                 os.makedirs(static_dir, exist_ok=True)
                 
@@ -1978,8 +1939,7 @@ def save_map(request):
                             os.remove(old_file)
                         except Exception as e:
                             print(f"Warning: Could not delete old file {old_file}: {e}")
-                
-                # Save new image
+
                 file_path = os.path.join(static_dir, 'campus-map.png')
                 with open(file_path, 'wb') as f:
                     f.write(image_bytes)
@@ -1988,11 +1948,9 @@ def save_map(request):
                 return JsonResponse({"error": f"Failed to save image: {str(e)}"}, status=400)
         
         with transaction.atomic():
-            # Clear existing data
             MapNode.objects.all().delete()
             MapEdge.objects.all().delete()
-            
-            # Create new nodes
+
             nodes_map = {}
             for node in nodes_data:
                 map_node = MapNode.objects.create(
@@ -2004,7 +1962,6 @@ def save_map(request):
                 )
                 nodes_map[node['node_id']] = map_node
             
-            # Create edges
             for edge in edges_data:
                 from_node = nodes_map.get(edge['from'])
                 to_node = nodes_map.get(edge['to'])
@@ -2031,7 +1988,6 @@ def save_map(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 def upload_map_image(request):
-    """Upload and save a new campus map image"""
     if request.method != 'POST':
         return JsonResponse({"error": "POST required"}, status=400)
     
@@ -2040,19 +1996,16 @@ def upload_map_image(request):
     
     try:
         image_file = request.FILES['image']
-        
-        # Validate file type
+
         allowed_types = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml']
         if image_file.content_type not in allowed_types:
             return JsonResponse({
                 "error": "Invalid file type. Only PNG, JPG, and SVG are allowed."
             }, status=400)
-        
-        # Save the file
+
         static_dir = os.path.join(settings.BASE_DIR, 'campus', 'static', 'myapp', 'images')
         os.makedirs(static_dir, exist_ok=True)
-        
-        # Delete old map images before saving the new one
+
         old_extensions = ['png', 'jpg', 'jpeg', 'svg']
         for ext in old_extensions:
             old_file = os.path.join(static_dir, f'campus-map.{ext}')
@@ -2062,15 +2015,12 @@ def upload_map_image(request):
                 except Exception as e:
                     print(f"Warning: Could not delete old file {old_file}: {e}")
         
-        # Always save as campus-map.png (since cropped images are PNG)
         file_path = os.path.join(static_dir, 'campus-map.png')
         
-        # Write the file
         with open(file_path, 'wb+') as destination:
             for chunk in image_file.chunks():
                 destination.write(chunk)
         
-        # Return success with the new image URL
         from django.templatetags.static import static
         image_url = static('myapp/images/campus-map.png')
         
@@ -2088,10 +2038,8 @@ def point_of_interest(request):
 
 
 def point_of_interest_data(request):
-    """Return JSON structure of categories and images."""
     data_path = os.path.join(settings.BASE_DIR, 'campus', 'poi_data.json')
     if not os.path.exists(data_path):
-        # try to create a default structure
         default = {
             "centrepoint": {"label": "CENTREPOINT & ATRIUM", "images": [f"centrepoint-{i+1}" for i in range(8)]},
             "auditoriums": {"label": "AUDITORIUMS", "images": [f"auditoriums-{i+1}" for i in range(8)]},
@@ -2117,7 +2065,6 @@ def point_of_interest_data(request):
 
 @login_required
 def point_of_interest_save(request):
-    """Save modified poi_data.json (admin-only)."""
     if not request.user.is_staff:
         return JsonResponse({"error": "forbidden"}, status=403)
 
@@ -2127,11 +2074,9 @@ def point_of_interest_save(request):
     data_path = os.path.join(settings.BASE_DIR, 'campus', 'poi_data.json')
     try:
         payload = json.loads(request.body.decode('utf-8'))
-        # basic validation: must be a dict of category-> {label, images}
         if not isinstance(payload, dict):
             return JsonResponse({"error": "invalid payload"}, status=400)
-
-        # Load old data for comparison
+        
         old_data = {}
         if os.path.exists(data_path):
             with open(data_path, 'r') as f:
@@ -2140,7 +2085,6 @@ def point_of_interest_save(request):
                 except (json.JSONDecodeError, ValueError):
                     old_data = {}
 
-        # Detect what changed
         changes = []
         old_keys = set(old_data.keys())
         new_keys = set(payload.keys())
@@ -2173,7 +2117,6 @@ def point_of_interest_save(request):
             if imgs_removed:
                 changes.append(f"Deleted {imgs_removed} image(s) from '{new_label}'")
 
-            # Check caption changes
             old_captions = {(img.get('src') if isinstance(img, dict) else img): (img.get('caption', '') if isinstance(img, dict) else '') for img in old_imgs}
             new_captions = {(img.get('src') if isinstance(img, dict) else img): (img.get('caption', '') if isinstance(img, dict) else '') for img in new_imgs}
             captions_edited = sum(1 for src in old_captions if src in new_captions and old_captions[src] != new_captions[src])
@@ -2182,7 +2125,6 @@ def point_of_interest_save(request):
 
         change_message = '; '.join(changes) if changes else 'POI data saved (no detected changes)'
 
-        # write file
         with open(data_path, 'w') as f:
             json.dump(payload, f, indent=2)
         
@@ -2200,7 +2142,6 @@ def point_of_interest_save(request):
 
 @login_required
 def point_of_interest_upload(request):
-    """Receive an uploaded image file (multipart/form-data) and store it under media/poi/. Returns JSON with `url`."""
     if not request.user.is_staff:
         return JsonResponse({"error": "forbidden"}, status=403)
 
@@ -2216,7 +2157,6 @@ def point_of_interest_upload(request):
     save_dir = os.path.join(media_root, 'poi')
     os.makedirs(save_dir, exist_ok=True)
 
-    # create unique filename
     orig = upload.name
     ext = os.path.splitext(orig)[1] or '.jpg'
     filename = f"{uuid.uuid4().hex}{ext}"
@@ -2239,7 +2179,6 @@ def point_of_interest_upload(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-#FAQ function
 @role_required(allowed_roles=['admin', 'lecturer', 'student'])
 def support_center(request):
     return render(request, 'help/support_center.html')
@@ -2935,8 +2874,6 @@ def ticket_action_ajax(request, ticket_id):
 
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
-
-#generate unique slug
 def generate_unique_slug(model_class, title, instance=None):
     base_slug = slugify(title)
     slug = base_slug
@@ -2983,18 +2920,15 @@ def edit_faq(request, slug=None):
                         format, imgstr = src.split(';base64,')
                         ext = format.split('/')[-1]
                         
-                        # Create a unique filename for the media folder
                         filename = f"faq_{faq_obj.id}_{uuid.uuid4().hex[:8]}.{ext}"
                         data = ContentFile(base64.b64decode(imgstr), name=filename)
 
-                        # 3. Create record in your attachments model
                         new_attachment = attachments.objects.create(
                             content_type=ContentType.objects.get_for_model(faq_obj),
                             object_id=faq_obj.id,
                             file=data
                         )
 
-                        # 4. Replace the Base64 source with the new media URL
                         img['src'] = new_attachment.file.url
                         images_processed = True
                     except Exception as e:
@@ -3185,7 +3119,6 @@ def delete_faq(request, slug):
 def faq_detail(request, slug):
     post = get_object_or_404(faq, slug=slug)
 
-    # Count only explicit click-through visits from FAQ listing/search links.
     if request.GET.get('from_click') == '1':
         faq.objects.filter(pk=post.pk).update(view_count=F('view_count') + 1)
         return redirect('faq_detail', slug=slug)
@@ -3320,7 +3253,6 @@ def viewFAQ(request):
 
     return render(request, 'help/view_faq.html', context)
 
-#extract and store image
 def extract_and_save_images(instance):
     if hasattr(instance, 'content'):
         html_data = instance.content
@@ -3381,7 +3313,6 @@ def save_manual_attachment(instance, file_obj):
         file=file_obj
     )
 
-#Facility Booking
 @role_required(allowed_roles=['lecturer', 'student'])
 def facility_list(request):
     query = request.GET.get("q", "")
@@ -3780,7 +3711,6 @@ def reject_booking(request, booking_id):
     messages.success(request, "Booking rejected successfully.")
     return redirect("review_booking_request")
 
-#Facility Status
 @login_required
 def facility_status(request):
     selected_date = request.GET.get("date")
@@ -3814,14 +3744,8 @@ def facility_status(request):
         "selected_date": selected_date
     })
 
-
-# ============================================================
-# COURSES MANAGEMENT MODULE
-# ============================================================
-
 @role_required(allowed_roles=['admin'])
 def manage_courses(request):
-    """Main courses management page — assign subjects to course semesters."""
     courses = course.objects.all().order_by('course_code')
     context = {
         'courses': courses,
@@ -3831,7 +3755,6 @@ def manage_courses(request):
 
 @role_required(allowed_roles=['admin'])
 def get_course_subjects(request):
-    """Get subjects assigned to a course for a given semester."""
     course_id = request.GET.get('course_id')
     semester = request.GET.get('semester')
     if not course_id or not semester:
@@ -3867,7 +3790,6 @@ def get_course_subjects(request):
 
 @role_required(allowed_roles=['admin'])
 def get_available_subjects(request):
-    """Get subjects NOT yet assigned to this course/semester."""
     course_id = request.GET.get('course_id')
     semester = request.GET.get('semester')
     if not course_id or not semester:
@@ -3897,7 +3819,6 @@ def get_available_subjects(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def assign_subject_to_course(request):
-    """Assign a subject to a course semester."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -3913,7 +3834,6 @@ def assign_subject_to_course(request):
     course_obj = get_object_or_404(course, course_id=course_id)
     subj = get_object_or_404(subject, subject_id=subject_id)
 
-    # Check if already assigned
     if course_subject.objects.filter(course=course_obj, subject=subj, recommended_semester=int(semester)).exists():
         return JsonResponse({'error': f'{subj.subject_code} is already assigned to this course/semester.'}, status=400)
 
@@ -3936,7 +3856,6 @@ def assign_subject_to_course(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def remove_subject_from_course(request):
-    """Remove a subject from a course semester."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -3965,14 +3884,8 @@ def remove_subject_from_course(request):
 
     return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
 
-
-# ============================================================
-# SUBJECTS MANAGEMENT MODULE
-# ============================================================
-
 @role_required(allowed_roles=['admin'])
 def manage_subjects(request):
-    """Main subjects management page — create, edit, remove subjects."""
     subjects_list = subject.objects.prefetch_related('components').all().order_by('subject_code')
     context = {'subjects': subjects_list}
     return render(request, 'partials/manage_subjects.html', context)
@@ -3980,7 +3893,6 @@ def manage_subjects(request):
 
 @role_required(allowed_roles=['admin'])
 def get_subject_detail(request):
-    """Get a single subject with its components."""
     subject_id = request.GET.get('subject_id')
     if not subject_id:
         return JsonResponse({'error': 'subject_id required'}, status=400)
@@ -4005,7 +3917,6 @@ def get_subject_detail(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def create_subject(request):
-    """Create a new subject with optional components."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -4044,7 +3955,6 @@ def create_subject(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def update_subject(request):
-    """Update an existing subject and its components (preserving timetable links)."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -4060,7 +3970,6 @@ def update_subject(request):
 
     subj = get_object_or_404(subject, subject_id=subject_id)
 
-    # Check for duplicate code (exclude current)
     if subject.objects.filter(subject_code=code).exclude(subject_id=subject_id).exists():
         return JsonResponse({'error': f'Subject code "{code}" already exists.'}, status=400)
 
@@ -4069,12 +3978,10 @@ def update_subject(request):
         subj.subject_name = name
         subj.save()
 
-        # Track which existing component IDs are kept
         incoming_ids = set()
         for comp in components_data:
             comp_id = comp.get('component_id')
             if comp_id:
-                # Update existing component in-place
                 try:
                     existing = SubjectComponent.objects.get(component_id=comp_id, subject=subj)
                     existing.class_type = comp.get('class_type', 'Lecture')
@@ -4085,7 +3992,6 @@ def update_subject(request):
                 except SubjectComponent.DoesNotExist:
                     pass
             else:
-                # Create new component
                 new_comp = SubjectComponent.objects.create(
                     subject=subj,
                     class_type=comp.get('class_type', 'Lecture'),
@@ -4094,11 +4000,9 @@ def update_subject(request):
                 )
                 incoming_ids.add(new_comp.component_id)
 
-        # Only delete components that were removed AND have no timetable sessions
         removed = SubjectComponent.objects.filter(subject=subj).exclude(component_id__in=incoming_ids)
         has_sessions = removed.filter(class_session__isnull=False).distinct()
         if has_sessions.exists():
-            # Keep components that have timetable sessions (don't cascade-delete them)
             safe_to_delete = removed.exclude(component_id__in=has_sessions.values_list('component_id', flat=True))
             safe_to_delete.delete()
         else:
@@ -4116,7 +4020,6 @@ def update_subject(request):
 
 @role_required(allowed_roles=['admin'])
 def check_subject_usage(request):
-    """Check if a subject has timetable sessions before deletion."""
     subject_id = request.GET.get('subject_id')
     if not subject_id:
         return JsonResponse({'error': 'subject_id required'}, status=400)
@@ -4134,7 +4037,6 @@ def check_subject_usage(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def delete_subject(request):
-    """Delete a subject and all related data."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -4165,7 +4067,6 @@ def delete_subject(request):
 
 @role_required(allowed_roles=['admin'])
 def manage_departments(request):
-    """Main departments management page — manage lecturer subject qualifications."""
     depts = departments.objects.all().order_by('dept_code')
     context = {'departments': depts}
     return render(request, 'partials/manage_departments.html', context)
@@ -4173,7 +4074,6 @@ def manage_departments(request):
 
 @role_required(allowed_roles=['admin'])
 def get_department_lecturers(request):
-    """Get lecturers in a department with their assigned subjects."""
     dept_id = request.GET.get('dept_id')
     if not dept_id:
         return JsonResponse({'error': 'dept_id required'}, status=400)
@@ -4209,7 +4109,6 @@ def get_department_lecturers(request):
 
 @role_required(allowed_roles=['admin'])
 def get_available_subjects_for_lecturer(request):
-    """Get subjects NOT yet assigned to a lecturer."""
     user_id = request.GET.get('user_id')
     if not user_id:
         return JsonResponse({'error': 'user_id required'}, status=400)
@@ -4231,7 +4130,6 @@ def get_available_subjects_for_lecturer(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def assign_subject_to_lecturer(request):
-    """Assign a subject qualification to a lecturer."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -4265,7 +4163,6 @@ def assign_subject_to_lecturer(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def remove_subject_from_lecturer(request):
-    """Remove a subject qualification from a lecturer."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -4294,16 +4191,10 @@ def remove_subject_from_lecturer(request):
 
     return JsonResponse({'success': True, 'message': f'{code} removed successfully.'})
 
-
-# ============================================================
-# TIMETABLE MODULE
-# ============================================================
-
 DAY_ORDER = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4}
 DAY_NAMES = {'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday', 'Thu': 'Thursday', 'Fri': 'Friday'}
 
 def _get_teaching_cutoff(term_obj):
-    """Calculate the last teaching date before study/exam weeks."""
     study_rule = academic_rules.objects.filter(rule_name='Study Weeks').first()
     exam_rule = academic_rules.objects.filter(rule_name='Examination Period').first()
     study_days = study_rule.value_days if study_rule else 0
@@ -4311,20 +4202,16 @@ def _get_teaching_cutoff(term_obj):
     return term_obj.end_date - timedelta(days=study_days + exam_days)
 
 def _is_teaching_date(term_obj, target_date):
-    """Check if a date is within the valid teaching period."""
     cutoff = _get_teaching_cutoff(term_obj)
     return term_obj.start_date <= target_date < cutoff
 
 def _get_monday_of_week(target_date):
-    """Return the Monday of the week containing target_date."""
     return target_date - timedelta(days=target_date.weekday())
 
 def _day_code_to_weekday_offset(day_code):
-    """Convert DAY_CHOICES code to weekday offset (MON=0, FRI=4)."""
     return DAY_ORDER.get(day_code, 0)
 
 def _get_lecturer_week_hours(lecturer_user, week_monday):
-    """Get total scheduled hours for a lecturer in a given week."""
     week_end = week_monday + timedelta(days=5)
     sessions = class_session.objects.filter(
         lecturer=lecturer_user,
@@ -4340,13 +4227,11 @@ def _get_lecturer_week_hours(lecturer_user, week_monday):
     return total_hours
 
 def _get_session_duration_hours(sess):
-    """Calculate duration of a session in hours."""
     delta = datetime.combine(date.today(), sess.end_time) - \
             datetime.combine(date.today(), sess.start_time)
     return delta.total_seconds() / 3600
 
 def _find_or_create_assignment(term_obj, subj, available_lecturers):
-    """Find existing lecturer assignment or pick one from available lecturers."""
     existing = lecturer_assignment.objects.filter(term=term_obj, subject=subj).first()
     if existing:
         return existing.lecturer
@@ -4361,7 +4246,6 @@ def _find_or_create_assignment(term_obj, subj, available_lecturers):
 
 @role_required(allowed_roles=['admin'])
 def manage_timetable(request):
-    """Main timetable management page."""
     terms = academic_term.objects.filter(is_active=True).select_related('course').order_by('-start_date')
     context = {'terms': terms}
     return render(request, "partials/manage_timetable.html", context)
@@ -4370,7 +4254,6 @@ def manage_timetable(request):
 @login_required
 @role_required(allowed_roles=['student', 'lecturer'])
 def view_timetable(request):
-    """Read-only timetable view for students and lecturers."""
     user = request.user
     user_groups = set(user.groups.values_list('name', flat=True))
 
@@ -4408,7 +4291,6 @@ def view_timetable(request):
 @login_required
 @role_required(allowed_roles=['student', 'lecturer'])
 def get_my_timetable_data(request):
-    """Return timetable JSON filtered for the current student or lecturer."""
     term_id = request.GET.get('term_id')
     week_start = request.GET.get('week_start')
 
@@ -4428,7 +4310,6 @@ def get_my_timetable_data(request):
     friday = monday + timedelta(days=4)
 
     if 'lecturer' in user_groups:
-        # Lecturers: load all their classes across all active terms
         sessions_qs = class_session.objects.filter(
             lecturer=user,
             date__gte=monday,
@@ -4439,8 +4320,6 @@ def get_my_timetable_data(request):
             'subject_component', 'subject_component__subject', 'lecturer', 'term'
         ).order_by('date', 'session__start_time')
         sessions_qs = list(sessions_qs)
-
-        # Determine overall term bounds across all active terms
         lec_terms = academic_term.objects.filter(
             term_id__in=set(s.term_id for s in sessions_qs)
         ) if sessions_qs else academic_term.objects.filter(
@@ -4531,10 +4410,9 @@ def get_my_timetable_data(request):
 
 @role_required(allowed_roles=['admin'])
 def get_timetable_data(request):
-    """Return timetable data as JSON for a given term and week."""
     term_id = request.GET.get('term_id')
-    week_start = request.GET.get('week_start')  # YYYY-MM-DD
-    semester_param = request.GET.get('semester')  # optional semester filter
+    week_start = request.GET.get('week_start')
+    semester_param = request.GET.get('semester')
 
     if not term_id:
         return JsonResponse({'error': 'term_id required'}, status=400)
@@ -4557,7 +4435,6 @@ def get_timetable_data(request):
         date__lte=friday
     ).select_related('session', 'session__facility', 'subject_component', 'subject_component__subject', 'lecturer').order_by('date', 'session__start_time')
 
-    # Filter to only subjects in the selected semester
     semester_subject_ids = set(
         course_subject.objects.filter(
             course=term_obj.course,
@@ -4565,14 +4442,11 @@ def get_timetable_data(request):
         ).values_list('subject_id', flat=True)
     )
     sessions_qs = [s for s in sessions_qs if s.subject_component.subject_id in semester_subject_ids]
-
-    # Pre-fetch SubjectComponent types for all subjects in this week
     subject_ids = set(s.subject_component.subject_id for s in sessions_qs)
     comp_map = {}
     for comp in SubjectComponent.objects.filter(subject_id__in=subject_ids):
         comp_map.setdefault(comp.subject_id, []).append(comp.class_type)
 
-    # Pre-compute per-subject session dates (sorted) for Lecture/Tutorial disambiguation
     subj_dates = {}
     for cs in sessions_qs:
         subj_dates.setdefault(cs.subject_component.subject_id, []).append((cs.date, cs.id))
@@ -4583,14 +4457,12 @@ def get_timetable_data(request):
     for cs in sessions_qs:
         fac_type = cs.session.facility.type
         components = comp_map.get(cs.subject_component.subject_id, [])
-        # Facility rules: Lab→Lab, Auditorium→Lecture, Classroom→Tutorial/Lecture
         if fac_type == 'Lab':
             ct = 'Lab'
         elif fac_type == 'Auditorium':
             ct = 'Lecture'
         elif fac_type == 'Classroom':
             if 'Tutorial' in components and 'Lecture' in components:
-                # Both exist — first session of the week is Lecture, rest Tutorial
                 dates_for_subj = subj_dates.get(cs.subject_component.subject_id, [])
                 first_id = dates_for_subj[0][1] if dates_for_subj else None
                 ct = 'Lecture' if cs.id == first_id else 'Tutorial'
@@ -4632,12 +4504,9 @@ def get_timetable_data(request):
         'week_start': monday.isoformat(),
     })
 
-
-# ── Slot-index helpers (4 timeslots per day: 0-early … 3-late) ──
 _SLOT_INDEX_CACHE = {}
 
 def _slot_index(start_time):
-    """Map a start_time to 0-based slot index within a day."""
     if start_time not in _SLOT_INDEX_CACHE:
         distinct = sorted(
             session.objects.values_list('start_time', flat=True).distinct()
@@ -4649,69 +4518,50 @@ def _slot_index(start_time):
 
 def _score_candidate(day_ord, slot_idx, facility, class_type, subj_id,
                      assignments, day_load, facility_usage, num_items):
-    """Return a numeric score for placing a class into a candidate slot.
-
-    Higher is better.  All weights are relative and tuned for a 5-day,
-    4-slot-per-day university layout with ~10 classes to place.
-    """
     score = 0.0
 
-    # ── 1. Day-spread: prefer the day with the fewest classes so far ──
     load = day_load.get(day_ord, 0)
     ideal_per_day = max(1, num_items / 5)
     if load < ideal_per_day:
-        score += 20          # under-loaded day is very attractive
+        score += 20
     elif load == 0:
-        score += 25          # empty day gets bonus
+        score += 25
     else:
-        score -= 10 * (load - ideal_per_day)   # overloaded day penalised
+        score -= 10 * (load - ideal_per_day)
 
-    # ── 2. Consecutive-day avoidance for the same subject ──
     subj_days = {a['day_ord'] for a in assignments if a['subj_id'] == subj_id}
     if (day_ord - 1) in subj_days or (day_ord + 1) in subj_days:
-        score -= 30          # strong penalty for back-to-back days
+        score -= 30
     if day_ord in subj_days:
-        score -= 15          # same day as another component (tutorial after lecture ok but not ideal)
+        score -= 15
 
-    # ── 3. Same-day same-subject slot adjacency ──
     subj_slots_today = [
         a['slot_idx'] for a in assignments
         if a['subj_id'] == subj_id and a['day_ord'] == day_ord
     ]
     for s in subj_slots_today:
         if abs(slot_idx - s) == 1:
-            score -= 10      # immediately adjacent slots
+            score -= 10
 
-    # ── 4. Slot-position preferences ──
     if class_type in ('Lab', 'Practical'):
-        # Labs preferred in afternoon (slots 2-3)
         if slot_idx >= 2:
             score += 10
         else:
             score -= 5
     elif class_type == 'Lecture':
-        # Lectures preferred in morning (slots 0-1)
         if slot_idx <= 1:
             score += 8
         else:
             score -= 3
-    # Tutorials: no strong preference (score += 0)
-
-    # Penalise the last slot of the day slightly (avoid late-only schedules)
     if slot_idx == 3:
         score -= 3
 
-    # ── 5. Facility rotation: penalise overuse of one room ──
     fid = facility.facility_id
     fu = facility_usage.get(fid, 0)
     score -= 4 * fu
-
-    # ── 6. Day-order balance: mild penalty for extreme front/back loading ──
-    # Prefer middle days slightly so Mon and Fri aren't always first picks
-    mid_dist = abs(day_ord - 2)            # 0=Wed (centre), 2=Mon/Fri
+    mid_dist = abs(day_ord - 2)
     score -= 2 * mid_dist
 
-    # ── 7. Gap avoidance for the intake on this day ──
     slots_today = sorted(
         [a['slot_idx'] for a in assignments if a['day_ord'] == day_ord] + [slot_idx]
     )
@@ -4719,7 +4569,7 @@ def _score_candidate(day_ord, slot_idx, facility, class_type, subj_id,
         for i in range(len(slots_today) - 1):
             gap = slots_today[i + 1] - slots_today[i]
             if gap > 1:
-                score -= 6 * (gap - 1)    # penalise each empty-slot gap
+                score -= 6 * (gap - 1)
 
     return score
 
@@ -4727,24 +4577,6 @@ def _score_candidate(day_ord, slot_idx, facility, class_type, subj_id,
 @role_required(allowed_roles=['admin'])
 @require_POST
 def generate_timetable(request):
-    """Generate a one-week timetable using score-based constraint scheduling.
-
-    Hard constraints (must satisfy):
-      - One class per intake per timeslot
-      - One class per lecturer per timeslot
-      - One booking per facility per timeslot
-      - Correct facility type for class type
-      - Lecturer weekly-hours cap
-      - Tutorials/Labs on a later day than their Lecture
-
-    Soft constraints (scoring preferences):
-      - Spread classes across all five days
-      - Avoid same-subject on consecutive days
-      - Prefer morning for lectures, afternoon for labs
-      - Rotate facility usage
-      - Minimise gaps within a day
-      - Balanced daily load
-    """
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -4752,11 +4584,10 @@ def generate_timetable(request):
 
     term_id = data.get('term_id')
     week_start_str = data.get('week_start')
-    semester_override = data.get('semester')  # optional semester selection
+    semester_override = data.get('semester')
 
     term_obj = get_object_or_404(academic_term, term_id=term_id)
 
-    # Use the semester from the request if provided, otherwise fall back to term's current_semester
     target_semester = int(semester_override) if semester_override else term_obj.current_semester
 
     if week_start_str:
@@ -4769,12 +4600,10 @@ def generate_timetable(request):
     if not _is_teaching_date(term_obj, week_monday):
         return JsonResponse({'error': 'Target week falls outside the teaching period (study/exam week).'}, status=400)
 
-    # Prevent generating timetable for current or past weeks
     current_monday = _get_monday_of_week(date.today())
     if week_monday <= current_monday:
         return JsonResponse({'error': 'Cannot generate timetable for the current or past weeks.'}, status=400)
 
-    # ── 1. Build items to schedule ──────────────────────────────────
     cs_entries = course_subject.objects.filter(
         course=term_obj.course,
         recommended_semester=target_semester
@@ -4804,19 +4633,15 @@ def generate_timetable(request):
                 'hours_per_class': 2,
             })
 
-    # Lectures first so tutorials/labs can reference their day
     type_order = {'Lecture': 0, 'Tutorial': 1, 'Lab': 2, 'Practical': 2, 'Fieldwork': 2}
     items_to_schedule.sort(key=lambda item: (
         type_order.get(item['class_type'], 9),
         item['subject'].subject_id,
     ))
     num_items = len(items_to_schedule)
-
-    # ── 2. Prepare session pool ─────────────────────────────────────
     all_sessions = list(session.objects.select_related('facility'))
     all_sessions.sort(key=lambda s: (DAY_ORDER.get(s.day_of_week, 9), s.start_time, s.facility_id))
 
-    # ── 3. Pre-compute valid teaching dates ─────────────────────────
     week_dates = {}
     valid_dates = set()
     skipped_set = set(
@@ -4828,7 +4653,6 @@ def generate_timetable(request):
         if d not in skipped_set and _is_teaching_date(term_obj, d):
             valid_dates.add(d)
 
-    # ── 4. Build occupancy maps from existing sessions ──────────────
     existing_qs = class_session.objects.filter(
         date__gte=week_monday,
         date__lt=week_monday + timedelta(days=5),
@@ -4840,10 +4664,9 @@ def generate_timetable(request):
     occupied_facility = set()
     lecturer_week_hours = {}
 
-    # Track current state for scoring
-    assignments = []        # list of {'subj_id','day_ord','slot_idx','facility_id','sess'}
-    day_load = {}           # day_ord -> count of classes
-    facility_usage = {}     # facility_id -> count of bookings
+    assignments = []
+    day_load = {}
+    facility_usage = {}
 
     for ex in existing_qs:
         st = ex.session.start_time
@@ -4854,7 +4677,6 @@ def generate_timetable(request):
         
         hrs = _get_session_duration_hours(ex.session)
         lecturer_week_hours[ex.lecturer_id] = lecturer_week_hours.get(ex.lecturer_id, 0) + hrs
-        # Seed scoring state
         assignments.append({
             'subj_id': ex.subject_component.subject_id,
             'day_ord': d_ord,
@@ -4864,17 +4686,15 @@ def generate_timetable(request):
         day_load[d_ord] = day_load.get(d_ord, 0) + 1
         facility_usage[ex.session.facility_id] = facility_usage.get(ex.session.facility_id, 0) + 1
 
-    # ── 5. Score-based scheduling ───────────────────────────────────
     created_sessions = []
     errors = []
-    scheduled_days = {}     # subject_id -> day_ord of its Lecture
+    scheduled_days = {}
 
     with transaction.atomic():
         for item in items_to_schedule:
             subj = item['subject']
             class_type = item['class_type']
 
-            # Resolve lecturer
             qualified = lecturer_subjects.objects.filter(subject=subj).select_related('user__lecturer_profile')
             assigned_lecturer = _find_or_create_assignment(term_obj, subj, qualified)
             if not assigned_lecturer:
@@ -4891,7 +4711,6 @@ def generate_timetable(request):
                 if parent_day is not None:
                     min_day_order = parent_day + 1
 
-            # Evaluate ALL valid candidates, pick the best score
             candidates = []
             for sess in all_sessions:
                 day_ord = DAY_ORDER.get(sess.day_of_week, 9)
@@ -4902,10 +4721,6 @@ def generate_timetable(request):
                 if sess_date is None or sess_date not in valid_dates:
                     continue
 
-                # Facility-type hard constraint
-                # Classroom: Lecture / Tutorial
-                # Auditorium: Lecture only
-                # Lab: Lab only
                 ft = sess.facility.type
                 if class_type in ('Lab', 'Practical') and ft != 'Lab':
                     continue
@@ -4918,7 +4733,6 @@ def generate_timetable(request):
 
                 st = sess.start_time
 
-                # Hard constraint checks
                 if (term_obj.term_id, sess_date, st) in occupied_intake:
                     continue
                 if (assigned_lecturer.id, sess_date, st) in occupied_lecturer:
@@ -4930,7 +4744,6 @@ def generate_timetable(request):
                 if current_hours + sess_hours > max_hours:
                     continue
 
-                # Candidate passes all hard constraints — score it
                 slot_idx = _slot_index(st)
                 sc = _score_candidate(
                     day_ord, slot_idx, sess.facility, class_type,
@@ -4943,8 +4756,6 @@ def generate_timetable(request):
                 errors.append(f"Could not find an available slot for {subj.subject_code} ({class_type})")
                 continue
 
-            # Pick the candidate with the highest score
-            # (tie-break by day_ord then slot_idx for determinism)
             candidates.sort(key=lambda c: (-c[0], c[2], c[3]))
             best_score, best_sess, best_day, best_slot, best_date, best_hours = candidates[0]
 
@@ -4959,7 +4770,6 @@ def generate_timetable(request):
             )
             created_sessions.append(new_cs)
 
-            # Update occupancy & scoring state
             occupied_intake.add((term_obj.term_id, best_date, best_sess.start_time))
             occupied_lecturer.add((assigned_lecturer.id, best_date, best_sess.start_time))
             occupied_facility.add((best_sess.facility_id, best_date, best_sess.start_time))
@@ -4978,7 +4788,6 @@ def generate_timetable(request):
             if class_type == 'Lecture':
                 scheduled_days[subj.subject_id] = best_day
 
-        # ── 6. Improvement pass: try swapping pairs for better scores ──
         improved = True
         max_passes = 3
         pass_count = 0
@@ -4991,22 +4800,17 @@ def generate_timetable(request):
                 day_i = DAY_ORDER.get(sess_i.day_of_week, 9)
                 slot_i = _slot_index(sess_i.start_time)
 
-                # Look at other created sessions to try swapping rooms/slots
                 for j in range(i + 1, len(created_sessions)):
                     cs_j = created_sessions[j]
                     sess_j = cs_j.session
 
-                    # Only consider swapping if same timeslot (same day+time)
-                    # to swap facilities, or same day different time to swap slots
                     if sess_i.day_of_week != sess_j.day_of_week:
                         continue
                     if sess_i.start_time != sess_j.start_time:
                         continue
-                    # Same timeslot, different rooms — try swapping rooms
                     if sess_i.facility_id == sess_j.facility_id:
                         continue
 
-                    # Check facility-type compatibility after swap
                     i_type = 'Lab' if sess_i.facility.type == 'Lab' else 'Classroom'
                     j_type = 'Lab' if sess_j.facility.type == 'Lab' else 'Classroom'
                     i_needs = 'Lab' if cs_i.session.facility.type == 'Lab' else 'Classroom'
@@ -5015,7 +4819,6 @@ def generate_timetable(request):
                     if j_type != i_needs or i_type != j_needs:
                         continue
 
-                    # Score before swap
                     old_i = _score_candidate(
                         day_i, slot_i, sess_i.facility, 'Lab' if i_needs == 'Lab' else 'Lecture',
                         cs_i.subject_component.subject_id, assignments, day_load, facility_usage, num_items
@@ -5025,7 +4828,6 @@ def generate_timetable(request):
                         cs_j.subject_component.subject_id, assignments, day_load, facility_usage, num_items
                     )
 
-                    # Score after swap
                     new_i = _score_candidate(
                         day_i, slot_i, sess_j.facility, 'Lab' if i_needs == 'Lab' else 'Lecture',
                         cs_i.subject_component.subject_id, assignments, day_load, facility_usage, num_items
@@ -5036,11 +4838,9 @@ def generate_timetable(request):
                     )
 
                     if (new_i + new_j) > (old_i + old_j):
-                        # Swap sessions in DB
                         cs_i.session, cs_j.session = cs_j.session, cs_i.session
                         cs_i.save()
                         cs_j.save()
-                        # Update facility_usage
                         facility_usage[sess_i.facility_id] = facility_usage.get(sess_i.facility_id, 1) - 1
                         facility_usage[sess_j.facility_id] = facility_usage.get(sess_j.facility_id, 1) - 1
                         facility_usage[sess_j.facility_id] = facility_usage.get(sess_j.facility_id, 0) + 1
@@ -5066,7 +4866,6 @@ def generate_timetable(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def delete_week_timetable(request):
-    """Delete all scheduled sessions for a given term and week."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -5083,14 +4882,12 @@ def delete_week_timetable(request):
     if monday is None:
         return JsonResponse({'error': 'Invalid date format'}, status=400)
 
-    # Prevent deleting timetable for current or past weeks
     current_monday = _get_monday_of_week(date.today())
     if monday <= current_monday:
         return JsonResponse({'error': 'Cannot delete timetable for the current or past weeks.'}, status=400)
 
     friday = monday + timedelta(days=4)
 
-    # Only delete sessions for subjects in the selected semester
     semester_subject_ids = set(
         course_subject.objects.filter(
             course=term_obj.course,
@@ -5122,7 +4919,6 @@ def delete_week_timetable(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def save_preference(request):
-    """Save the current week's timetable as the active preference."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -5140,7 +4936,6 @@ def save_preference(request):
 
     friday = monday + timedelta(days=4)
 
-    # Only save preferences for subjects in the selected semester
     semester_subject_ids = set(
         course_subject.objects.filter(
             course=term_obj.course,
@@ -5160,12 +4955,9 @@ def save_preference(request):
         return JsonResponse({'error': 'No scheduled classes found for this week.'}, status=400)
 
     with transaction.atomic():
-        # Deactivate old preferences
         timetable_preference.objects.filter(term=term_obj).update(is_active=False)
-        # Delete old inactive ones
         timetable_preference.objects.filter(term=term_obj, is_active=False).delete()
 
-        # Create new preferences
         for cs in current_classes:
             timetable_preference.objects.create(
                 term=term_obj,
@@ -5188,15 +4980,13 @@ def save_preference(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def replicate_preference(request):
-    """Replicate preference to one or more target weeks."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     term_id = data.get('term_id')
-    target_weeks = data.get('target_weeks', [])  # list of YYYY-MM-DD (Monday)
-    # Backward compat: accept single target_week too
+    target_weeks = data.get('target_weeks', [])
     if not target_weeks:
         single = data.get('target_week')
         if single:
@@ -5209,7 +4999,6 @@ def replicate_preference(request):
     term_obj = get_object_or_404(academic_term, term_id=term_id)
     target_semester = int(semester_param) if semester_param else term_obj.current_semester
 
-    # Only replicate preferences for subjects in the selected semester
     semester_subject_ids = set(
         course_subject.objects.filter(
             course=term_obj.course,
@@ -5239,7 +5028,6 @@ def replicate_preference(request):
                 weeks_with_errors.append({'week': target_week_str, 'reason': 'Outside teaching period'})
                 continue
 
-            # Check for existing classes in target week for this semester
             target_friday = target_monday + timedelta(days=4)
             existing_count = class_session.objects.filter(
                 term=term_obj,
@@ -5252,7 +5040,6 @@ def replicate_preference(request):
                 weeks_with_errors.append({'week': target_week_str, 'reason': 'Already has scheduled classes'})
                 continue
 
-            # Get skipped dates for target week
             skipped_dates = set(
                 skipped_date.objects.filter(
                     term=term_obj,
@@ -5315,7 +5102,6 @@ def replicate_preference(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def add_skipped_date(request):
-    """Add a skipped date (public holiday) for an intake."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -5335,7 +5121,6 @@ def add_skipped_date(request):
 
     skipped_date.objects.create(term=term_obj, date=skip_dt, reason=reason)
 
-    # Cancel any existing classes on that date
     cancelled = class_session.objects.filter(
         term=term_obj, date=skip_dt, status='scheduled'
     ).update(status='cancelled')
@@ -5356,7 +5141,6 @@ def add_skipped_date(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def remove_skipped_date(request):
-    """Remove a skipped date."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -5386,7 +5170,6 @@ def remove_skipped_date(request):
 
 @role_required(allowed_roles=['admin'])
 def get_missing_classes(request):
-    """Get cancelled/missing classes for a term that can be rearranged."""
     term_id = request.GET.get('term_id')
     term_obj = get_object_or_404(academic_term, term_id=term_id)
 
@@ -5414,7 +5197,6 @@ def get_missing_classes(request):
 @role_required(allowed_roles=['admin'])
 @require_POST
 def rearrange_missing_class(request):
-    """Rearrange a single cancelled class to a new available slot."""
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -5427,15 +5209,10 @@ def rearrange_missing_class(request):
     subj = cs_obj.subject_component.subject
     lecturer_user = cs_obj.lecturer
 
-    # Search within the same week first, then nearby weeks
     original_monday = _get_monday_of_week(cs_obj.date)
     search_weeks = [original_monday]
-    # Also check next week
     search_weeks.append(original_monday + timedelta(days=7))
 
-    # Determine valid facility types based on original facility
-    # Rules: Lab→Lab only, Auditorium→Lecture (Auditorium only),
-    #        Classroom→Tutorial/Lecture (Classroom only)
     original_facility_type = cs_obj.session.facility.type
     if original_facility_type == 'Lab':
         valid_facility_types = ['Lab']
@@ -5459,7 +5236,6 @@ def rearrange_missing_class(request):
             if skipped_date.objects.filter(term=term_obj, date=target_date).exists():
                 continue
 
-            # Check clashes
             intake_clash = class_session.objects.filter(
                 term=term_obj, session=sess, date=target_date, status='scheduled'
             ).exists()
@@ -5470,7 +5246,6 @@ def rearrange_missing_class(request):
             if intake_clash or lecturer_clash:
                 continue
 
-            # Check lecturer hours
             lec_profile = getattr(lecturer_user, 'lecturer_profile', None)
             max_hours = lec_profile.max_hours_per_week if lec_profile else 20
             current_hours = _get_lecturer_week_hours(lecturer_user, week_monday)
@@ -5479,7 +5254,6 @@ def rearrange_missing_class(request):
             if current_hours + sess_hours > max_hours:
                 continue
 
-            # Rearrange
             cs_obj.session = sess
             cs_obj.date = target_date
             cs_obj.status = 'rearranged'
@@ -5506,9 +5280,6 @@ def rearrange_missing_class(request):
         'error': 'No available slot found for rearrangement.',
     })
 
-
-
-#announcement function
 @role_required(allowed_roles=['admin'])
 @transaction.atomic
 def announcements_form(request, ann_id=None):

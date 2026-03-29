@@ -9,7 +9,6 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 import os
-# Create your models here.
 
 class academic_rules(models.Model):
     id = models.AutoField(primary_key = True)
@@ -32,7 +31,6 @@ class academic_term(models.Model):
     def save(self, *args, **kwargs):
         if not self.term_id:
             self.current_semester = 1
-            # asdqw
         if self.start_date and self.course:
             course_code = getattr(self.course, 'course_code', '')
             

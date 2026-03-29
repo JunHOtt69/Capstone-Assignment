@@ -175,8 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.setAttribute('data-open', 'true');
                     e.classList.add('animatingExtend'); 
                     document.body.classList.toggle('nav-open', true);
-
-                    // Listen for the exact moment the transition ends
                     e.addEventListener('transitionend', () => {
                         e.classList.remove('animatingExtend');
                     }, { once: true, signal: abortController.signal });

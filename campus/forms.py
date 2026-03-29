@@ -43,17 +43,14 @@ class UserRowForm(forms.Form):
         widget=forms.EmailInput(attrs={'placeholder': 'Email'})
     )
 
-    # for lecturer
     department = forms.CharField(widget=forms.HiddenInput())
 
-    #student
     term = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     def clean(self):
         cleaned_data = super().clean()
         role = cleaned_data.get("user_role")
 
-        # Validation Logic based on Role
         if role == "3":
             if not cleaned_data.get("term"):
                 self.add_error('term', "Academic Term is required for students.")

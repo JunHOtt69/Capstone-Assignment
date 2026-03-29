@@ -6,14 +6,8 @@ main {
     width: 100%;
     margin-top: 5vw;
     position: relative;
-    
-    /* 1. Use min-height to ensure it covers the screen by default */
     min-height: 91vh; 
-    
-    /* 2. CRITICAL: Override 'max-content' from root.css to allow growth */
     height: auto !important; 
-    
-    /* 3. Ensure overflow doesn't clip the growing table */
     overflow: visible; 
 }
 

@@ -1,9 +1,4 @@
-/* ============================================================
-   COURSES MANAGEMENT JS
-   ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
-
-    // ---- Elements ----
     const courseDropdown    = document.getElementById('courseDropdown');
     const courseOptions     = document.getElementById('courseOptions');
     const semesterDropdown  = document.getElementById('semesterDropdown');
@@ -27,23 +22,19 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedSemester = null;
     let selectedTotalSem = 0;
 
-    // ---- CSRF ----
     function getCSRF() {
         const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
         return cookie ? cookie.split('=')[1] : '';
     }
 
-    // ---- Helpers ----
     function selectionReady() {
         return selectedCourseId && selectedSemester;
     }
 
-    // ---- Info Bar ----
     function showInfo(msg, type) {
         showNotif(type, msg);
     }
 
-    // ---- Component Tags HTML ----
     function componentTagsHTML(components) {
         if (!components || components.length === 0) return '<span class="componentTag">None</span>';
         return components.map(function (c) {
@@ -55,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }).join(' ');
     }
 
-    // ---- Custom dropdown: course selection ----
     courseDropdown.querySelector('.selectedLabel').addEventListener('click', function () {
         courseDropdown.classList.add('active');
     });
@@ -70,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedTotalSem = parseInt(e.target.getAttribute('data-total-sem')) || 0;
         selectedSemester = null;
 
-        // Reset and populate semester dropdown
         semesterDropdown.classList.remove('inactive');
         semesterDropdown.querySelector('.selectedLabel label').innerText = 'Choose Semester';
         semesterOptions.innerHTML = '';
@@ -82,13 +71,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 '</div>';
         }
         semesterDropdown.classList.add('active');
-
-        // Hide content until semester is chosen
         courseInfo.style.display = 'none';
         assignedSection.style.display = 'none';
     });
 
-    // ---- Custom dropdown: semester selection ----
     semesterDropdown.querySelector('.selectedLabel').addEventListener('click', function () {
         if (semesterDropdown.classList.contains('inactive')) return;
         semesterDropdown.classList.add('active');
@@ -104,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function () {
         loadAssigned();
     });
 
-    // ---- Load Assigned ----
     function loadAssigned() {
         if (!selectionReady()) {
             courseInfo.style.display = 'none';
@@ -144,7 +129,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function () { showInfo('Failed to load assigned subjects.', 'error'); });
     }
 
-    // ---- Remove ----
     function bindRemoveButtons() {
         assignedBody.querySelectorAll('.removeBtn').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -168,7 +152,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---- Available subjects ----
     function renderAvailable(list) {
         availableBody.innerHTML = '';
         var query = (subjectSearch.value || '').toLowerCase();
@@ -210,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function () { showInfo('Failed to load available subjects.', 'error'); });
     }
 
-    // ---- Assign ----
     function bindAssignButtons() {
         availableBody.querySelectorAll('.cmBtnAssign').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -236,7 +218,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---- Modal Events ----
     addSubjectBtn.addEventListener('click', function () {
         addSubjectModal.style.display = 'flex';
         subjectSearch.value = '';

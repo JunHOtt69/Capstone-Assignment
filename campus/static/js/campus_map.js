@@ -67,7 +67,7 @@
       line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
       line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
       line.setAttribute('stroke', '#AAAAAA'); line.setAttribute('stroke-width', '3');
-      line.setAttribute('opacity', '0'); // Make pathways transparent
+      line.setAttribute('opacity', '0');
       svg.appendChild(line);
     });
   }
@@ -83,12 +83,9 @@
   }
 
   function drawNodes(nodes, pathNodeIds){
-    // Only draw nodes that are in the path and are terminals
     nodes.forEach(n=>{
-      // Skip all pathway nodes
       if(n.type === 'pathway') return;
-      
-      // Only draw terminals that are in the path
+
       if(!pathNodeIds || !pathNodeIds.includes(n.id)) return;
       
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
@@ -110,7 +107,6 @@
     pois.forEach(p=>{
       const node = nodes.find(n=>n.id===p.node);
       if(!node) return;
-      // Only show POIs on nodes that are in path or if no path yet
       if(pathNodeIds && !pathNodeIds.includes(p.node)) return;
       
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
@@ -146,8 +142,7 @@
     const addOpt = (sel, value, label)=>{ const o = document.createElement('option'); o.value = value; o.textContent = label; sel.appendChild(o); };
     addOpt(startSelect,'','-- select start --'); 
     addOpt(endSelect,'','-- select end --');
-    
-    // Get terminal nodes and sort alphabetically + numerically (natural sort)
+
     const terminals = nodes
       .filter(n => n.type === 'terminal')
       .sort((a, b) => {
@@ -155,8 +150,7 @@
         const nameB = b.name || 'Node '+b.id;
         return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
       });
-    
-    // Add sorted terminals to dropdowns
+
     terminals.forEach(n => {
       addOpt(startSelect, n.id, n.name || 'Node '+n.id);
       addOpt(endSelect, n.id, n.name || 'Node '+n.id);
@@ -177,30 +171,25 @@
     }
   }
 
-  // Initialize
   fetchData().then(data=>{
     const {nodes = [], edges = [], pois = []} = data || {};
     const {byId, adj} = buildGraph(nodes, edges);
     populateControls(nodes, pois);
-    
-    // Initial draw with no path and no visible nodes
+
     draw(nodes, edges, pois, null);
 
-    // Check for navigate-to-class destination from URL params
     const urlParams = new URLSearchParams(window.location.search);
     const destination = urlParams.get('destination');
     if(destination){
-      // Find matching terminal node by name (case-insensitive)
+
       const destNode = nodes.find(n => n.type === 'terminal' && n.name && n.name.toLowerCase() === destination.toLowerCase());
       if(destNode){
         endSelect.value = destNode.id;
 
-        // Pin the destination on the map immediately
         clearSvg();
         drawEdges(nodes, edges);
         drawNodes(nodes, [destNode.id]);
 
-        // Highlight the destination node with a pulsing marker
         const marker = document.createElementNS('http://www.w3.org/2000/svg','circle');
         marker.setAttribute('cx', destNode.x); marker.setAttribute('cy', destNode.y);
         marker.setAttribute('r','14'); marker.setAttribute('fill','none');
@@ -213,7 +202,6 @@
         svg.appendChild(marker);
       }
 
-      // Show class info banner
       const subjectName = urlParams.get('subject');
       const startTime = urlParams.get('start_time');
       const endTime = urlParams.get('end_time');
@@ -250,7 +238,6 @@
         alert('No path found between selected locations'); 
         return; 
       }
-      // Redraw with path - nodes will only show on path
       draw(nodes, edges, pois, path);
     });
 

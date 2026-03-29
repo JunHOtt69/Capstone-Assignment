@@ -14,13 +14,11 @@
 
 {% block content %}
     <div class="edit-map-container">
-        <!-- Header Section -->
         <div class="edit-map-header">
             <h1>Edit Campus Map</h1>
             <p class="edit-map-subtitle">Manage campus navigation nodes and pathways</p>
         </div>
 
-        <!-- Instructions Card -->
         <div class="instructions">
             <p><strong>Instructions:</strong></p>
             <ul>
@@ -33,7 +31,6 @@
             </ul>
         </div>
 
-        <!-- Map Controls Toolbar -->
         <div class="map-controls">
             <button id="uploadMapBtn" class="upload-map-btn">Upload New Map</button>
             <button id="addTerminal">Add Terminal</button>
@@ -44,7 +41,6 @@
             <a href="{% url 'navigation' %}" class="cancel-link">Cancel</a>
         </div>
 
-        <!-- Map Container -->
         <div class="map-card">
             <div id="mapWrapper">
                 <img src="{% static 'myapp/images/campus-map.png' %}" alt="Campus Map" id="campusMapImage" />
@@ -56,7 +52,6 @@
         </div>
     </div>
 
-    <!-- Image Upload & Crop Modal -->
     <div id="cropModal" class="crop-modal" style="display: none;">
         <div class="crop-modal-content">
             <div class="crop-modal-header">

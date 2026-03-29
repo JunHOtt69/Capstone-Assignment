@@ -112,7 +112,6 @@ main{
     height: 25vw;
     overflow: hidden;
     position: relative;
-    /* background-color: rgba(var(--black), 1); */
 }
 
 .arrow{
@@ -171,7 +170,7 @@ main{
     transition: transform 0.5s, opacity 0.5s;
     opacity: 0.5;
     overflow: hidden;
-    transform: scale(0.8); /* Side images are smaller */
+    transform: scale(0.8);
     display: flex;
     justify-content: center;
     align-items: center;
