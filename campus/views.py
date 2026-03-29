@@ -2718,7 +2718,6 @@ def sync_messages(request, ticket_id):
         'new_act_id': new_activities.last().id if new_activities.exists() else last_act_id,
     })
 
-
 @login_required
 @transaction.atomic
 def ticket_action_ajax(request, ticket_id):
